@@ -2,15 +2,27 @@
 const CHAPTER_RANGE = { min: 0, max: 149 };
 const DATA_FILE_PATH = "psalms.json";
 
-// This function fetches data from a given file path and returns it as JSON
+// Cache for the Psalms data to avoid repeatedly fetching the same file
+let cachedData = null;
+
+// Fetch Psalms data from the packaged JSON file. The data is cached so
+// subsequent calls do not repeatedly read the same file.
 async function fetchData(filePath) {
+  if (cachedData) {
+    return cachedData;
+  }
+
   try {
-    // Fetch the data from the file
-    const response = await fetch(filePath);
-    // Parse the data as JSON and return it
-    return await response.json();
+    // Resolve the file URL in case this runs inside a browser extension
+    let url = filePath;
+    if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.getURL) {
+      url = chrome.runtime.getURL(filePath);
+    }
+
+    const response = await fetch(url);
+    cachedData = await response.json();
+    return cachedData;
   } catch (error) {
-    // Log any errors that occur during fetching or parsing
     console.error("Error fetching JSON:", error);
     return null;
   }
