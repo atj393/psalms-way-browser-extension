@@ -74,6 +74,15 @@ function getRandomVerseIndex(chapterContent) {
 
 // This function sets up event listeners for the UI elements
 function initializeEventListeners() {
+  const chapterInput = document.getElementById("txtChapter");
+  const goButton = document.getElementById("btnGo");
+
+  // helper to validate chapter input
+  function isValidChapter(value) {
+    const num = parseInt(value, 10);
+    return !isNaN(num) && num >= CHAPTER_RANGE.min + 1 && num <= CHAPTER_RANGE.max + 1;
+  }
+
   // Update the content when the chapter or verse buttons are clicked
   document.getElementById("btnChapter").addEventListener("click", () => updateContent());
   document.getElementById("btnVerse").addEventListener("click", () => updateContent(true));
@@ -87,8 +96,8 @@ function initializeEventListeners() {
     updateContent(false, currentChapter);
   });
   // Update the content to a specific chapter when the go button is clicked
-  document.getElementById("btnGo").addEventListener("click", () => {
-    let chapterNum = parseInt(document.getElementById("txtChapter").value, 10) - 1;
+  goButton.addEventListener("click", () => {
+    let chapterNum = parseInt(chapterInput.value, 10) - 1;
     if (!isNaN(chapterNum) && chapterNum >= CHAPTER_RANGE.min && chapterNum <= CHAPTER_RANGE.max) {
       console.log("--->   chapterNum:", chapterNum)
       updateContent(false, chapterNum);
@@ -96,6 +105,21 @@ function initializeEventListeners() {
       alert("Please enter a valid chapter number between 1 and 150.");
     }
   });
+
+  // Enable or disable go button based on input validity
+  chapterInput.addEventListener("input", () => {
+    goButton.disabled = !isValidChapter(chapterInput.value);
+  });
+
+  // Trigger Go on Enter if input is valid
+  chapterInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && isValidChapter(chapterInput.value)) {
+      goButton.click();
+    }
+  });
+
+  // Set initial disabled state
+  goButton.disabled = true;
 }
 
 // This variable keeps track of the current chapter

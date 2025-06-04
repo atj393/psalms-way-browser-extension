@@ -6,6 +6,7 @@
 
 - **One Verse**: Start your day or task with a verse from the Psalms, chosen to uplift and inspire.
 - **New Chapter**: Engage with entire chapters of Psalms, experiencing the richness of these timeless texts.
+- **Quick Navigation**: Type a chapter number (1-150) and press Enter or the Go button to jump directly to that chapter.
 - **Offline Access**: Enjoy access to the Psalms without needing an internet connection, making spiritual guidance available anytime, anywhere.
 
 ## Technical Overview

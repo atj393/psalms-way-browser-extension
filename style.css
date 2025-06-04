@@ -46,6 +46,11 @@ body {
   opacity: 0.8;
 }
 
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Sub-header Section */
 .sub-header {
   display: flex;
