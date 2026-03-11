@@ -2,51 +2,238 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Psalms Way! - A Biblical Pause Before New Beginnings</title>
-  <link rel="stylesheet" href="./style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psalms Way! - A Biblical Pause Before New Beginnings</title>
+    <link rel="stylesheet" href="./style.css" />
 </head>
 
 <body>
-  <header class="header">
-    <h1 class="title">Psalms Way!</h1>
-    <div>
-      <button class="button" id="btnVerse">One Verse</button>
-      <button class="button" id="btnChapter">New Chapter</button>
-    </div>
-  </header>
+    <!-- ── Header: title + primary action buttons ── -->
+    <header class="header">
+        <h1 class="title">Psalms Way!</h1>
+        <div class="header-btns">
+            <button class="button" id="btnVerse">One Verse</button>
+            <button class="button" id="btnChapter">New Chapter</button>
+        </div>
+    </header>
 
-  <hr class="divider">
+    <hr class="divider">
 
-  <section class="sub-header">
-    <h2 class="chapter-title" id="chapterTitle">Psalms</h2>
-    <div>
-      <input type="text" id="txtChapter" class="input" placeholder="Chapter" />
-      <button class="button" type="button" id="btnGo">Go</button>
-      <span class="divider-vertical">|</span>
-      <button class="button" id="btnPrev">&lt;</button>
-      <button class="button" id="btnNext">&gt;</button>
-    </div>
-  </section>
+    <!-- ── Sub-header: chapter title + chapter navigation ── -->
+    <section class="sub-header">
+        <h2 class="chapter-title" id="chapterTitle">Psalms</h2>
+        <div class="nav-controls">
+            <input type="number" id="txtChapter" class="input" placeholder="1–150" min="1" max="150" />
+            <button class="button" type="button" id="btnGo">Go</button>
+            <span class="divider-vertical">|</span>
+            <button class="btn-nav" id="btnPrev" title="Previous Psalm" aria-label="Previous Psalm">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path d="M10.5 3L5.5 8L10.5 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+            <button class="btn-nav" id="btnNext" title="Next Psalm" aria-label="Next Psalm">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path d="M5.5 3L10.5 8L5.5 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+            <span class="divider-vertical">|</span>
+            <button class="btn-nav" id="btnToggleToolbar" title="Toggle toolbar" aria-label="Toggle feature toolbar"
+                aria-expanded="true">
+                <svg id="iconToolbarToggle" width="16" height="16" viewBox="0 0 16 16" fill="none"
+                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M3 6L8 11L13 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+        </div>
+    </section>
 
-  <hr class="divider">
+    <!-- ── Collapsible toolbar wrapper ── -->
+    <div id="toolbarWrapper" class="toolbar-wrapper">
+        <hr class="divider">
 
-  <main class="content" id="contentElement"></main>
+        <!-- ── Feature icon toolbar (own row) ── -->
+        <nav class="icon-toolbar" aria-label="Features">
 
-  <hr class="divider">
+            <!-- Today's Psalm — Lucide: CalendarDays -->
+            <button class="btn-icon" id="btnTodaysPsalm" title="Today's Psalm">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                    <circle cx="8" cy="15" r="1" fill="currentColor" stroke="none" />
+                    <circle cx="12" cy="15" r="1" fill="currentColor" stroke="none" />
+                    <circle cx="16" cy="15" r="1" fill="currentColor" stroke="none" />
+                </svg>
+                <span class="btn-icon-label">Today</span>
+            </button>
 
-  <footer class="footer">
-    <nav aria-label="Footer links">
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSda0j_4GX_E_aFhsyItJssbgRc6C7Ukg-No54Gc0Sivzt5iSA/viewform?usp=sf_link" target="_blank" alt="Feedback Form"> Feedback </a>
-      <span> | </span>
-      <a href="https://github.com/atj393/cx-psalms-way" target="_blank" alt="Github Repository"> Github </a>
-      <span> | </span>
-      <a href="https://www.linkedin.com/in/atj393/" target="_blank" alt="LinkedIn Profile"> LinkedIn </a>
-    </nav>
-  </footer>
+            <!-- Search — Lucide: Search -->
+            <button class="btn-icon" id="btnSearch" title="Search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <span class="btn-icon-label">Search</span>
+            </button>
 
-  <script src="./popup.js"></script>
+            <!-- Favourites — Lucide: Heart -->
+            <button class="btn-icon" id="btnFavourites" title="Favourites">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path
+                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+                <span class="btn-icon-label">Saved</span>
+            </button>
+
+            <!-- History — Lucide: Clock -->
+            <button class="btn-icon" id="btnHistory" title="History">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" />
+                    <polyline points="12 7 12 12 15 15" />
+                </svg>
+                <span class="btn-icon-label">History</span>
+            </button>
+
+            <!-- Settings — Lucide: Settings2 (sliders) -->
+            <button class="btn-icon" id="btnSettings" title="Settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="4" y1="6" x2="20" y2="6" />
+                    <line x1="4" y1="12" x2="20" y2="12" />
+                    <line x1="4" y1="18" x2="20" y2="18" />
+                    <circle cx="9" cy="6" r="2" fill="var(--bg)" />
+                    <circle cx="15" cy="12" r="2" fill="var(--bg)" />
+                    <circle cx="9" cy="18" r="2" fill="var(--bg)" />
+                </svg>
+                <span class="btn-icon-label">Settings</span>
+            </button>
+
+        </nav>
+    </div><!-- end toolbarWrapper -->
+
+    <hr class="divider">
+
+    <!-- ── Main reading area ── -->
+    <main class="content" id="contentElement"></main>
+
+    <!-- ── Search Panel ── -->
+    <section class="panel" id="searchPanel" hidden>
+        <div class="search-bar">
+            <input type="text" id="txtSearch" class="input input-search" placeholder="Search psalms..." />
+            <button class="button" id="btnDoSearch">Search</button>
+            <button class="btn-close" id="btnCloseSearch" title="Close" aria-label="Close search">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path
+                        d="M4.4 4.55a.75.75 0 0 1 1.06 0L12 11.09l6.54-6.54a.75.75 0 1 1 1.06 1.06L13.06 12l6.54 6.54a.75.75 0 0 1-1.06 1.06L12 13.06l-6.54 6.54a.75.75 0 0 1-1.06-1.06L10.94 12 4.4 5.61a.75.75 0 0 1 0-1.06Z"
+                        fill="currentColor" />
+                </svg>
+            </button>
+        </div>
+        <div id="searchResults" class="panel-list"></div>
+    </section>
+
+    <!-- ── Favourites Panel ── -->
+    <section class="panel" id="favPanel" hidden>
+        <div class="panel-header">
+            <span>Favourites</span>
+            <button class="btn-close" id="btnCloseFav" title="Close" aria-label="Close favourites">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path
+                        d="M4.4 4.55a.75.75 0 0 1 1.06 0L12 11.09l6.54-6.54a.75.75 0 1 1 1.06 1.06L13.06 12l6.54 6.54a.75.75 0 0 1-1.06 1.06L12 13.06l-6.54 6.54a.75.75 0 0 1-1.06-1.06L10.94 12 4.4 5.61a.75.75 0 0 1 0-1.06Z"
+                        fill="currentColor" />
+                </svg>
+            </button>
+        </div>
+        <div id="favList" class="panel-list"></div>
+    </section>
+
+    <!-- ── History Panel ── -->
+    <section class="panel" id="historyPanel" hidden>
+        <div class="panel-header">
+            <span>Reading History</span>
+            <div class="panel-header-actions">
+                <button class="btn-action btn-clear-history" id="btnClearHistory" title="Clear all history" aria-label="Clear all history">Clear all</button>
+                <button class="btn-close" id="btnCloseHistory" title="Close" aria-label="Close history">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true">
+                        <path
+                            d="M4.4 4.55a.75.75 0 0 1 1.06 0L12 11.09l6.54-6.54a.75.75 0 1 1 1.06 1.06L13.06 12l6.54 6.54a.75.75 0 0 1-1.06 1.06L12 13.06l-6.54 6.54a.75.75 0 0 1-1.06-1.06L10.94 12 4.4 5.61a.75.75 0 0 1 0-1.06Z"
+                            fill="currentColor" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="historyList" class="panel-list"></div>
+    </section>
+
+    <!-- ── Settings Panel ── -->
+    <section class="panel" id="settingsPanel" hidden>
+        <div class="panel-header">
+            <span>Settings</span>
+            <button class="btn-close" id="btnCloseSettings" title="Close" aria-label="Close settings">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path
+                        d="M4.4 4.55a.75.75 0 0 1 1.06 0L12 11.09l6.54-6.54a.75.75 0 1 1 1.06 1.06L13.06 12l6.54 6.54a.75.75 0 0 1-1.06 1.06L12 13.06l-6.54 6.54a.75.75 0 0 1-1.06-1.06L10.94 12 4.4 5.61a.75.75 0 0 1 0-1.06Z"
+                        fill="currentColor" />
+                </svg>
+            </button>
+        </div>
+        <div class="settings-body">
+            <div class="settings-row">
+                <label class="settings-label" for="themeOptions">Theme</label>
+                <div class="theme-options" id="themeOptions">
+                    <button class="theme-btn" data-theme="light"> Light</button>
+                    <button class="theme-btn" data-theme="sepia"> Sepia</button>
+                    <button class="theme-btn" data-theme="dark"> Dark</button>
+                </div>
+            </div>
+            <div class="settings-row">
+                <label class="settings-label" for="fontSizeOptions">Text size</label>
+                <div class="font-size-options" id="fontSizeOptions">
+                    <button class="font-size-btn" data-size="small">A</button>
+                    <button class="font-size-btn" data-size="medium">A</button>
+                    <button class="font-size-btn" data-size="large">A</button>
+                </div>
+            </div>
+            <div class="settings-row">
+                <label class="settings-label" for="selectLang">Language</label>
+                <select class="settings-select" id="selectLang">
+                    <option value="en">English (NIV)</option>
+                    <option value="es" disabled>Español (coming soon)</option>
+                    <option value="fr" disabled>Français (coming soon)</option>
+                    <option value="de" disabled>Deutsch (coming soon)</option>
+                    <option value="pt" disabled>Português (coming soon)</option>
+                </select>
+            </div>
+        </div>
+        <nav class="settings-footer-links" aria-label="Footer links">
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSda0j_4GX_E_aFhsyItJssbgRc6C7Ukg-No54Gc0Sivzt5iSA/viewform?usp=sf_link"
+                target="_blank" rel="noopener noreferrer" title="Feedback Form">Feedback</a>
+            <span>|</span>
+            <a href="https://github.com/atj393/cx-psalms-way" target="_blank" rel="noopener noreferrer"
+                title="Github Repository">Github</a>
+        </nav>
+    </section>
+
+    <hr class="divider">
+
+
+
+    <script src="./popup.js"></script>
 </body>
 
 </html>
