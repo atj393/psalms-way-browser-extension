@@ -1,50 +1,37 @@
-// Define the range of chapters available and the path to the data file
 const CHAPTER_RANGE = { min: 0, max: 149 };
 const DATA_FILE_PATH = "psalms.json";
 
-// This function fetches data from a given file path and returns it as JSON
-async function fetchData(filePath) {
+// Cache psalms data so we only fetch once per popup session
+let psalmsData = null;
+
+async function getData() {
+  if (psalmsData) return psalmsData;
   try {
-    // Fetch the data from the file
-    const response = await fetch(filePath);
-    // Parse the data as JSON and return it
-    return await response.json();
+    const response = await fetch(DATA_FILE_PATH);
+    psalmsData = await response.json();
+    return psalmsData;
   } catch (error) {
-    // Log any errors that occur during fetching or parsing
-    console.error("Error fetching JSON:", error);
+    console.error("Error loading psalms data:", error);
     return null;
   }
 }
 
-// This function updates the content displayed on the page
 async function updateContent(isVerse = false, chapterIndex = getRandomChapterIndex()) {
-  console.log("--->   chapterIndex:", chapterIndex)
-  // Fetch the data from the file
-  const data = await fetchData(DATA_FILE_PATH);
-  // If no data was fetched, stop execution of the function
+  const data = await getData();
   if (!data) return;
 
-  // Get the content for the selected chapter
-  const chapterContent = data[chapterIndex];
-
-  // Update the current chapter
   currentChapter = chapterIndex;
-  // Define the chapter title based on the chapter index
-  let chapterTitle = `Psalms ${chapterIndex + 1}`;
-  // Create a new div for the content
+  const chapterContent = data[chapterIndex];
+  const baseTitle = `Psalms ${chapterIndex + 1}`;
   const contentDiv = document.createElement("div");
-  // If displaying a verse, create a p element and append it to the div
+
   if (isVerse) {
-    // Create a p element for the verse text
-    const verse = document.createElement("p");
-    // Get a random verse index and set the verse text
     const verseIndex = getRandomVerseIndex(chapterContent);
-    // Update the chapter title to include the verse number
-    chapterTitle = `${chapterTitle}:${verseIndex + 1}`;
+    const verse = document.createElement("p");
     verse.textContent = chapterContent[verseIndex];
     contentDiv.appendChild(verse);
+    document.getElementById("chapterTitle").textContent = `${baseTitle}:${verseIndex + 1}`;
   } else {
-    // If displaying a chapter, create a ul element and append li elements for each verse
     const ul = document.createElement("ul");
     chapterContent.forEach(verseText => {
       const li = document.createElement("li");
@@ -52,18 +39,13 @@ async function updateContent(isVerse = false, chapterIndex = getRandomChapterInd
       ul.appendChild(li);
     });
     contentDiv.appendChild(ul);
+    document.getElementById("chapterTitle").textContent = baseTitle;
   }
 
-    // Update the chapter title and reset the input field
-    document.getElementById("chapterTitle").textContent = chapterTitle;
-    document.getElementById("txtChapter").value = "";
-
-  // Replace the existing content with the new content
-  const contentSection = document.getElementById("contentElement");
-  if (contentSection) contentSection.replaceChildren(contentDiv);
+  document.getElementById("txtChapter").value = "";
+  document.getElementById("contentElement").replaceChildren(contentDiv);
 }
 
-// These functions return a random index for a chapter or verse
 function getRandomChapterIndex() {
   return Math.floor(Math.random() * (CHAPTER_RANGE.max - CHAPTER_RANGE.min + 1)) + CHAPTER_RANGE.min;
 }
@@ -72,12 +54,18 @@ function getRandomVerseIndex(chapterContent) {
   return Math.floor(Math.random() * chapterContent.length);
 }
 
-// This function sets up event listeners for the UI elements
+function goToChapter() {
+  const chapterNum = parseInt(document.getElementById("txtChapter").value, 10) - 1;
+  if (!isNaN(chapterNum) && chapterNum >= CHAPTER_RANGE.min && chapterNum <= CHAPTER_RANGE.max) {
+    updateContent(false, chapterNum);
+  } else {
+    alert("Please enter a valid chapter number between 1 and 150.");
+  }
+}
+
 function initializeEventListeners() {
-  // Update the content when the chapter or verse buttons are clicked
   document.getElementById("btnChapter").addEventListener("click", () => updateContent());
   document.getElementById("btnVerse").addEventListener("click", () => updateContent(true));
-  // Update the content and current chapter when the prev or next buttons are clicked
   document.getElementById("btnPrev").addEventListener("click", () => {
     currentChapter = currentChapter === CHAPTER_RANGE.min ? CHAPTER_RANGE.max : currentChapter - 1;
     updateContent(false, currentChapter);
@@ -86,23 +74,16 @@ function initializeEventListeners() {
     currentChapter = currentChapter === CHAPTER_RANGE.max ? CHAPTER_RANGE.min : currentChapter + 1;
     updateContent(false, currentChapter);
   });
-  // Update the content to a specific chapter when the go button is clicked
-  document.getElementById("btnGo").addEventListener("click", () => {
-    let chapterNum = parseInt(document.getElementById("txtChapter").value, 10) - 1;
-    if (!isNaN(chapterNum) && chapterNum >= CHAPTER_RANGE.min && chapterNum <= CHAPTER_RANGE.max) {
-      console.log("--->   chapterNum:", chapterNum)
-      updateContent(false, chapterNum);
-    } else {
-      alert("Please enter a valid chapter number between 1 and 150.");
-    }
+  document.getElementById("btnGo").addEventListener("click", goToChapter);
+  document.getElementById("txtChapter").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") goToChapter();
   });
 }
 
-// This variable keeps track of the current chapter
-let currentChapter = getRandomChapterIndex();
+let currentChapter = 0;
 
-// When the document is loaded, display a random chapter and set up the event listeners
 document.addEventListener("DOMContentLoaded", () => {
-  updateContent();
+  currentChapter = getRandomChapterIndex();
+  updateContent(false, currentChapter);
   initializeEventListeners();
 });
