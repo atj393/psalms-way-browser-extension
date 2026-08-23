@@ -7,6 +7,7 @@
 **A Biblical pause before new beginnings. All 150 Psalms in the browser toolbar, with no network access.**
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-Live-4285F4?logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/psalms-way-biblical-begin/aplafmlmecdjlmcgbibmlbjnilcomcnl)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-4285F4)](manifest.json)
 [![Version](https://img.shields.io/badge/version-1.1-informational)](manifest.json)
 [![Offline](https://img.shields.io/badge/network-none-lightgrey)](#privacy)
@@ -24,7 +25,7 @@ no server, and no request of any kind.
 - **Chrome Web Store:** [live](https://chromewebstore.google.com/detail/psalms-way-biblical-begin/aplafmlmecdjlmcgbibmlbjnilcomcnl), version 1.1.
 - **Stack:** plain HTML, CSS, and JavaScript. Manifest V3, no build step, no dependencies.
 - **Text:** 150 chapters, English (NIV), bundled as a 228 KB JSON file.
-- **Licence:** none yet. See [Licence](#licence).
+- **Licence:** [MIT](LICENSE) for the source. The bundled text keeps its own terms.
 
 There is also a companion [Android app](https://github.com/atj393/psalms-way-app) with a much
 larger translation set.
@@ -103,7 +104,9 @@ To test a change, load the unpacked extension as described above, then reload it
 
 ## Licence
 
-This repository does not currently carry a licence file, so default copyright applies and all
-rights are reserved by the author. If you want to reuse any of it, open an issue and ask.
+Extension source code is released under the [MIT License](LICENSE), which permits personal and
+commercial use, modification, and redistribution, provided the copyright and licence notice are
+kept.
 
-The Psalms text bundled in `psalms.json` remains under its own respective terms.
+The Psalms text bundled in `psalms.json` is **not** covered by that licence and remains under its
+own respective terms.
