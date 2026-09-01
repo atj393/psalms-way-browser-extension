@@ -12,8 +12,9 @@
 [![Version](https://img.shields.io/badge/version-1.1-informational)](manifest.json)
 [![Offline](https://img.shields.io/badge/network-none-lightgrey)](#privacy)
 
-<video src="https://github.com/atj393/psalms-way-browser-extension/raw/main/docs/assets/brag.mp4" poster="https://github.com/atj393/psalms-way-browser-extension/raw/main/docs/assets/brag.jpg" controls width="720">
-</video>
+[<img src="docs/assets/brag.jpg" width="720" alt="Psalms Way! launch video" />](docs/assets/brag.mp4)
+
+▶ Watch the launch video
 
 </div>
 
