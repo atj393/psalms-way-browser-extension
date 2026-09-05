@@ -12,9 +12,7 @@
 [![Version](https://img.shields.io/badge/version-1.1-informational)](manifest.json)
 [![Offline](https://img.shields.io/badge/network-none-lightgrey)](#privacy)
 
-[<img src="docs/assets/brag.jpg" width="720" alt="Psalms Way! launch video" />](docs/assets/brag.mp4)
-
-▶ Watch the launch video
+https://github.com/user-attachments/assets/5cfdbd72-f785-48d5-b7d1-99119d0eb39b
 
 </div>
 
