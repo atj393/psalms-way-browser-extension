@@ -1,0 +1,33 @@
+{
+  "name": "psalms-way-browser-extension",
+  "version": "1.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Development tooling for the Psalms Way! browser extension. The shipped extension has no runtime dependencies.",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format:check": "prettier --check \"**/*.{js,json,css,html,md}\"",
+    "format": "prettier --write \"**/*.{js,json,css,html,md}\"",
+    "validate:data": "node scripts/validate-data.js",
+    "validate:manifest": "node scripts/validate-manifest.js",
+    "validate:package": "node scripts/validate-package.js",
+    "validate": "npm run validate:data && npm run validate:manifest && npm run validate:package",
+    "package": "node scripts/package.js",
+    "check": "npm run lint && npm run validate && npm run test"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.9",
+    "eslint": "^9.18.0",
+    "globals": "^15.14.0",
+    "jsdom": "^25.0.1",
+    "prettier": "^3.4.2",
+    "vitest": "^2.1.9"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
