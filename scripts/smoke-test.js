@@ -226,9 +226,30 @@ try {
     return result.result.value;
   };
 
+  /**
+   * Poll until an expression is truthy.
+   *
+   * Fixed sleeps made this suite flaky: a cold profile occasionally needed
+   * longer than the allowance to fetch 224 KB of JSON and paint, so the
+   * startup assertions could run against a half-built page.
+   */
+  const waitFor = async (expression, timeout = 10000) => {
+    const deadline = Date.now() + timeout;
+    while (Date.now() < deadline) {
+      try {
+        if (await evaluate(expression)) return true;
+      } catch {
+        // The page can be mid-navigation; try again.
+      }
+      await sleep(50);
+    }
+    return false;
+  };
+
   const reload = async () => {
     await page.send("Page.navigate", { url: popupUrl });
-    await sleep(700);
+    // Wait for the first render to finish rather than guessing at a duration.
+    await waitFor("!!document.querySelector('.verse, .single-verse, .panel-empty')");
   };
 
   // ── Startup ──────────────────────────────────────────────────────────────

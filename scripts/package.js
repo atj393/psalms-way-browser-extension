@@ -113,9 +113,23 @@ function buildZip(entries) {
 
 const manifest = JSON.parse(readFileSync(resolve("manifest.json"), "utf8"));
 
+/**
+ * Read a file for packaging.
+ *
+ * Text files are normalised to LF. A Windows checkout rewrites them to CRLF,
+ * and without this the same commit would produce a different archive, and a
+ * different checksum, depending on which machine built it.
+ */
+function readForPackage(name) {
+  const raw = readFileSync(resolve(name));
+  if (!/[.](js|json|css|html)$/.test(name)) return raw;
+  // Strip carriage returns so a CRLF checkout packages identically to LF.
+  const text = raw.toString("utf8").split(String.fromCharCode(13)).join("");
+  return Buffer.from(text, "utf8");
+}
 const entries = PACKAGE_FILES.map((name) => ({
   name,
-  data: readFileSync(resolve(name)),
+  data: readForPackage(name),
 }));
 
 const zip = buildZip(entries);
