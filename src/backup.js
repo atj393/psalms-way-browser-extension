@@ -126,7 +126,5 @@ export function parseBackup(text) {
 }
 
 function byteLength(text) {
-  return typeof TextEncoder !== "undefined"
-    ? new TextEncoder().encode(text).length
-    : Buffer.byteLength(text, "utf8");
+  return new TextEncoder().encode(text).length;
 }

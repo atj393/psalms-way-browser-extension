@@ -52,6 +52,23 @@ export function iconButton(iconName, label, { className = "btn-icon-only", size 
   );
 }
 
+/**
+ * Fill `data-icon` placeholders in the static markup.
+ *
+ * Keeps the icon path data in icons.js alone: popup.html declares which icon a
+ * control uses, not what it looks like. The icon is inserted before any label
+ * the button already contains.
+ */
+export function hydrateIcons(root = document) {
+  for (const host of root.querySelectorAll("[data-icon]")) {
+    const name = host.dataset.icon;
+    const size = Number(host.dataset.iconSize) || 20;
+    host.prepend(icon(name, { size }));
+    delete host.dataset.icon;
+    delete host.dataset.iconSize;
+  }
+}
+
 export function qs(selector, root = document) {
   return root.querySelector(selector);
 }
