@@ -117,9 +117,7 @@ try {
 
   const { targetId } = await browser.send("Target.createTarget", { url: "about:blank" });
   const targets = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
-  const page = await new CDP(
-    targets.find((t) => t.id === targetId).webSocketDebuggerUrl
-  ).connect();
+  const page = await new CDP(targets.find((t) => t.id === targetId).webSocketDebuggerUrl).connect();
 
   await page.send("Page.enable");
   await page.send("Runtime.enable");
