@@ -295,9 +295,28 @@ reopen, toolbar collapse persisting, no horizontal scrolling, damaged storage
 recovery, migration from a real 1.1 profile, a backup round trip with four
 rejection cases, zero console errors and zero network requests.
 
-**Not verified:** the CI workflow itself has not run — it cannot until the branch
-is pushed and a pull request exists. Every command it runs was run locally and
-passes. Firefox is untested and is not claimed as supported.
+### CI
+
+The workflow ran on the pull request and **all eight jobs passed on the first
+attempt** (run `34174927156`):
+
+```
+Lint, validate and test                          PASS  17s
+Browser smoke test                               PASS  38s   73/73, Chrome 152 on Linux
+Date logic across time zones (UTC)               PASS   9s
+Date logic across time zones (Europe/Berlin)     PASS  12s
+Date logic across time zones (America/New_York)  PASS  15s
+Date logic across time zones (Australia/Sydney)  PASS  14s
+Date logic across time zones (Asia/Kolkata)      PASS  10s
+Date logic across time zones (Pacific/Chatham)   PASS  13s
+```
+
+The browser job runs against `dist/unpacked` — the zip is built, extracted and
+loaded — so what CI tests is the packaged output rather than the working tree.
+`Extensions.loadUnpacked` works on the `ubuntu-latest` image under `xvfb-run`,
+so no extra Chrome setup action is needed.
+
+**Not verified:** Firefox. It is untested and is not claimed as supported.
 
 ---
 
@@ -355,9 +374,5 @@ extension at 880×1120 by `npm run screenshots`:
    declarations can only be changed from the dashboard. `docs/screenshots/` has
    ten current images. **Nothing was published or uploaded.**
 
-3. **Watch the first CI run**, particularly the browser job. It uses `xvfb-run`
-   with the runner's preinstalled Chrome; if `Extensions.loadUnpacked` is not
-   available on that image, that job will need `browser-actions/setup-chrome`.
-
-4. **Review and merge the draft pull request.** It is left as a draft
+3. **Review and merge the draft pull request.** It is left as a draft
    deliberately; nothing was merged to `main`.

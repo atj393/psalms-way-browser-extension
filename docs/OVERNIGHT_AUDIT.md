@@ -563,10 +563,9 @@ updated from the repository. `docs/screenshots/` holds ten current images at
 
 Nothing was published or uploaded.
 
-### 3. Verify CI on the first pull request
+### 3. Nothing further — CI is green
 
-The workflow has not run — it cannot until the branch is pushed and a pull
-request exists. The browser job uses `xvfb-run` with the runner's preinstalled
-Chrome; if `Extensions.loadUnpacked` is unavailable on that image, the smoke
-test job will need `browser-actions/setup-chrome`. Everything else in the
-workflow was run locally and passes.
+Recorded here only to close the loop: the workflow ran on the pull request and
+all eight jobs passed first time, including the browser smoke test on Linux
+(73/73, against the extracted `dist/` build) and the date suite in all six time
+zones. No follow-up is needed.
