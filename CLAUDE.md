@@ -1,302 +1,158 @@
-# CLAUDE.md — Psalms Way! Browser Extension
+# CLAUDE.md — Psalms Way! browser extension
 
-This file provides comprehensive guidance for Claude Code when working on this project.
+Guidance for Claude Code working on this repository.
 
----
+## What this is
 
-## Project Overview
+A Manifest V3 Chrome extension that puts all 150 Psalms in a browser popup. It
+works offline, requests one permission, and has no runtime dependencies.
 
-**Psalms Way!** is a Chrome browser extension (Manifest V3) that displays Biblical Psalms passages. It is designed to be a simple, offline-capable devotional tool requiring zero external dependencies.
+- **Version:** 1.2
+- **Type:** popup only — no background service worker, no content scripts
+- **Runtime dependencies:** none. `package.json` exists for development tooling
+  only and is not shipped.
 
-- **Version:** 1.1
-- **Platform:** Chrome (Manifest V3)
-- **Type:** Popup Extension (no background script, no content scripts)
-- **Dependencies:** None — pure vanilla JavaScript, no npm, no build tools
-
----
-
-## Repository Structure
+## Layout
 
 ```
-psalms-way-browser-extension/
-├── manifest.json        # Chrome extension manifest (MV3)
-├── popup.html           # Extension popup UI (entry point)
-├── popup.js             # All application logic (~107 lines)
-├── style.css            # All styling (~128 lines)
-├── psalms.json          # Complete 150-chapter Psalms data (~2763 lines)
-├── icon.png             # 256x256 icon
-├── icon128.png          # 128x128 icon (used in manifest)
-├── icon48.png           # 48x48 icon (used in manifest)
-├── icon16.png           # 16x16 icon (used in manifest)
-├── README.md            # Project overview and setup guide
-├── USER_GUIDE.md        # End-user instructions
-├── CONTRIBUTING.md      # Contributor workflow and code style
-├── CODE_OF_CONDUCT.md   # Community standards (Contributor Covenant 2.0)
-└── .gitignore           # Excludes psalms-way.zip only
+manifest.json          MV3 manifest. permissions: ["storage"] and nothing else
+popup.html             the popup markup; loads src/app.js as a module
+style.css              all styling, built on CSS custom properties
+psalms.json            150 chapters, 2,461 verses, 224 KB. Data, not source
+icon{16,48,128}.png    manifest icons
+
+src/                   the extension's JavaScript, loaded as ES modules
+  app.js               bootstrap, view switching, focus management, event wiring
+  reader.js            the reading view: chapters, single verses, verse actions
+  panels.js            search results, Library and history lists
+  notes.js             the note editor
+  settings.js          appearance, export and restore
+  storage.js           the ONLY module that touches chrome.storage
+  backup.js            versioned export format, import validation
+  search.js            search and match segmentation (pure)
+  data.js              bundled text, reference formatting, range checks
+  dates.js             Today's Psalm (pure)
+  dom.js               element helpers, status line, confirmation dialog
+  icons.js             SVG icon definitions
+
+test/                  Vitest suites plus a strict chrome.storage double
+scripts/               validators, packaging, browser smoke test, screenshots
+docs/                  audit, results, screenshots
 ```
 
-**No directories of source code** — all logic lives directly in the root. There is no `src/`, `dist/`, `node_modules/`, or build output folder.
+There is **no build step**. The files in the repository are the files that ship.
+`src/*.js` are loaded directly by the browser as ES modules, which Manifest V3
+popups support natively.
 
----
+## Commands
 
-## Architecture
-
-### Extension Type: Popup-Only
-
-This extension has no background service worker, no content scripts, and no injected code. Everything runs in an isolated popup window (440px wide, minimum 400px tall) that Chrome creates when the user clicks the toolbar icon.
-
-```
-User clicks icon
-    → Chrome opens popup.html (440x400+ px window)
-    → style.css applied
-    → popup.js executes
-    → DOMContentLoaded fires → fetchData("psalms.json") → updateContent()
-    → Random chapter rendered on first load
-    → Event listeners attached to all buttons/inputs
-    → User interactions trigger updateContent() with different parameters
+```bash
+npm test              # 146 unit and DOM tests (Vitest)
+npm run test:coverage # service-layer coverage, thresholds enforced
+npm run test:browser  # loads the real extension into Chrome, 73 checks
+npm run lint          # ESLint
+npm run format:check  # Prettier
+npm run validate      # psalms.json + manifest.json + package contents
+npm run package       # dist/psalms-way-extension.zip
+npm run check         # lint + validate + test
 ```
 
-### Data Flow
-
-```
-psalms.json  →  fetchData()  →  updateContent()  →  DOM manipulation  →  Rendered UI
-(offline)       (async fetch)   (transforms data)   (createElement)     (styled by CSS)
-```
-
-### psalms.json Data Format
-
-A nested array: 150 chapters, each chapter is an array of verse strings.
-
-```json
-[
-  ["Blessed is the man...", "But his delight is..."],   // Chapter 1, indices 0-indexed
-  ["Why do the nations rage...", "The kings of the earth..."], // Chapter 2
-  ...
-]
-```
-
-- Array index `0` = Psalm 1, index `149` = Psalm 150
-- The UI displays chapter numbers as 1-indexed to the user; `popup.js` converts internally
-
----
-
-## Key Source Files
-
-### manifest.json
-
-- `manifest_version: 3`
-- `action.default_popup: "popup.html"` — sole entry point
-- `permissions: []` — no permissions required whatsoever
-- Icons at 16, 48, 128px
-
-### popup.html
-
-UI sections (all controlled by popup.js via IDs):
-
-| Element ID       | Purpose                                              |
-|------------------|------------------------------------------------------|
-| `btnVerse`       | Show one random verse from a random chapter          |
-| `btnChapter`     | Show an entire random chapter                        |
-| `txtChapter`     | Manual chapter number text input (1–150)             |
-| `btnGo`          | Load the chapter typed in `txtChapter`               |
-| `btnPrev`        | Navigate to previous chapter (wraps 1 → 150)        |
-| `btnNext`        | Navigate to next chapter (wraps 150 → 1)            |
-| `chapterTitle`   | Displays current chapter/verse heading               |
-| `contentElement` | Main content area where verses/chapters are rendered |
-
-Footer contains links to: Feedback Form, GitHub repository, LinkedIn.
-
-### popup.js
-
-**Constants:**
-- `CHAPTER_RANGE = { min: 0, max: 149 }` — 0-indexed, 150 chapters
-- `DATA_FILE_PATH = "psalms.json"`
-
-**Global State:**
-- `currentChapter` — tracks the currently displayed chapter index (0-indexed)
-
-**Functions:**
-
-| Function                        | Description                                                                 |
-|---------------------------------|-----------------------------------------------------------------------------|
-| `fetchData(filePath)`           | Async; uses Fetch API to load psalms.json; returns parsed JSON array        |
-| `updateContent(isVerse, chapterIndex)` | Core renderer; re-fetches data; renders verse (p tag) or chapter (ul/li) |
-| `getRandomChapterIndex()`       | Returns random int in [0, 149]                                              |
-| `getRandomVerseIndex(chapter)`  | Returns random index within a specific chapter array                        |
-| `initializeEventListeners()`    | Binds all button/input events                                               |
-
-**Rendering modes (via `updateContent`):**
-- `isVerse=true`: Renders a single `<p>` with one random verse; title format: `"Psalms X:Y"`
-- `isVerse=false`: Renders a `<ul>` with `<li>` for each verse; title format: `"Psalms X"`
-
-### style.css
-
-- **Primary brand color:** `#33b249` (green)
-- **Popup width:** 440px fixed, `min-height: 400px`
-- **Layout:** Flexbox column for body; flexbox row with `space-between` for header
-- **Button style:** Green background, white text, `border-radius: 24px`, 0.5s hover opacity transition
-- **Input + Go button:** Paired design — input has left-rounded border, Go button has right-rounded border
-- **List items:** 16px font, 8px padding, alternating even-child `#eeeeee` background
-- **Verse display:** `<p>` tag, 16px font, `0 8px` horizontal margin, `32px` bottom margin
-- **Footer:** 12px font
-
----
-
-## Development Workflow
-
-### Loading the Extension Locally
-
-There is **no build step**. Load directly:
-
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable **Developer mode** (toggle top-right)
-3. Click **Load unpacked**
-4. Select the project root directory (`psalms-way-browser-extension/`)
-
-After any code change, click the **refresh icon** on the extension card in `chrome://extensions/`.
-
-### Making Changes
-
-- Edit HTML/CSS/JS directly — no compilation needed
-- Reload extension in `chrome://extensions/` to see changes
-- The popup re-opens fresh each time; there is no hot-reload
-
-### No Build System
-
-- No `package.json`, no npm, no webpack, no Babel
-- Do **not** introduce a build system unless explicitly requested
-- All JavaScript must be compatible with Chrome's modern V8 engine (ES6+ is fine; no TypeScript)
-
----
-
-## Testing
-
-There is **no automated test framework**. All testing is manual in the browser.
-
-### Manual Test Checklist
-
-Before any PR or change, verify:
-
-1. **One Verse button** — Each click shows a new random verse; title shows `"Psalms X:Y"` format
-2. **New Chapter button** — Loads full chapter as a numbered list; title shows `"Psalms X"`
-3. **Prev/Next buttons** — Navigate chapters sequentially; wrap correctly at boundaries (Psalm 1 ↔ Psalm 150)
-4. **Go button** — Loads specific chapter by number; invalid input shows an alert; Enter key also triggers this
-5. **Input validation** — Numbers outside 1–150 are rejected with an alert
-6. **Offline access** — With no internet connection, the extension loads and displays content normally (data is bundled)
-7. **Chapter title** — Updates correctly after every interaction
-
----
-
-## Code Conventions
-
-### Naming
-
-- **Element IDs:** `btn<Action>` for buttons (e.g., `btnVerse`), `txt<Input>` for inputs (e.g., `txtChapter`)
-- **Functions:** camelCase, descriptive (e.g., `getRandomChapterIndex`)
-- **Constants:** UPPER_SNAKE_CASE (e.g., `CHAPTER_RANGE`, `DATA_FILE_PATH`)
-- **CSS classes:** lowercase with hyphens where applicable
-
-### JavaScript Style
-
-- Indentation: **2 spaces**
-- Use `async/await` for asynchronous operations (not `.then()` chains)
-- Wrap async calls in `try/catch` with `console.error()` logging
-- Use `const`/`let`; no `var`
-- No semicolons are not enforced — follow existing file style (semicolons present in popup.js)
-- DOM creation via `document.createElement()` and `replaceChildren()` (not innerHTML)
-
-### CSS Style
-
-- Use existing CSS custom properties / named colors where applicable
-- Keep to flexbox for layout
-- Maintain the green brand color (`#33b249`) for interactive elements
-
-### No External Libraries
-
-- Do **not** add jQuery, React, or any other library
-- Do **not** add CDN script tags in HTML
-- Do **not** create a package.json unless a build system is explicitly requested
-
----
-
-## Git Workflow
-
-### Branch Naming (from CONTRIBUTING.md)
-
-- `feature/<description>` — new features
-- `issues/<issue-number>` — bug fixes or issue work (e.g., `issues/9`)
-- `codex/<description>` — automated/AI-assisted changes
-
-### Commit Style
-
-- Short imperative messages (e.g., `Add enter key support for chapter input`)
-- Reference issue numbers where applicable
-
-### PR Process
-
-1. Fork → branch → changes → PR against `main`
-2. All manual tests must pass before opening a PR
-3. Code review required
-
----
-
-## Manifest V3 Constraints
-
-This extension uses MV3. Key implications:
-
-- **No background pages** — use service workers if background logic is ever needed (currently not used)
-- **No `eval()`** — MV3 forbids dynamic code execution
-- **No remote code** — all scripts must be bundled locally (psalms.json is local; no CDNs allowed per MV3)
-- **Permissions** — currently none; adding any permission requires justification and manifest update
-- **CSP** — MV3 has stricter Content Security Policy; avoid inline event handlers (use `addEventListener`)
-
----
-
-## Psalms Data Notes
-
-- `psalms.json` contains the complete Book of Psalms (150 chapters) in an archaic English translation (King James style)
-- The file is ~2763 lines and should not be reformatted without care — it is human-readable and used directly
-- Chapter sizes vary: shortest ~6 verses (e.g., Psalm 117), longest ~45 verses (Psalm 119)
-- The word "Selah" appears as part of verse text — this is intentional and should not be removed
-- Do **not** modify psalms.json content unless the translation is being intentionally updated
-- Array is 0-indexed internally; all user-facing numbers are 1-indexed (Psalms 1–150)
-
----
-
-## Common Tasks
-
-### Add a new button/feature to the popup
-
-1. Add the button element to `popup.html` with a descriptive `id` (follow `btn<Action>` convention)
-2. Style it in `style.css` using existing button styles
-3. Add the event listener in `initializeEventListeners()` in `popup.js`
-4. If it displays content, use or extend `updateContent()`
-
-### Change the display format of verses or chapters
-
-- Modify the DOM creation logic inside `updateContent()` in `popup.js`
-- Verse rendering: look for the `isVerse === true` branch (creates `<p>` element)
-- Chapter rendering: look for the `isVerse === false` branch (creates `<ul>/<li>` elements)
-
-### Update extension metadata (name, description, version)
-
-- Edit `manifest.json` directly — `name`, `description`, `version` fields
-
-### Package the extension for distribution
-
-- Zip the entire project root (excluding `.git/` and `psalms-way.zip` itself)
-- Output: `psalms-way.zip` (excluded from git via `.gitignore`)
-- Submit to Chrome Web Store via the developer dashboard
-
----
-
-## What NOT to Do
-
-- Do **not** introduce a build system, bundler, or transpiler without explicit request
-- Do **not** add npm dependencies
-- Do **not** use `innerHTML` for rendering user-visible content (use DOM API methods)
-- Do **not** add permissions to manifest.json unless strictly required
-- Do **not** modify `psalms.json` verse text casually — it's sacred source material
-- Do **not** add background service workers unless the feature explicitly requires persistent state
-- Do **not** break offline functionality — all data must remain bundled locally
-- Do **not** use inline `onclick=` handlers in HTML — use `addEventListener` in JS
+`npm run test:browser` needs Chrome; set `CHROME_PATH` if it is not on a usual
+path. `--headful` watches it run. It drives the popup over the DevTools Protocol
+and fails if the popup logs an error or makes any network request.
+
+## Rules that are enforced, not just preferred
+
+These are checked by lint, a validator or a test. Breaking one fails the build.
+
+- **No `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `eval` or `new Function`.**
+  Build nodes with `el()` and `icon()` from `src/dom.js` and `src/icons.js`.
+  ESLint fails on the first three; `scripts/validate-package.js` greps the
+  shipped files for all of them.
+- **No new permission** without adding it to the approved list in
+  `scripts/validate-manifest.js` with a justification.
+- **No `host_permissions` and no `content_scripts`.** The validator rejects both
+  outright. Not reading the user's pages is the extension's main promise.
+- **No network request.** The smoke test fails if the popup makes one.
+- **No remote code.** Manifest V3 forbids it and the package validator checks.
+- `psalms.json` must stay 150 chapters of non-empty verse strings.
+
+## Conventions
+
+- 2-space indent, semicolons, `const`/`let`, ES modules. Prettier settings are in
+  `.prettierrc.json`; run `npm run format` rather than hand-formatting.
+- References are formatted by `formatReference()` and read **"Psalm 23:1"**,
+  singular. "Psalms" is the book; a chapter is a Psalm. This matches the
+  companion Android app. Do not write `Psalms 23:1`.
+- Chapter and verse indices are **0-based everywhere in code** and 1-based only
+  in what the reader sees. `formatReference()` does the conversion.
+- Saved verses are **Favourites**, British spelling, one concept. The Android app
+  has both "Bookmarks" and "Favorites"; that is deliberately not copied. See
+  `docs/OVERNIGHT_AUDIT.md`.
+- User-facing errors go through `toast()` or `reportError()` in `src/dom.js`.
+  They are one sentence and never contain a stack trace. Technical detail goes to
+  `console.error`.
+
+## Things that are easy to get wrong here
+
+**The popup is destroyed every time it closes.** A module-level variable is not
+state, it is a cache. Anything that must survive belongs in `src/storage.js`. When
+changing behaviour, test it by closing and reopening the popup, not by clicking
+around in one session.
+
+**Never swallow a storage error.** Writes in `src/storage.js` reject with a
+`StorageError`; callers report it. The previous version caught and discarded
+every storage error, so a verse could look saved and be gone on the next open. Do
+not reintroduce `catch {}` on a write path.
+
+**Stored data is untrusted.** Users upgrade across versions, restore backups and
+edit storage by hand. Everything read from storage goes through a sanitiser in
+`src/storage.js`; malformed records are dropped, not repaired into something
+surprising, and never allowed to throw mid-render.
+
+**Migration must stay non-destructive.** Version 1.1 wrote three separate keys
+(`psalmsway_favourites`, `psalmsway_history`, `psalmsway_settings`). `loadStore()`
+migrates them into the single `psalmsway` record on first run and **leaves the old
+keys in place**, so a user who rolls back does not lose anything. The migration is
+idempotent. `test/storage.test.js` pins this against the exact 1.1 shape — if you
+change the schema, extend those tests first.
+
+**Dates are not milliseconds.** A local calendar day is 23 or 25 hours long on a
+daylight-saving transition. `src/dates.js` builds both endpoints with `Date.UTC()`
+from local calendar components for exactly this reason. Do not "simplify" it back
+to subtracting two `Date` objects — that was a real shipped bug, and CI runs the
+date tests in six time zones to stop it coming back.
+
+**Psalm 119 has 176 verses.** Any per-verse UI has to work at that size. The verse
+list uses a roving tabindex rather than putting each verse in the tab order.
+
+## Testing approach
+
+- **Pure logic** — `dates`, `search`, `data`, `backup`, and the sanitisers and
+  migration in `storage` — is tested directly in Vitest under Node.
+- **DOM helpers** are tested under jsdom (`// @vitest-environment jsdom`).
+- **Views** (`reader`, `panels`, `notes`, `settings`) are covered by
+  `scripts/smoke-test.js` in real Chrome rather than by jsdom tests, because what
+  matters about them is that they work in an actual extension popup. They are
+  excluded from the coverage thresholds for that reason, not to flatter the
+  number.
+- The `chrome.storage` double in `test/chrome-mock.js` is deliberately strict: it
+  structured-clones values as Chrome does and can inject quota and write
+  failures. Do not loosen it to make a test pass.
+
+## Not to be added
+
+Without a strong, stated reason: a framework or bundler, runtime dependencies,
+analytics or telemetry, an account requirement, a background service worker,
+content scripts, host permissions, or remote code. The extension's value is that
+it is small, fast, offline and trustworthy.
+
+## Scripture text
+
+`psalms.json` is an English NIV text and is **not** covered by the repository's
+MIT licence. Do not describe it as public domain, do not replace the licence
+notice, and do not add further translations without confirming distribution
+rights. There is an open licensing question recorded in
+`docs/OVERNIGHT_AUDIT.md` under External actions.
+
+Do not edit verse text.

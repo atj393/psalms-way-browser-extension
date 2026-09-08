@@ -1,2 +1,6 @@
 psalms-way.zip
 .history/
+node_modules/
+coverage/
+dist/
+brag-output/
