@@ -30,7 +30,9 @@ export async function openNoteEditor({ chapterIndex, verseIndex, text, onSaved }
   }
 
   const reference = formatReference(chapterIndex, verseIndex);
-  byId("noteEditorTitle").textContent = existing ? `Edit note — ${reference}` : `Add note — ${reference}`;
+  byId("noteEditorTitle").textContent = existing
+    ? `Edit note — ${reference}`
+    : `Add note — ${reference}`;
   byId("noteVerse").textContent = text;
 
   const textarea = byId("noteText");

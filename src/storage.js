@@ -65,10 +65,7 @@ export function defaultStore() {
 function storageArea() {
   const area = globalThis.chrome?.storage?.local;
   if (!area) {
-    throw new StorageError(
-      "Browser storage is unavailable.",
-      "unavailable"
-    );
+    throw new StorageError("Browser storage is unavailable.", "unavailable");
   }
   return area;
 }
@@ -93,11 +90,7 @@ async function writeRaw(items) {
     if (error instanceof StorageError) throw error;
     const message = String(error?.message ?? "");
     if (/quota/i.test(message)) {
-      throw new StorageError(
-        "There is no room left in browser storage.",
-        "quota_exceeded",
-        error
-      );
+      throw new StorageError("There is no room left in browser storage.", "quota_exceeded", error);
     }
     throw new StorageError("Changes could not be saved.", "write_failed", error);
   }
@@ -338,9 +331,7 @@ export async function getNotes() {
 
 export function findNote(store, chapterIndex, verseIndex) {
   return (
-    store.notes.find(
-      (n) => n.chapterIndex === chapterIndex && n.verseIndex === verseIndex
-    ) ?? null
+    store.notes.find((n) => n.chapterIndex === chapterIndex && n.verseIndex === verseIndex) ?? null
   );
 }
 
@@ -360,10 +351,7 @@ export async function saveNote(chapterIndex, verseIndex, text) {
     return null;
   }
   if (trimmed.length > NOTE_MAX_LENGTH) {
-    throw new StorageError(
-      `Notes are limited to ${NOTE_MAX_LENGTH} characters.`,
-      "note_too_long"
-    );
+    throw new StorageError(`Notes are limited to ${NOTE_MAX_LENGTH} characters.`, "note_too_long");
   }
 
   let saved = null;
@@ -378,10 +366,7 @@ export async function saveNote(chapterIndex, verseIndex, text) {
       saved = existing;
     } else {
       if (draft.notes.length >= NOTES_MAX) {
-        throw new StorageError(
-          `You can keep up to ${NOTES_MAX} notes.`,
-          "notes_limit"
-        );
+        throw new StorageError(`You can keep up to ${NOTES_MAX} notes.`, "notes_limit");
       }
       saved = {
         id: makeNoteId(chapterIndex, verseIndex),

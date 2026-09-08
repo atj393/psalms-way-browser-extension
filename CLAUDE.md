@@ -94,13 +94,13 @@ A nested array: 150 chapters, each chapter is an array of verse strings.
 UI sections (all controlled by popup.js via IDs):
 
 | Element ID       | Purpose                                              |
-|------------------|------------------------------------------------------|
+| ---------------- | ---------------------------------------------------- |
 | `btnVerse`       | Show one random verse from a random chapter          |
 | `btnChapter`     | Show an entire random chapter                        |
 | `txtChapter`     | Manual chapter number text input (1–150)             |
 | `btnGo`          | Load the chapter typed in `txtChapter`               |
-| `btnPrev`        | Navigate to previous chapter (wraps 1 → 150)        |
-| `btnNext`        | Navigate to next chapter (wraps 150 → 1)            |
+| `btnPrev`        | Navigate to previous chapter (wraps 1 → 150)         |
+| `btnNext`        | Navigate to next chapter (wraps 150 → 1)             |
 | `chapterTitle`   | Displays current chapter/verse heading               |
 | `contentElement` | Main content area where verses/chapters are rendered |
 
@@ -109,23 +109,26 @@ Footer contains links to: Feedback Form, GitHub repository, LinkedIn.
 ### popup.js
 
 **Constants:**
+
 - `CHAPTER_RANGE = { min: 0, max: 149 }` — 0-indexed, 150 chapters
 - `DATA_FILE_PATH = "psalms.json"`
 
 **Global State:**
+
 - `currentChapter` — tracks the currently displayed chapter index (0-indexed)
 
 **Functions:**
 
-| Function                        | Description                                                                 |
-|---------------------------------|-----------------------------------------------------------------------------|
-| `fetchData(filePath)`           | Async; uses Fetch API to load psalms.json; returns parsed JSON array        |
+| Function                               | Description                                                              |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `fetchData(filePath)`                  | Async; uses Fetch API to load psalms.json; returns parsed JSON array     |
 | `updateContent(isVerse, chapterIndex)` | Core renderer; re-fetches data; renders verse (p tag) or chapter (ul/li) |
-| `getRandomChapterIndex()`       | Returns random int in [0, 149]                                              |
-| `getRandomVerseIndex(chapter)`  | Returns random index within a specific chapter array                        |
-| `initializeEventListeners()`    | Binds all button/input events                                               |
+| `getRandomChapterIndex()`              | Returns random int in [0, 149]                                           |
+| `getRandomVerseIndex(chapter)`         | Returns random index within a specific chapter array                     |
+| `initializeEventListeners()`           | Binds all button/input events                                            |
 
 **Rendering modes (via `updateContent`):**
+
 - `isVerse=true`: Renders a single `<p>` with one random verse; title format: `"Psalms X:Y"`
 - `isVerse=false`: Renders a `<ul>` with `<li>` for each verse; title format: `"Psalms X"`
 

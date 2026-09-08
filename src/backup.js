@@ -9,11 +9,7 @@
 // no network, and works across browsers and profiles. Local storage stays
 // authoritative.
 
-import {
-  SCHEMA_VERSION,
-  normaliseStore,
-  sanitiseSettings,
-} from "./storage.js";
+import { SCHEMA_VERSION, normaliseStore, sanitiseSettings } from "./storage.js";
 
 export const BACKUP_TYPE = "psalms-way-browser-backup";
 export const BACKUP_SCHEMA_VERSION = 1;

@@ -38,7 +38,11 @@ export function el(tag, props = {}, children = []) {
 }
 
 /** An icon-only button, with the accessible name callers keep forgetting. */
-export function iconButton(iconName, label, { className = "btn-icon-only", size = 18, filled = false, onClick } = {}) {
+export function iconButton(
+  iconName,
+  label,
+  { className = "btn-icon-only", size = 18, filled = false, onClick } = {}
+) {
   return el(
     "button",
     {
@@ -105,10 +109,13 @@ export function toast(message, tone = "info") {
   host.setAttribute("role", tone === "error" ? "alert" : "status");
 
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    host.replaceChildren();
-    host.hidden = true;
-  }, tone === "error" ? 6000 : 2600);
+  toastTimer = setTimeout(
+    () => {
+      host.replaceChildren();
+      host.hidden = true;
+    },
+    tone === "error" ? 6000 : 2600
+  );
 }
 
 /**
@@ -129,9 +136,18 @@ export function reportError(error, fallbackMessage) {
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+/**
+ * Focusable descendants, in document order.
+ *
+ * Visibility is judged by the `hidden` attribute rather than by layout.
+ * `offsetParent` looks like the obvious test and is not: it is null for any
+ * position:fixed element, which is exactly what the dialog is, and it is null
+ * for everything in a non-rendering environment, which silently reduced the
+ * focus trap to a single element under test.
+ */
 export function focusableWithin(root) {
   return Array.from(root.querySelectorAll(FOCUSABLE)).filter(
-    (node) => node.offsetParent !== null || node === document.activeElement
+    (node) => !node.hasAttribute("disabled") && !node.closest("[hidden]")
   );
 }
 
@@ -159,7 +175,13 @@ export function focusFirst(root) {
  *
  * @returns {Promise<boolean>}
  */
-export function confirmDialog({ title, message, confirmLabel = "Confirm", cancelLabel = "Cancel", destructive = false }) {
+export function confirmDialog({
+  title,
+  message,
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
+  destructive = false,
+}) {
   return new Promise((resolve) => {
     const previouslyFocused = document.activeElement;
     const host = byId("dialogHost");
@@ -173,13 +195,21 @@ export function confirmDialog({ title, message, confirmLabel = "Confirm", cancel
       class: `button ${destructive ? "button-danger" : ""}`.trim(),
       text: confirmLabel,
     });
-    const cancelBtn = el("button", { type: "button", class: "button button-quiet", text: cancelLabel });
+    const cancelBtn = el("button", {
+      type: "button",
+      class: "button button-quiet",
+      text: cancelLabel,
+    });
 
-    const dialog = el("div", { class: "dialog", role: "dialog", "aria-modal": "true", "aria-labelledby": "dialogTitle" }, [
-      el("h2", { class: "dialog-title", id: "dialogTitle", text: title }),
-      message ? el("p", { class: "dialog-message", text: message }) : null,
-      el("div", { class: "dialog-actions" }, [cancelBtn, confirmBtn]),
-    ]);
+    const dialog = el(
+      "div",
+      { class: "dialog", role: "dialog", "aria-modal": "true", "aria-labelledby": "dialogTitle" },
+      [
+        el("h2", { class: "dialog-title", id: "dialogTitle", text: title }),
+        message ? el("p", { class: "dialog-message", text: message }) : null,
+        el("div", { class: "dialog-actions" }, [cancelBtn, confirmBtn]),
+      ]
+    );
 
     const backdrop = el("div", { class: "dialog-backdrop" }, [dialog]);
 

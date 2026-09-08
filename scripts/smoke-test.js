@@ -19,7 +19,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const EXTENSION_PATH = fileURLToPath(new URL("../", import.meta.url)).replace(/[/\\]$/, "");
+// Defaults to the repository root. Point it at an unpacked dist/ build to
+// prove the packaged files are the ones that work.
+const EXTENSION_PATH = (
+  process.env.PSALMS_EXTENSION_PATH ?? fileURLToPath(new URL("../", import.meta.url))
+).replace(/[/\\]$/, "");
 const HEADFUL = process.argv.includes("--headful");
 const KEEP_OPEN = process.argv.includes("--keep-open");
 const PORT = 9222 + Math.floor(Math.random() * 700);
@@ -216,9 +220,7 @@ try {
     });
     if (result.exceptionDetails) {
       throw new Error(
-        `${result.exceptionDetails.text}: ${
-          result.exceptionDetails.exception?.description ?? ""
-        }`
+        `${result.exceptionDetails.text}: ${result.exceptionDetails.exception?.description ?? ""}`
       );
     }
     return result.result.value;
@@ -249,9 +251,14 @@ try {
     "reference uses the singular 'Psalm'",
     !(await evaluate("document.getElementById('chapterTitle').textContent")).startsWith("Psalms ")
   );
-  check("icons hydrated from icons.js", (await evaluate("document.querySelectorAll('svg').length")) > 5);
-  check("no element still carries a data-icon placeholder",
-    (await evaluate("document.querySelectorAll('[data-icon]').length")) === 0);
+  check(
+    "icons hydrated from icons.js",
+    (await evaluate("document.querySelectorAll('svg').length")) > 5
+  );
+  check(
+    "no element still carries a data-icon placeholder",
+    (await evaluate("document.querySelectorAll('[data-icon]').length")) === 0
+  );
 
   // ── Today's Psalm ────────────────────────────────────────────────────────
   section("Today's Psalm");
@@ -265,7 +272,11 @@ try {
     const day = Math.round((today - start) / 86400000) + 1;
     return 'Psalm ' + (((day - 1) % 150) + 1);
   })()`);
-  check("Today's Psalm matches the date", todayTitle === expectedToday, `${todayTitle} vs ${expectedToday}`);
+  check(
+    "Today's Psalm matches the date",
+    todayTitle === expectedToday,
+    `${todayTitle} vs ${expectedToday}`
+  );
 
   // ── Navigation ───────────────────────────────────────────────────────────
   section("Chapter navigation");
@@ -273,7 +284,10 @@ try {
     "document.getElementById('txtChapter').value = '1'; document.getElementById('btnGo').click()"
   );
   await sleep(250);
-  check("Psalm 1 reachable", (await evaluate("document.getElementById('chapterTitle').textContent")) === "Psalm 1");
+  check(
+    "Psalm 1 reachable",
+    (await evaluate("document.getElementById('chapterTitle').textContent")) === "Psalm 1"
+  );
 
   await evaluate("document.getElementById('btnPrev').click()");
   await sleep(250);
@@ -312,7 +326,8 @@ try {
   );
   check(
     "the invalid input is marked for assistive technology",
-    (await evaluate("document.getElementById('txtChapter').getAttribute('aria-invalid')")) === "true"
+    (await evaluate("document.getElementById('txtChapter').getAttribute('aria-invalid')")) ===
+      "true"
   );
 
   // ── Random ───────────────────────────────────────────────────────────────
@@ -356,8 +371,9 @@ try {
   await sleep(400);
   check(
     "saving marks the button pressed",
-    (await evaluate("document.querySelector('.verse-actions .btn-fav').getAttribute('aria-pressed')")) ===
-      "true"
+    (await evaluate(
+      "document.querySelector('.verse-actions .btn-fav').getAttribute('aria-pressed')"
+    )) === "true"
   );
   const storedFav = await evaluate(
     "chrome.storage.local.get('psalmsway').then(r => JSON.stringify(r.psalmsway.favourites))"
@@ -371,11 +387,9 @@ try {
   await reload();
   check(
     "the favourite survives closing and reopening the popup",
-    (
-      await evaluate(
-        "chrome.storage.local.get('psalmsway').then(r => r.psalmsway.favourites.length)"
-      )
-    ) === 1
+    (await evaluate(
+      "chrome.storage.local.get('psalmsway').then(r => r.psalmsway.favourites.length)"
+    )) === 1
   );
 
   // ── Notes ────────────────────────────────────────────────────────────────
@@ -388,7 +402,7 @@ try {
   await sleep(250);
   await evaluate("document.querySelector('.verse-actions .btn-note').click()");
   await sleep(300);
-  check("the note editor opens", (await evaluate("!document.getElementById('notePanel').hidden")));
+  check("the note editor opens", await evaluate("!document.getElementById('notePanel').hidden"));
   check(
     "focus moves into the note textarea",
     (await evaluate("document.activeElement.id")) === "noteText"
@@ -516,7 +530,7 @@ try {
   section("Keyboard and focus");
   await evaluate("document.getElementById('btnHistory').click()");
   await sleep(300);
-  check("history panel opens", (await evaluate("!document.getElementById('historyPanel').hidden")));
+  check("history panel opens", await evaluate("!document.getElementById('historyPanel').hidden"));
   await page.send("Input.dispatchKeyEvent", {
     type: "keyDown",
     key: "Escape",
@@ -530,7 +544,10 @@ try {
     windowsVirtualKeyCode: 27,
   });
   await sleep(300);
-  check("Escape closes the panel", (await evaluate("document.getElementById('historyPanel').hidden")));
+  check(
+    "Escape closes the panel",
+    await evaluate("document.getElementById('historyPanel').hidden")
+  );
   check(
     "focus returns to the button that opened it",
     (await evaluate("document.activeElement.id")) === "btnHistory"
@@ -554,9 +571,9 @@ try {
   await sleep(200);
   check(
     "ArrowDown moves between verses",
-    (await evaluate(
+    await evaluate(
       "document.activeElement.classList.contains('verse') && document.activeElement === document.querySelectorAll('.verse')[1]"
-    ))
+    )
   );
 
   // ── History ──────────────────────────────────────────────────────────────
@@ -567,7 +584,21 @@ try {
   check("history records what was read", historyRows > 0, `${historyRows} rows`);
   await evaluate("document.getElementById('btnClearHistory').click()");
   await sleep(300);
-  check("clearing history asks first", (await evaluate("!document.getElementById('dialogHost').hidden")));
+  check(
+    "clearing history asks first",
+    await evaluate("!document.getElementById('dialogHost').hidden")
+  );
+  check(
+    "the dialog focuses its confirm button",
+    (await evaluate("document.activeElement.textContent")) === "Clear history"
+  );
+  check(
+    "the dialog sees both of its buttons as focusable",
+    (await evaluate(
+      "(async () => { const m = await import('./src/dom.js'); return m.focusableWithin(document.querySelector('.dialog')).length; })()"
+    )) === 2,
+    "a collapsed list here means the focus trap is not trapping"
+  );
   await evaluate("document.querySelector('.dialog-actions .button-danger').click()");
   await sleep(350);
   check(
@@ -576,11 +607,9 @@ try {
   );
   check(
     "favourites are untouched by clearing history",
-    (
-      await evaluate(
-        "chrome.storage.local.get('psalmsway').then(r => r.psalmsway.favourites.length)"
-      )
-    ) === 1
+    (await evaluate(
+      "chrome.storage.local.get('psalmsway').then(r => r.psalmsway.favourites.length)"
+    )) === 1
   );
 
   // ── Settings ─────────────────────────────────────────────────────────────
@@ -595,9 +624,9 @@ try {
       (await evaluate("document.documentElement.getAttribute('data-theme')")) === theme
     );
   }
-  await evaluate('document.querySelector(\'.theme-btn[data-theme="dark"]\').click()');
+  await evaluate("document.querySelector('.theme-btn[data-theme=\"dark\"]').click()");
   await sleep(250);
-  await evaluate('document.querySelector(\'.font-size-btn[data-size="large"]\').click()');
+  await evaluate("document.querySelector('.font-size-btn[data-size=\"large\"]').click()");
   await sleep(300);
   await reload();
   check(
@@ -611,11 +640,11 @@ try {
 
   await evaluate("document.getElementById('btnToggleToolbar').click()");
   await sleep(300);
-  check("toolbar collapses", (await evaluate("document.getElementById('toolbarWrapper').hidden")));
+  check("toolbar collapses", await evaluate("document.getElementById('toolbarWrapper').hidden"));
   await reload();
   check(
     "toolbar stays collapsed after reopening",
-    (await evaluate("document.getElementById('toolbarWrapper').hidden"))
+    await evaluate("document.getElementById('toolbarWrapper').hidden")
   );
   await evaluate("document.getElementById('btnToggleToolbar').click()");
   await sleep(250);
@@ -628,18 +657,18 @@ try {
   await sleep(400);
   check(
     "the popup never scrolls horizontally",
-    (await evaluate("document.documentElement.scrollWidth <= document.documentElement.clientWidth"))
+    await evaluate("document.documentElement.scrollWidth <= document.documentElement.clientWidth")
   );
   check(
     "a long chapter scrolls inside the reading pane, not the page",
-    (await evaluate("document.getElementById('readingView').scrollHeight > document.getElementById('readingView').clientHeight"))
+    await evaluate(
+      "document.getElementById('readingView').scrollHeight > document.getElementById('readingView').clientHeight"
+    )
   );
 
   // ── Corrupt storage ──────────────────────────────────────────────────────
   section("Damaged storage");
-  await evaluate(
-    "chrome.storage.local.set({ psalmsway: 'this is not an object' })"
-  );
+  await evaluate("chrome.storage.local.set({ psalmsway: 'this is not an object' })");
   await reload();
   check(
     "the popup still renders when the store is nonsense",
@@ -682,7 +711,11 @@ try {
   const migrated = await evaluate(
     "chrome.storage.local.get('psalmsway').then(r => JSON.stringify({f: r.psalmsway.favourites.length, h: r.psalmsway.history.length, t: r.psalmsway.settings.theme, s: r.psalmsway.settings.fontSize}))"
   );
-  check("1.1 favourites, history and settings migrate", migrated === '{"f":2,"h":1,"t":"dark","s":"large"}', migrated);
+  check(
+    "1.1 favourites, history and settings migrate",
+    migrated === '{"f":2,"h":1,"t":"dark","s":"large"}',
+    migrated
+  );
   check(
     "the migrated theme is actually applied",
     (await evaluate("document.documentElement.getAttribute('data-theme')")) === "dark"
@@ -690,7 +723,11 @@ try {
   const legacyIntact = await evaluate(
     "chrome.storage.local.get('psalmsway_favourites').then(r => r.psalmsway_favourites?.length ?? 0)"
   );
-  check("the 1.1 keys are left in place for a rollback", legacyIntact === 2, `legacy length ${legacyIntact}`);
+  check(
+    "the 1.1 keys are left in place for a rollback",
+    legacyIntact === 2,
+    `legacy length ${legacyIntact}`
+  );
 
   // ── Backup round trip ────────────────────────────────────────────────────
   section("Backup");

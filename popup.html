@@ -1,202 +1,387 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Psalms Way!</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <title>Psalms Way!</title>
-  <link rel="stylesheet" href="./style.css" />
-</head>
+  <body>
+    <!-- ── Header ── -->
+    <header class="header">
+      <h1 class="title">Psalms Way!</h1>
+      <div class="header-actions">
+        <button class="button" type="button" id="btnVerse">One Verse</button>
+        <button class="button" type="button" id="btnChapter">New Chapter</button>
+      </div>
+    </header>
 
-<body>
-  <!-- ── Header ── -->
-  <header class="header">
-    <h1 class="title">Psalms Way!</h1>
-    <div class="header-actions">
-      <button class="button" type="button" id="btnVerse">One Verse</button>
-      <button class="button" type="button" id="btnChapter">New Chapter</button>
-    </div>
-  </header>
-
-  <!-- ── Chapter bar ── -->
-  <div class="chapter-bar">
-    <h2 class="chapter-title" id="chapterTitle" aria-live="polite">Psalm</h2>
-    <div class="chapter-nav">
-      <label class="sr-only" for="txtChapter">Go to Psalm number</label>
-      <input type="text" inputmode="numeric" pattern="[0-9]*" id="txtChapter" class="input input-chapter"
-        placeholder="1–150" autocomplete="off" maxlength="3" />
-      <button class="button button-attached" type="button" id="btnGo">Go</button>
-      <span class="nav-divider" aria-hidden="true"></span>
-      <button class="btn-nav" type="button" id="btnPrev" title="Previous Psalm" aria-label="Previous Psalm"
-        data-icon="chevronLeft" data-icon-size="16"></button>
-      <button class="btn-nav" type="button" id="btnNext" title="Next Psalm" aria-label="Next Psalm"
-        data-icon="chevronRight" data-icon-size="16"></button>
-      <button class="btn-nav btn-toolbar-toggle" type="button" id="btnToggleToolbar" title="Hide toolbar"
-        aria-label="Hide toolbar" aria-expanded="true" aria-controls="toolbarWrapper" data-icon="chevronDown"
-        data-icon-size="16"></button>
-    </div>
-  </div>
-
-  <!-- ── Feature toolbar ── -->
-  <div id="toolbarWrapper" class="toolbar-wrapper">
-    <nav class="toolbar" aria-label="Features">
-      <button class="btn-tool" type="button" id="btnTodaysPsalm" title="Today's Psalm" data-icon="calendar">
-        <span class="btn-tool-label">Today</span>
-      </button>
-      <button class="btn-tool" type="button" id="btnSearch" title="Search" aria-pressed="false" data-icon="search">
-        <span class="btn-tool-label">Search</span>
-      </button>
-      <button class="btn-tool" type="button" id="btnLibrary" title="Library" aria-pressed="false" data-icon="library">
-        <span class="btn-tool-label">Library</span>
-      </button>
-      <button class="btn-tool" type="button" id="btnHistory" title="History" aria-pressed="false" data-icon="clock">
-        <span class="btn-tool-label">History</span>
-      </button>
-      <button class="btn-tool" type="button" id="btnSettings" title="Settings" aria-pressed="false"
-        data-icon="settings">
-        <span class="btn-tool-label">Settings</span>
-      </button>
-    </nav>
-  </div>
-
-  <!-- ── Reading ── -->
-  <main class="panel panel-reading" id="readingPanel">
-    <div class="panel-body" id="readingView" tabindex="-1"></div>
-  </main>
-
-  <!-- ── Search ── -->
-  <section class="panel" id="searchPanel" aria-labelledby="searchHeading" hidden>
-    <div class="panel-head">
-      <h2 class="panel-heading" id="searchHeading">Search</h2>
-      <button class="btn-quiet" type="button" id="btnCloseSearch" title="Close search" aria-label="Close search"
-        data-icon="close" data-icon-size="16"></button>
-    </div>
-    <div class="search-bar">
-      <label class="sr-only" for="txtSearch">Search the Psalms</label>
-      <input type="search" id="txtSearch" class="input input-search" placeholder="Search the Psalms…"
-        autocomplete="off" data-autofocus />
-      <button class="btn-quiet" type="button" id="btnClearSearch" title="Clear search" aria-label="Clear search"
-        data-icon="close" data-icon-size="14"></button>
-      <button class="button" type="button" id="btnDoSearch">Search</button>
-    </div>
-    <p class="panel-count" id="searchCount" aria-live="polite"></p>
-    <div class="panel-body" id="searchResults"></div>
-  </section>
-
-  <!-- ── Library ── -->
-  <section class="panel" id="libraryPanel" aria-labelledby="libraryHeading" hidden>
-    <div class="panel-head">
-      <h2 class="panel-heading" id="libraryHeading">Library</h2>
-      <button class="btn-quiet" type="button" id="btnCloseLibrary" title="Close library" aria-label="Close library"
-        data-icon="close" data-icon-size="16"></button>
-    </div>
-    <div class="tabs" id="libraryTabs" role="tablist" aria-label="Library sections">
-      <button class="tab is-active" type="button" role="tab" data-tab="favourites" aria-selected="true"
-        tabindex="0" data-autofocus>Favourites</button>
-      <button class="tab" type="button" role="tab" data-tab="notes" aria-selected="false" tabindex="-1">Notes</button>
-    </div>
-    <div class="panel-body" id="libraryBody"></div>
-  </section>
-
-  <!-- ── History ── -->
-  <section class="panel" id="historyPanel" aria-labelledby="historyHeading" hidden>
-    <div class="panel-head">
-      <h2 class="panel-heading" id="historyHeading">History</h2>
-      <div class="panel-head-actions">
-        <button class="button button-quiet button-small" type="button" id="btnClearHistory">Clear</button>
-        <button class="btn-quiet" type="button" id="btnCloseHistory" title="Close history" aria-label="Close history"
-          data-icon="close" data-icon-size="16"></button>
+    <!-- ── Chapter bar ── -->
+    <div class="chapter-bar">
+      <h2 class="chapter-title" id="chapterTitle" aria-live="polite">Psalm</h2>
+      <div class="chapter-nav">
+        <label class="sr-only" for="txtChapter">Go to Psalm number</label>
+        <input
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          id="txtChapter"
+          class="input input-chapter"
+          placeholder="1–150"
+          autocomplete="off"
+          maxlength="3"
+        />
+        <button class="button button-attached" type="button" id="btnGo">Go</button>
+        <span class="nav-divider" aria-hidden="true"></span>
+        <button
+          class="btn-nav"
+          type="button"
+          id="btnPrev"
+          title="Previous Psalm"
+          aria-label="Previous Psalm"
+          data-icon="chevronLeft"
+          data-icon-size="16"
+        ></button>
+        <button
+          class="btn-nav"
+          type="button"
+          id="btnNext"
+          title="Next Psalm"
+          aria-label="Next Psalm"
+          data-icon="chevronRight"
+          data-icon-size="16"
+        ></button>
+        <button
+          class="btn-nav btn-toolbar-toggle"
+          type="button"
+          id="btnToggleToolbar"
+          title="Hide toolbar"
+          aria-label="Hide toolbar"
+          aria-expanded="true"
+          aria-controls="toolbarWrapper"
+          data-icon="chevronDown"
+          data-icon-size="16"
+        ></button>
       </div>
     </div>
-    <div class="panel-body" id="historyBody"></div>
-  </section>
 
-  <!-- ── Settings ── -->
-  <section class="panel" id="settingsPanel" aria-labelledby="settingsHeading" hidden>
-    <div class="panel-head">
-      <h2 class="panel-heading" id="settingsHeading">Settings</h2>
-      <button class="btn-quiet" type="button" id="btnCloseSettings" title="Close settings" aria-label="Close settings"
-        data-icon="close" data-icon-size="16"></button>
+    <!-- ── Feature toolbar ── -->
+    <div id="toolbarWrapper" class="toolbar-wrapper">
+      <nav class="toolbar" aria-label="Features">
+        <button
+          class="btn-tool"
+          type="button"
+          id="btnTodaysPsalm"
+          title="Today's Psalm"
+          data-icon="calendar"
+        >
+          <span class="btn-tool-label">Today</span>
+        </button>
+        <button
+          class="btn-tool"
+          type="button"
+          id="btnSearch"
+          title="Search"
+          aria-pressed="false"
+          data-icon="search"
+        >
+          <span class="btn-tool-label">Search</span>
+        </button>
+        <button
+          class="btn-tool"
+          type="button"
+          id="btnLibrary"
+          title="Library"
+          aria-pressed="false"
+          data-icon="library"
+        >
+          <span class="btn-tool-label">Library</span>
+        </button>
+        <button
+          class="btn-tool"
+          type="button"
+          id="btnHistory"
+          title="History"
+          aria-pressed="false"
+          data-icon="clock"
+        >
+          <span class="btn-tool-label">History</span>
+        </button>
+        <button
+          class="btn-tool"
+          type="button"
+          id="btnSettings"
+          title="Settings"
+          aria-pressed="false"
+          data-icon="settings"
+        >
+          <span class="btn-tool-label">Settings</span>
+        </button>
+      </nav>
     </div>
-    <div class="panel-body settings-body">
-      <fieldset class="settings-row">
-        <legend class="settings-label">Theme</legend>
-        <div class="settings-controls">
-          <button class="theme-btn" type="button" data-theme="light" aria-pressed="false">Light</button>
-          <button class="theme-btn" type="button" data-theme="sepia" aria-pressed="false">Sepia</button>
-          <button class="theme-btn" type="button" data-theme="dark" aria-pressed="false">Dark</button>
+
+    <!-- ── Reading ── -->
+    <main class="panel panel-reading" id="readingPanel">
+      <div class="panel-body" id="readingView" tabindex="-1"></div>
+    </main>
+
+    <!-- ── Search ── -->
+    <section class="panel" id="searchPanel" aria-labelledby="searchHeading" hidden>
+      <div class="panel-head">
+        <h2 class="panel-heading" id="searchHeading">Search</h2>
+        <button
+          class="btn-quiet"
+          type="button"
+          id="btnCloseSearch"
+          title="Close search"
+          aria-label="Close search"
+          data-icon="close"
+          data-icon-size="16"
+        ></button>
+      </div>
+      <div class="search-bar">
+        <label class="sr-only" for="txtSearch">Search the Psalms</label>
+        <input
+          type="search"
+          id="txtSearch"
+          class="input input-search"
+          placeholder="Search the Psalms…"
+          autocomplete="off"
+          data-autofocus
+        />
+        <button
+          class="btn-quiet"
+          type="button"
+          id="btnClearSearch"
+          title="Clear search"
+          aria-label="Clear search"
+          data-icon="close"
+          data-icon-size="14"
+        ></button>
+        <button class="button" type="button" id="btnDoSearch">Search</button>
+      </div>
+      <p class="panel-count" id="searchCount" aria-live="polite"></p>
+      <div class="panel-body" id="searchResults"></div>
+    </section>
+
+    <!-- ── Library ── -->
+    <section class="panel" id="libraryPanel" aria-labelledby="libraryHeading" hidden>
+      <div class="panel-head">
+        <h2 class="panel-heading" id="libraryHeading">Library</h2>
+        <button
+          class="btn-quiet"
+          type="button"
+          id="btnCloseLibrary"
+          title="Close library"
+          aria-label="Close library"
+          data-icon="close"
+          data-icon-size="16"
+        ></button>
+      </div>
+      <div class="tabs" id="libraryTabs" role="tablist" aria-label="Library sections">
+        <button
+          class="tab is-active"
+          type="button"
+          role="tab"
+          data-tab="favourites"
+          aria-selected="true"
+          tabindex="0"
+          data-autofocus
+        >
+          Favourites
+        </button>
+        <button
+          class="tab"
+          type="button"
+          role="tab"
+          data-tab="notes"
+          aria-selected="false"
+          tabindex="-1"
+        >
+          Notes
+        </button>
+      </div>
+      <div class="panel-body" id="libraryBody"></div>
+    </section>
+
+    <!-- ── History ── -->
+    <section class="panel" id="historyPanel" aria-labelledby="historyHeading" hidden>
+      <div class="panel-head">
+        <h2 class="panel-heading" id="historyHeading">History</h2>
+        <div class="panel-head-actions">
+          <button class="button button-quiet button-small" type="button" id="btnClearHistory">
+            Clear
+          </button>
+          <button
+            class="btn-quiet"
+            type="button"
+            id="btnCloseHistory"
+            title="Close history"
+            aria-label="Close history"
+            data-icon="close"
+            data-icon-size="16"
+          ></button>
         </div>
-      </fieldset>
+      </div>
+      <div class="panel-body" id="historyBody" tabindex="-1" data-autofocus></div>
+    </section>
 
-      <fieldset class="settings-row">
-        <legend class="settings-label">Text size</legend>
-        <div class="settings-controls">
-          <button class="font-size-btn font-size-small" type="button" data-size="small" aria-pressed="false"
-            aria-label="Small text">A</button>
-          <button class="font-size-btn font-size-medium" type="button" data-size="medium" aria-pressed="false"
-            aria-label="Medium text">A</button>
-          <button class="font-size-btn font-size-large" type="button" data-size="large" aria-pressed="false"
-            aria-label="Large text">A</button>
+    <!-- ── Settings ── -->
+    <section class="panel" id="settingsPanel" aria-labelledby="settingsHeading" hidden>
+      <div class="panel-head">
+        <h2 class="panel-heading" id="settingsHeading">Settings</h2>
+        <button
+          class="btn-quiet"
+          type="button"
+          id="btnCloseSettings"
+          title="Close settings"
+          aria-label="Close settings"
+          data-icon="close"
+          data-icon-size="16"
+        ></button>
+      </div>
+      <div class="panel-body settings-body" tabindex="-1" data-autofocus>
+        <fieldset class="settings-row">
+          <legend class="settings-label">Theme</legend>
+          <div class="settings-controls">
+            <button class="theme-btn" type="button" data-theme="light" aria-pressed="false">
+              Light
+            </button>
+            <button class="theme-btn" type="button" data-theme="sepia" aria-pressed="false">
+              Sepia
+            </button>
+            <button class="theme-btn" type="button" data-theme="dark" aria-pressed="false">
+              Dark
+            </button>
+          </div>
+        </fieldset>
+
+        <fieldset class="settings-row">
+          <legend class="settings-label">Text size</legend>
+          <div class="settings-controls">
+            <button
+              class="font-size-btn font-size-small"
+              type="button"
+              data-size="small"
+              aria-pressed="false"
+              aria-label="Small text"
+            >
+              A
+            </button>
+            <button
+              class="font-size-btn font-size-medium"
+              type="button"
+              data-size="medium"
+              aria-pressed="false"
+              aria-label="Medium text"
+            >
+              A
+            </button>
+            <button
+              class="font-size-btn font-size-large"
+              type="button"
+              data-size="large"
+              aria-pressed="false"
+              aria-label="Large text"
+            >
+              A
+            </button>
+          </div>
+        </fieldset>
+
+        <div class="settings-block">
+          <h3 class="settings-label">Your data</h3>
+          <p class="settings-hint">
+            Favourites, notes, history and settings are kept on this browser only. Export a copy to
+            move them to another browser or to keep them safe.
+          </p>
+          <div class="settings-controls settings-controls-wide">
+            <button
+              class="button button-quiet"
+              type="button"
+              id="btnExport"
+              data-icon="download"
+              data-icon-size="14"
+            >
+              Export…
+            </button>
+            <button
+              class="button button-quiet"
+              type="button"
+              id="btnImport"
+              data-icon="upload"
+              data-icon-size="14"
+            >
+              Restore…
+            </button>
+            <input type="file" id="fileImport" accept="application/json,.json" hidden />
+          </div>
         </div>
-      </fieldset>
 
-      <div class="settings-block">
-        <h3 class="settings-label">Your data</h3>
-        <p class="settings-hint">
-          Favourites, notes, history and settings are kept on this browser only. Export a copy to
-          move them to another browser or to keep them safe.
-        </p>
-        <div class="settings-controls settings-controls-wide">
-          <button class="button button-quiet" type="button" id="btnExport" data-icon="download"
-            data-icon-size="14">Export…</button>
-          <button class="button button-quiet" type="button" id="btnImport" data-icon="upload"
-            data-icon-size="14">Restore…</button>
-          <input type="file" id="fileImport" accept="application/json,.json" hidden />
+        <div class="settings-block">
+          <h3 class="settings-label">About</h3>
+          <p class="settings-hint" id="aboutText">
+            All 150 Psalms are bundled with the extension. Psalms Way works offline and makes no
+            network requests.
+          </p>
+          <nav class="settings-links" aria-label="Links">
+            <a
+              href="https://github.com/atj393/psalms-way-browser-extension"
+              target="_blank"
+              rel="noopener noreferrer"
+              >GitHub</a
+            >
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSda0j_4GX_E_aFhsyItJssbgRc6C7Ukg-No54Gc0Sivzt5iSA/viewform?usp=sf_link"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Feedback</a
+            >
+          </nav>
         </div>
       </div>
+    </section>
 
-      <div class="settings-block">
-        <h3 class="settings-label">About</h3>
-        <p class="settings-hint" id="aboutText">
-          All 150 Psalms are bundled with the extension. Psalms Way works offline and makes no
-          network requests.
-        </p>
-        <nav class="settings-links" aria-label="Links">
-          <a href="https://github.com/atj393/psalms-way-browser-extension" target="_blank"
-            rel="noopener noreferrer">GitHub</a>
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSda0j_4GX_E_aFhsyItJssbgRc6C7Ukg-No54Gc0Sivzt5iSA/viewform?usp=sf_link"
-            target="_blank" rel="noopener noreferrer">Feedback</a>
-        </nav>
+    <!-- ── Note editor ── -->
+    <section class="panel" id="notePanel" aria-labelledby="noteEditorTitle" hidden>
+      <div class="panel-head">
+        <h2 class="panel-heading" id="noteEditorTitle">Note</h2>
+        <button
+          class="btn-quiet"
+          type="button"
+          id="btnCloseNote"
+          title="Close note"
+          aria-label="Close note"
+          data-icon="close"
+          data-icon-size="16"
+        ></button>
       </div>
-    </div>
-  </section>
-
-  <!-- ── Note editor ── -->
-  <section class="panel" id="notePanel" aria-labelledby="noteEditorTitle" hidden>
-    <div class="panel-head">
-      <h2 class="panel-heading" id="noteEditorTitle">Note</h2>
-      <button class="btn-quiet" type="button" id="btnCloseNote" title="Close note" aria-label="Close note"
-        data-icon="close" data-icon-size="16"></button>
-    </div>
-    <div class="panel-body note-body">
-      <blockquote class="note-verse" id="noteVerse"></blockquote>
-      <label class="sr-only" for="noteText">Your note</label>
-      <textarea id="noteText" class="note-textarea" rows="5" placeholder="Write a note for this verse…"
-        data-autofocus></textarea>
-      <p class="note-counter" id="noteCounter" aria-live="polite"></p>
-      <div class="note-actions">
-        <button class="button button-danger-quiet" type="button" id="btnDeleteNote" hidden>Delete</button>
-        <span class="note-actions-spacer"></span>
-        <button class="button button-quiet" type="button" id="btnCancelNote">Cancel</button>
-        <button class="button" type="button" id="btnSaveNote">Save</button>
+      <div class="panel-body note-body">
+        <blockquote class="note-verse" id="noteVerse"></blockquote>
+        <label class="sr-only" for="noteText">Your note</label>
+        <textarea
+          id="noteText"
+          class="note-textarea"
+          rows="5"
+          placeholder="Write a note for this verse…"
+          data-autofocus
+        ></textarea>
+        <p class="note-counter" id="noteCounter" aria-live="polite"></p>
+        <div class="note-actions">
+          <button class="button button-danger-quiet" type="button" id="btnDeleteNote" hidden>
+            Delete
+          </button>
+          <span class="note-actions-spacer"></span>
+          <button class="button button-quiet" type="button" id="btnCancelNote">Cancel</button>
+          <button class="button" type="button" id="btnSaveNote">Save</button>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ── Status messages and dialogs ── -->
-  <div class="status-bar" id="statusBar" role="status" aria-live="polite" hidden></div>
-  <div id="dialogHost" hidden></div>
+    <!-- ── Status messages and dialogs ── -->
+    <div class="status-bar" id="statusBar" role="status" aria-live="polite" hidden></div>
+    <div id="dialogHost" hidden></div>
 
-  <script type="module" src="./src/app.js"></script>
-</body>
-
+    <script type="module" src="./src/app.js"></script>
+  </body>
 </html>

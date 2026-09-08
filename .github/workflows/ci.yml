@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, validate and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Formatting
+        run: npm run format:check
+
+      - name: Validate Psalm data
+        run: npm run validate:data
+
+      - name: Validate manifest
+        run: npm run validate:manifest
+
+      - name: Validate package contents
+        run: npm run validate:package
+
+      - name: Unit and DOM tests
+        run: npm run test:coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+  timezones:
+    name: Date logic across time zones
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Today's Psalm is derived from the local calendar date, so the date
+        # tests run in zones with southern-hemisphere, northern-hemisphere and
+        # no daylight saving, plus a half-hour offset.
+        timezone:
+          - UTC
+          - Europe/Berlin
+          - America/New_York
+          - Australia/Sydney
+          - Asia/Kolkata
+          - Pacific/Chatham
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run date tests in ${{ matrix.timezone }}
+        env:
+          TZ: ${{ matrix.timezone }}
+        run: npx vitest run test/dates.test.js
+
+  browser:
+    name: Browser smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build the extension package
+        run: npm run package
+
+      - name: Unpack the built package
+        run: |
+          mkdir -p dist/unpacked
+          unzip -q dist/psalms-way-extension.zip -d dist/unpacked
+          ls -R dist/unpacked
+
+      - name: Load the packaged extension in Chrome
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+          PSALMS_EXTENSION_PATH: ${{ github.workspace }}/dist/unpacked
+        run: xvfb-run --auto-servernum node scripts/smoke-test.js
+
+      - name: Upload the package
+        uses: actions/upload-artifact@v4
+        with:
+          name: psalms-way-extension
+          path: dist/psalms-way-extension.zip
+          retention-days: 14

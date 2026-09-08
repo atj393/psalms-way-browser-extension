@@ -1,6 +1,14 @@
 node_modules
 coverage
 dist
-package-lock.json
-psalms.json
 brag-output
+package-lock.json
+
+# The bundled scripture is data, not source. Reformatting it would produce an
+# enormous diff and risk touching verse text.
+psalms.json
+
+# Community documents and editor settings are left as their authors wrote them.
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+.vscode/

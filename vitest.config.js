@@ -12,15 +12,26 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],
-      include: ["src/**/*.js"],
-      // app.js is the wiring layer: it is exercised through the DOM tests
-      // rather than measured directly.
-      exclude: ["src/app.js"],
+      // Thresholds apply to the service and logic layer, which is what these
+      // suites exist to protect. The view modules below render into a live
+      // popup and are covered by scripts/smoke-test.js, which drives the real
+      // extension in Chrome; counting them here would mean either a
+      // meaningless number or jsdom tests that re-assert what the browser
+      // already proves.
+      include: [
+        "src/backup.js",
+        "src/data.js",
+        "src/dates.js",
+        "src/dom.js",
+        "src/icons.js",
+        "src/search.js",
+        "src/storage.js",
+      ],
       thresholds: {
-        lines: 80,
-        functions: 80,
-        branches: 75,
-        statements: 80,
+        lines: 90,
+        functions: 90,
+        branches: 85,
+        statements: 90,
       },
     },
   },

@@ -65,7 +65,11 @@ describe("getDailyChapterIndex", () => {
     // Checked just after midnight as well as at noon: a millisecond-based
     // implementation drifts at the start of the day, where the offset change
     // lands, and can look correct at midday.
-    for (const [hour, minute] of [[0, 30], [12, 0], [23, 30]]) {
+    for (const [hour, minute] of [
+      [0, 30],
+      [12, 0],
+      [23, 30],
+    ]) {
       for (const year of [2024, 2025, 2026, 2027]) {
         const cursor = new Date(year, 0, 1, hour, minute);
         let previous = getDailyChapterIndex(cursor);
@@ -86,8 +90,12 @@ describe("getDailyChapterIndex", () => {
   it("returns one chapter for the whole of a daylight-saving transition day", () => {
     // Cover both hemispheres' usual transition weekends regardless of host zone.
     const candidates = [
-      [2026, 2, 8], [2026, 2, 29], [2026, 3, 5],
-      [2026, 9, 4], [2026, 9, 25], [2026, 10, 1],
+      [2026, 2, 8],
+      [2026, 2, 29],
+      [2026, 3, 5],
+      [2026, 9, 4],
+      [2026, 9, 25],
+      [2026, 10, 1],
     ];
     for (const [y, m, d] of candidates) {
       const values = new Set();

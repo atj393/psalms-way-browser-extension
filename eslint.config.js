@@ -31,13 +31,11 @@ export default [
       "no-restricted-syntax": [
         "error",
         {
-          selector:
-            "AssignmentExpression > MemberExpression[property.name='innerHTML']",
+          selector: "AssignmentExpression > MemberExpression[property.name='innerHTML']",
           message: "Use textContent or the helpers in dom.js; never assign innerHTML.",
         },
         {
-          selector:
-            "AssignmentExpression > MemberExpression[property.name='outerHTML']",
+          selector: "AssignmentExpression > MemberExpression[property.name='outerHTML']",
           message: "Use textContent or the helpers in dom.js; never assign outerHTML.",
         },
         {
@@ -66,10 +64,11 @@ export default [
     },
   },
   {
-    // The smoke test drives a browser, so it touches both worlds.
-    files: ["scripts/smoke-test.js"],
+    // The smoke test drives a browser, and DOM suites run under jsdom, so both
+    // touch the browser globals as well as Node's.
+    files: ["scripts/smoke-test.js", "test/**/*.test.js"],
     languageOptions: {
-      globals: { ...globals.node, ...globals.browser },
+      globals: { ...globals.node, ...globals.browser, chrome: "readonly" },
     },
   },
 ];

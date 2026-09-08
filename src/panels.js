@@ -301,10 +301,7 @@ export async function renderHistory() {
   if (usable.length === 0) {
     paint(
       "historyBody",
-      emptyState(
-        "Nothing read yet",
-        "Psalms you open appear here, most recent first."
-      )
+      emptyState("Nothing read yet", "Psalms you open appear here, most recent first.")
     );
     return;
   }
@@ -316,9 +313,7 @@ export async function renderHistory() {
         listRow({
           reference: formatReference(chapterIndex, verseIndex),
           preview: truncate(
-            verseIndex === null
-              ? data[chapterIndex][0]
-              : data[chapterIndex][verseIndex],
+            verseIndex === null ? data[chapterIndex][0] : data[chapterIndex][verseIndex],
             110
           ),
           meta: formatTimestamp(viewedAt),

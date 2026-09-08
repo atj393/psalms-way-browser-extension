@@ -12,13 +12,7 @@ import {
   isVerseRef,
   getRandomVerseIndex,
 } from "./data.js";
-import {
-  addHistoryEntry,
-  hasFavourite,
-  findNote,
-  loadStore,
-  toggleFavourite,
-} from "./storage.js";
+import { addHistoryEntry, hasFavourite, findNote, loadStore, toggleFavourite } from "./storage.js";
 
 /** Current passage. Persisted through history, not held across popup closes. */
 const state = {
@@ -170,10 +164,7 @@ function renderVerseRow(chapterIndex, verseIndex, text, store) {
     el("span", { class: "verse-text", text }),
   ]);
   body.setAttribute("aria-expanded", "false");
-  body.setAttribute(
-    "aria-label",
-    `${formatReference(chapterIndex, verseIndex)}. ${text}`
-  );
+  body.setAttribute("aria-label", `${formatReference(chapterIndex, verseIndex)}. ${text}`);
 
   const markers = el("span", { class: "verse-markers" });
   if (isFav) markers.appendChild(markerIcon("heart", "Saved"));
@@ -280,26 +271,34 @@ export async function buildVerseActions(chapterIndex, verseIndex, text, { onChan
     }
   });
 
-  const noteBtn = el("button", {
-    type: "button",
-    class: `btn-action btn-note ${hasNote ? "has-note" : ""}`.trim(),
-    title: hasNote ? "Edit note" : "Add a note",
-    "aria-label": hasNote ? "Edit note" : "Add a note",
-  }, [
-    icon("note", { size: 15 }),
-    el("span", { class: "btn-action-label", text: hasNote ? "Note" : "Note" }),
-  ]);
+  const noteBtn = el(
+    "button",
+    {
+      type: "button",
+      class: `btn-action btn-note ${hasNote ? "has-note" : ""}`.trim(),
+      title: hasNote ? "Edit note" : "Add a note",
+      "aria-label": hasNote ? "Edit note" : "Add a note",
+    },
+    [
+      icon("note", { size: 15 }),
+      el("span", { class: "btn-action-label", text: hasNote ? "Note" : "Note" }),
+    ]
+  );
   noteBtn.addEventListener("click", (event) => {
     event.stopPropagation();
     onOpenNoteEditor({ chapterIndex, verseIndex, text, onSaved: onChanged });
   });
 
-  const copyBtn = el("button", {
-    type: "button",
-    class: "btn-action btn-copy",
-    title: "Copy verse",
-    "aria-label": "Copy verse",
-  }, [icon("copy", { size: 15 }), el("span", { class: "btn-action-label", text: "Copy" })]);
+  const copyBtn = el(
+    "button",
+    {
+      type: "button",
+      class: "btn-action btn-copy",
+      title: "Copy verse",
+      "aria-label": "Copy verse",
+    },
+    [icon("copy", { size: 15 }), el("span", { class: "btn-action-label", text: "Copy" })]
+  );
   copyBtn.addEventListener("click", (event) => {
     event.stopPropagation();
     copyVerse(chapterIndex, verseIndex, text);

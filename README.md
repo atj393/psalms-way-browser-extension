@@ -34,17 +34,17 @@ larger translation set.
 
 ## What it does
 
-| Feature | Detail |
-|---|---|
-| **Today's Psalm** | A chapter derived from the current date, so it is the same for the whole day. |
-| **Random verse** | One verse, drawn at random. |
-| **Random chapter** | A full chapter, drawn at random. |
-| **Chapter navigation** | Previous, next, or jump straight to a chapter number. |
-| **Search** | Keyword search across all 150 chapters, with matches highlighted in the results. |
-| **Favourites** | Save verses and remove them again from a dedicated panel. |
-| **History** | Recently viewed chapters, with a clear-history action. |
-| **Copy** | Copy any verse with its reference. |
-| **Appearance** | Light and dark themes, adjustable font size, and a collapsible toolbar. All persisted. |
+| Feature                | Detail                                                                                 |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| **Today's Psalm**      | A chapter derived from the current date, so it is the same for the whole day.          |
+| **Random verse**       | One verse, drawn at random.                                                            |
+| **Random chapter**     | A full chapter, drawn at random.                                                       |
+| **Chapter navigation** | Previous, next, or jump straight to a chapter number.                                  |
+| **Search**             | Keyword search across all 150 chapters, with matches highlighted in the results.       |
+| **Favourites**         | Save verses and remove them again from a dedicated panel.                              |
+| **History**            | Recently viewed chapters, with a clear-history action.                                 |
+| **Copy**               | Copy any verse with its reference.                                                     |
+| **Appearance**         | Light and dark themes, adjustable font size, and a collapsible toolbar. All persisted. |
 
 ## Install
 

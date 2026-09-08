@@ -98,9 +98,15 @@
   --shadow-panel: 0 8px 28px rgba(0, 0, 0, 0.55);
 }
 
-:root[data-size="small"] { --size-read: 13px; }
-:root[data-size="medium"] { --size-read: 15px; }
-:root[data-size="large"] { --size-read: 18px; }
+:root[data-size="small"] {
+  --size-read: 13px;
+}
+:root[data-size="medium"] {
+  --size-read: 15px;
+}
+:root[data-size="large"] {
+  --size-read: 18px;
+}
 
 /* ── Reset ─────────────────────────────────────────────────────────────── */
 *,
@@ -130,12 +136,22 @@ body {
   overflow: hidden;
 }
 
-h1, h2, h3, p, ul, ol, blockquote, figure, fieldset, legend {
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+blockquote,
+figure,
+fieldset,
+legend {
   margin: 0;
   padding: 0;
 }
 
-ul, ol {
+ul,
+ol {
   list-style: none;
 }
 
@@ -207,7 +223,10 @@ fieldset {
   background: var(--brand);
   color: var(--brand-text);
   white-space: nowrap;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .button:hover {
@@ -384,7 +403,9 @@ fieldset {
   border-radius: var(--radius-md);
   padding: 6px 2px;
   color: var(--text-muted);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .btn-tool:hover {
@@ -544,8 +565,12 @@ fieldset {
   line-height: 0;
 }
 
-.verse-marker-heart { color: var(--danger); }
-.verse-marker-note { color: var(--text-muted); }
+.verse-marker-heart {
+  color: var(--danger);
+}
+.verse-marker-note {
+  color: var(--text-muted);
+}
 
 .verse-actions {
   display: flex;
@@ -564,7 +589,10 @@ fieldset {
   font-size: 11px;
   font-weight: 600;
   color: var(--text-soft);
-  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .btn-action:hover {
@@ -799,6 +827,13 @@ fieldset {
   color: var(--text);
 }
 
+/* Keep the focus ring inside the tab strip so it does not collide with the
+   selected tab's underline. */
+.tab:focus-visible {
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
 .tab.is-active {
   color: var(--brand);
   border-bottom-color: var(--brand);
@@ -812,11 +847,16 @@ fieldset {
   gap: var(--space-5);
 }
 
+/* Theme and text size are fieldsets, so the label is a <legend>. A legend is
+   laid out by the fieldset itself and does not take part in flex, so these
+   rows stack: label above its controls. That reads well at 440px and the
+   grouping is what makes the buttons announce correctly. */
 .settings-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
+  display: block;
+}
+
+.settings-row .settings-controls {
+  margin-top: var(--space-2);
 }
 
 .settings-block {
@@ -860,7 +900,10 @@ fieldset {
   font-size: 11.5px;
   font-weight: 600;
   color: var(--text-soft);
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .theme-btn:hover,
@@ -881,9 +924,15 @@ fieldset {
   line-height: 1.3;
 }
 
-.font-size-small { font-size: 11px; }
-.font-size-medium { font-size: 13px; }
-.font-size-large { font-size: 16px; }
+.font-size-small {
+  font-size: 11px;
+}
+.font-size-medium {
+  font-size: 13px;
+}
+.font-size-large {
+  font-size: 16px;
+}
 
 .settings-links {
   display: flex;
@@ -977,9 +1026,15 @@ fieldset {
   flex-shrink: 0;
 }
 
-.status-success { color: var(--brand); }
-.status-info { color: var(--text-soft); }
-.status-error { color: var(--danger); }
+.status-success {
+  color: var(--brand);
+}
+.status-info {
+  color: var(--text-soft);
+}
+.status-error {
+  color: var(--danger);
+}
 
 /* ── Dialog ────────────────────────────────────────────────────────────── */
 .dialog-backdrop {

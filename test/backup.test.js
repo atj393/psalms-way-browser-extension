@@ -41,12 +41,7 @@ describe("createBackup", () => {
 
   it("carries only user data, not scripture or assets", () => {
     const backup = createBackup(sampleStore, "1.2");
-    expect(Object.keys(backup.data).sort()).toEqual([
-      "favourites",
-      "history",
-      "notes",
-      "settings",
-    ]);
+    expect(Object.keys(backup.data).sort()).toEqual(["favourites", "history", "notes", "settings"]);
   });
 
   it("names the file with the date", () => {
@@ -82,11 +77,7 @@ describe("parseBackup — rejects bad input", () => {
       JSON.stringify({ type: "some-other-app", schemaVersion: 1, data: {} }),
       "wrong_type",
     ],
-    [
-      "a missing version",
-      JSON.stringify({ type: BACKUP_TYPE, data: {} }),
-      "missing_version",
-    ],
+    ["a missing version", JSON.stringify({ type: BACKUP_TYPE, data: {} }), "missing_version"],
     [
       "a future schema",
       JSON.stringify({
@@ -96,11 +87,7 @@ describe("parseBackup — rejects bad input", () => {
       }),
       "future_version",
     ],
-    [
-      "no data block",
-      JSON.stringify({ type: BACKUP_TYPE, schemaVersion: 1 }),
-      "no_data",
-    ],
+    ["no data block", JSON.stringify({ type: BACKUP_TYPE, schemaVersion: 1 }), "no_data"],
     [
       "a data block that is an array",
       JSON.stringify({ type: BACKUP_TYPE, schemaVersion: 1, data: [] }),
@@ -192,7 +179,13 @@ describe("parseBackup — hostile content is neutralised", () => {
         schemaVersion: 1,
         data: {
           favourites: [
-            { chapterIndex: 1, verseIndex: 1, addedAt: 1730000000000, __proto__: { evil: true }, evil: true },
+            {
+              chapterIndex: 1,
+              verseIndex: 1,
+              addedAt: 1730000000000,
+              __proto__: { evil: true },
+              evil: true,
+            },
           ],
         },
       })

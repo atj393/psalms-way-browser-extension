@@ -19,10 +19,7 @@ export function applyTheme(theme) {
 }
 
 export function applyFontSize(size) {
-  document.documentElement.setAttribute(
-    "data-size",
-    FONT_SIZES.includes(size) ? size : "medium"
-  );
+  document.documentElement.setAttribute("data-size", FONT_SIZES.includes(size) ? size : "medium");
 }
 
 export function applyToolbarCollapsed(collapsed) {
@@ -119,10 +116,7 @@ export async function exportBackup() {
   // Revoke on the next turn so the download has taken the reference.
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 
-  toast(
-    `Exported ${store.favourites.length} saved, ${store.notes.length} notes`,
-    "success"
-  );
+  toast(`Exported ${store.favourites.length} saved, ${store.notes.length} notes`, "success");
 }
 
 // ─── Restore ──────────────────────────────────────────────────────────────────

@@ -1,13 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import {
-  searchVerses,
-  splitMatches,
-  escapeRegExp,
-  truncate,
-  SEARCH_MAX,
-} from "../src/search.js";
+import { searchVerses, splitMatches, escapeRegExp, truncate, SEARCH_MAX } from "../src/search.js";
 
 const psalms = JSON.parse(
   readFileSync(fileURLToPath(new URL("../psalms.json", import.meta.url)), "utf8")
@@ -60,9 +54,39 @@ describe("searchVerses", () => {
   // Every character that means something to a regular expression, plus quotes
   // and Unicode. None of these may throw or match spuriously.
   const hostile = [
-    ".", "*", "+", "?", "^", "$", "{", "}", "(", ")", "|", "[", "]", "\\",
-    ".*", "(.*)", "[a-z]", "a{2,}", "\\d", "^the", "the$", "()", "|||",
-    "''", '""', "’", "—", "…", "ü", "日本語", "🙂", "a\\", "\\\\",
+    ".",
+    "*",
+    "+",
+    "?",
+    "^",
+    "$",
+    "{",
+    "}",
+    "(",
+    ")",
+    "|",
+    "[",
+    "]",
+    "\\",
+    ".*",
+    "(.*)",
+    "[a-z]",
+    "a{2,}",
+    "\\d",
+    "^the",
+    "the$",
+    "()",
+    "|||",
+    "''",
+    '""',
+    "’",
+    "—",
+    "…",
+    "ü",
+    "日本語",
+    "🙂",
+    "a\\",
+    "\\\\",
   ];
 
   it("survives regular-expression metacharacters and Unicode", () => {
@@ -83,9 +107,7 @@ describe("searchVerses", () => {
   });
 
   it("trims surrounding whitespace from the query", () => {
-    expect(searchVerses(psalms, "  shepherd  ").total).toBe(
-      searchVerses(psalms, "shepherd").total
-    );
+    expect(searchVerses(psalms, "  shepherd  ").total).toBe(searchVerses(psalms, "shepherd").total);
   });
 
   it("handles a very long query", () => {
