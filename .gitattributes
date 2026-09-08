@@ -1,0 +1,12 @@
+# Normalise line endings in the repository to LF.
+#
+# Without this, a Windows checkout rewrites text files to CRLF, which makes
+# `prettier --check` fail locally while passing in CI, and makes the release
+# zip differ byte for byte between a Windows and a Linux build.
+* text=auto eol=lf
+
+# Binary assets must never be touched.
+*.png binary
+*.jpg binary
+*.mp4 binary
+*.zip binary
