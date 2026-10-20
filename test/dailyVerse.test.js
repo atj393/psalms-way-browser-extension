@@ -109,7 +109,7 @@ describe("getVerseForDate", () => {
   });
 
   it("treats chapters a version lacks as empty", () => {
-    // A 137-psalm version has no Psalm 138 to 150; Psalm 150 does not exist.
+    // A damaged version file with only 137 psalms: Psalm 150 does not exist.
     const data = chapters(137, ["a", "b", "c"]);
     expect(getVerseForDate("2026-10-20", "modern", data)).toEqual({
       chapter: 1,

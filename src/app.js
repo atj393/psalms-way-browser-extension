@@ -54,7 +54,7 @@ import {
   renderCloud,
   sendCloud,
 } from "./cloud.js";
-import { applyTranslations, currentLanguage, initI18n } from "./i18n.js";
+import { applyTranslations, currentLanguage, initI18n, t } from "./i18n.js";
 import { currentVersion, initVersions, loadCatalogue, versionLabel } from "./versions.js";
 import { renderVersionPicker } from "./versionPicker.js";
 import { openToday, renderToday } from "./today.js";
@@ -361,7 +361,7 @@ async function paintVersion() {
 /** After the reader picks a version: repaint, and show the same passage in it. */
 async function afterVersionChosen() {
   await paintVersion();
-  showView("reading");
+  closePanel();
   await showPassage({
     chapterIndex: getCurrentChapter(),
     verseIndex: getCurrentVerse(),
@@ -436,11 +436,19 @@ export async function start() {
     await initVersions(settings, currentLanguage());
     await paintVersion();
   } catch (error) {
-    console.error("Psalms Way: could not prepare the language or version", error);
+    reportError(error, t("versionPrepareError", {}, "Your Bible version could not be loaded."));
   }
-  recordVisit().catch((error) =>
-    console.error("Psalms Way: could not record today's visit", error)
-  );
+  recordVisit()
+    .then((newly) => {
+      // A visit earns at most the next badge, unless the phone's streak just arrived.
+      const badge = newly.at(-1);
+      if (badge) {
+        toast(
+          `${t("achievementUnlocked", {}, "Achievement Unlocked!")} ${badge.icon} ${t(badge.i18nKey)}`
+        );
+      }
+    })
+    .catch((error) => console.error("Psalms Way: could not record today's visit", error));
 
   try {
     await getData();

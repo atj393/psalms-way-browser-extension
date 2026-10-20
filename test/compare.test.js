@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { installChromeMock } from "./chrome-mock.js";
 import * as store from "../src/storage.js";
 
-// A small fake catalogue stands in for the real 82 versions: the current one,
+// A small fake catalogue stands in for the real versions: the current one,
 // two ordinary ones, a right-to-left one, and one that lacks verse 2.
 const fake = vi.hoisted(() => ({
   current: "modern",
