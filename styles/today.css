@@ -1,1 +1,83 @@
-/* today: filled by its wave 1 task. */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Today panel: the verse of the day, Today's Psalm and the streak line.
+   Colours, spacing and type come from the tokens in style.css, so the three
+   themes, the accent and the text size all apply without anything here.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.today {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.today-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+}
+
+.today-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.today-reference {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+/* The verse reads at the reader's own text size and font. */
+.today-verse {
+  font-family: var(--font-read);
+  font-size: var(--size-read);
+  line-height: var(--line-read);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.today-note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.today-card .button-row {
+  margin-top: 0;
+}
+
+.today-psalm {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.today-psalm-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.today-streak {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.today-streak svg {
+  flex-shrink: 0;
+  color: var(--brand);
+}
