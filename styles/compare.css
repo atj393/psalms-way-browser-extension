@@ -1,1 +1,58 @@
-/* compare: filled by its wave 1 task. */
+/* Compare: one verse in three versions, one card each. */
+
+.compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.compare-reference {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.compare-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.compare-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+}
+
+/* The version name, or the select that picks it, sits above the verse. */
+.compare-card-head {
+  min-width: 0;
+}
+
+.compare-card-name {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--brand-strong);
+  overflow-wrap: anywhere;
+}
+
+/* .select adds a top margin for the settings page; here it is the header. */
+.compare-select {
+  margin-top: 0;
+  min-width: 0;
+  font-weight: 700;
+}
+
+.compare-text {
+  font-family: var(--font-read);
+  font-size: var(--size-read);
+  line-height: var(--line-read);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
