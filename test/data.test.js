@@ -9,18 +9,59 @@ import {
   getData,
   getRandomChapterIndex,
   getRandomVerseIndex,
+  hasChapter,
   isChapterRef,
   isVerseRef,
   parseChapterInput,
   resetDataCache,
   wrapChapter,
 } from "../src/data.js";
+import * as store from "../src/storage.js";
+import { setCurrentVersion } from "../src/versions.js";
+import { installChromeMock } from "./chrome-mock.js";
 
 const psalms = JSON.parse(
   readFileSync(fileURLToPath(new URL("../psalms.json", import.meta.url)), "utf8")
 );
 
-beforeEach(() => resetDataCache());
+const entry = (module, file, chapters) => ({
+  module,
+  name: module,
+  lang: "English",
+  lang_short: "en",
+  year: "",
+  chapters,
+  rtl: false,
+  copyright: "",
+  file,
+});
+const catalogue = [
+  entry("modern", "psalms.json", CHAPTER_COUNT),
+  entry("short", "bibles/short.json", 2),
+];
+const shortVersion = [["In the beginning", "was the word"], ["Peace"]];
+
+const okJson = (value) => ({ ok: true, json: async () => value });
+
+/** Fetch that serves only the named files, so a stray request fails the test. */
+function serve(files) {
+  const routes = {
+    "bibles/index.json": okJson(catalogue),
+    "psalms.json": okJson(psalms),
+    ...files,
+  };
+  const fetchMock = vi.fn(async (path) => {
+    if (!(path in routes)) throw new Error(`unexpected fetch of ${path}`);
+    return routes[path];
+  });
+  globalThis.fetch = fetchMock;
+  return fetchMock;
+}
+
+beforeEach(() => {
+  store.resetStoreCache();
+  resetDataCache();
+});
 afterEach(() => {
   delete globalThis.fetch;
   resetDataCache();
@@ -154,48 +195,105 @@ describe("reference validation", () => {
   });
 });
 
+describe("hasChapter", () => {
+  // No shipped version has a gap, but a damaged file could: the reader asks before rendering.
+  const data = [["In the beginning"], [], ["a", "b"], null];
+
+  it("is true for a chapter with verses", () => {
+    expect(hasChapter(data, 0)).toBe(true);
+    expect(hasChapter(data, 2)).toBe(true);
+    expect(hasChapter(psalms, 149)).toBe(true);
+  });
+
+  it("is false for an empty or damaged chapter, so a gap is reported rather than rendered blank", () => {
+    expect(hasChapter(data, 1)).toBe(false);
+    expect(hasChapter(data, 3)).toBe(false);
+  });
+
+  it("is false past the end of the version and for input that is not a chapter number", () => {
+    expect(hasChapter(data, 4)).toBe(false);
+    expect(hasChapter(data, -1)).toBe(false);
+    expect(hasChapter(data, 0.5)).toBe(false);
+    expect(hasChapter(data, "0")).toBe(false);
+    expect(hasChapter(null, 0)).toBe(false);
+  });
+});
+
 describe("getData", () => {
   it("loads and caches the bundled text", async () => {
-    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => psalms }));
-    globalThis.fetch = fetchMock;
+    const fetchMock = serve();
 
     const first = await getData();
     const second = await getData();
 
     expect(first).toHaveLength(CHAPTER_COUNT);
     expect(second).toBe(first);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls.filter(([path]) => path === "psalms.json")).toHaveLength(1);
+  });
+
+  it("raises a DataError when psalms.json cannot be read", async () => {
+    const fetchMock = serve();
+    // The list of versions loads; only the text itself fails.
+    fetchMock.mockImplementation(async (path) => {
+      if (path === "bibles/index.json") return okJson(catalogue);
+      throw new Error("net::ERR_FILE_NOT_FOUND");
+    });
+
+    await expect(getData()).rejects.toBeInstanceOf(DataError);
     expect(fetchMock).toHaveBeenCalledWith("psalms.json");
   });
 
-  it("raises a DataError when the file cannot be read", async () => {
+  it("raises a DataError when the list of versions cannot be read", async () => {
     globalThis.fetch = vi.fn(async () => {
       throw new Error("net::ERR_FILE_NOT_FOUND");
     });
-    await expect(getData()).rejects.toBeInstanceOf(DataError);
+    await expect(getData()).rejects.toThrow(/list of Bible versions/);
   });
 
   it("raises a DataError on a non-OK response", async () => {
-    globalThis.fetch = vi.fn(async () => ({ ok: false, status: 404 }));
+    serve({ "psalms.json": { ok: false, status: 404 } });
     await expect(getData()).rejects.toThrow(/404/);
   });
 
   it("raises a DataError when the text is the wrong shape", async () => {
-    globalThis.fetch = vi.fn(async () => ({ ok: true, json: async () => ({ nope: true }) }));
+    serve({ "psalms.json": okJson({ nope: true }) });
     await expect(getData()).rejects.toThrow(/not in the expected format/);
   });
 
   it("raises a DataError when a chapter is missing", async () => {
-    globalThis.fetch = vi.fn(async () => ({ ok: true, json: async () => psalms.slice(0, 149) }));
+    serve({ "psalms.json": okJson(psalms.slice(0, 149)) });
     await expect(getData()).rejects.toThrow(/not in the expected format/);
   });
 
   it("does not cache a failure", async () => {
-    globalThis.fetch = vi.fn(async () => {
+    serve().mockImplementation(async (path) => {
+      if (path === "bibles/index.json") return okJson(catalogue);
       throw new Error("offline");
     });
-    await expect(getData()).rejects.toThrow();
-    globalThis.fetch = vi.fn(async () => ({ ok: true, json: async () => psalms }));
+    await expect(getData()).rejects.toBeInstanceOf(DataError);
+    serve();
     await expect(getData()).resolves.toHaveLength(CHAPTER_COUNT);
+  });
+
+  it("returns the chosen version's chapters, as the list says it has them", async () => {
+    installChromeMock();
+    serve({ "bibles/short.json": okJson(shortVersion) });
+
+    await setCurrentVersion("short");
+
+    const data = await getData();
+    expect(data).toEqual(shortVersion);
+    expect(isChapterRef(data, 2)).toBe(false);
+  });
+
+  it("goes back to the bundled text when the cache is reset", async () => {
+    installChromeMock();
+    serve({ "bibles/short.json": okJson(shortVersion) });
+    await setCurrentVersion("short");
+    expect(await getData()).toHaveLength(2);
+
+    resetDataCache();
+
+    expect(await getData()).toHaveLength(CHAPTER_COUNT);
   });
 });

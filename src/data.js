@@ -1,12 +1,13 @@
 // ─── Psalm data access ────────────────────────────────────────────────────────
-// Loads the bundled text once per popup session and exposes reference
-// formatting and range checks. Everything here is offline: `psalms.json` ships
-// inside the extension package.
+// The text of the Bible version being read, plus reference formatting and range
+// checks. Loading and caching the versions is versions.js's job; everything is
+// offline, because every version ships inside the extension package.
+
+import { currentVersion, getVersionData, resetVersions } from "./versions.js";
 
 export const CHAPTER_COUNT = 150;
-const DATA_FILE_PATH = "psalms.json";
 
-/** Raised when the bundled text cannot be read or is structurally wrong. */
+/** Raised when a version's text cannot be read or is structurally wrong. */
 export class DataError extends Error {
   constructor(message, cause) {
     super(message);
@@ -15,41 +16,20 @@ export class DataError extends Error {
   }
 }
 
-let cache = null;
-
 /**
- * Load and validate the bundled Psalms.
- * Cached for the lifetime of the popup; the popup is destroyed on close, so
- * this is at most one fetch per open.
+ * The chapters of the current Bible version, each an array of verse strings.
+ * 150 chapters for every shipped version. A damaged file could still have an
+ * empty or missing chapter, so check `hasChapter()` before rendering one.
  *
  * @returns {Promise<string[][]>}
  */
-export async function getData() {
-  if (cache) return cache;
-
-  let parsed;
-  try {
-    const response = await fetch(DATA_FILE_PATH);
-    if (!response.ok) {
-      throw new DataError(`psalms.json responded ${response.status}`);
-    }
-    parsed = await response.json();
-  } catch (error) {
-    if (error instanceof DataError) throw error;
-    throw new DataError("The Psalms text could not be loaded.", error);
-  }
-
-  if (!Array.isArray(parsed) || parsed.length !== CHAPTER_COUNT) {
-    throw new DataError("The Psalms text is not in the expected format.");
-  }
-
-  cache = parsed;
-  return cache;
+export function getData() {
+  return getVersionData(currentVersion());
 }
 
-/** Test seam: drop the in-memory cache. */
+/** Test seam: forget every loaded version and go back to the NIV. */
 export function resetDataCache() {
-  cache = null;
+  resetVersions();
 }
 
 /**
@@ -71,8 +51,8 @@ export function isVerseRef(data, chapterIndex, verseIndex) {
 }
 
 /**
- * Whether a version includes this chapter. A few versions are incomplete
- * (one has 137 psalms), so the reader asks before rendering.
+ * Whether a version has text for this chapter (an empty or missing chapter does
+ * not count), so the reader can say so instead of showing a blank page.
  */
 export function hasChapter(data, chapterIndex) {
   return (

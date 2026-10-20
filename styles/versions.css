@@ -1,1 +1,95 @@
-/* versions: filled by its wave 1 task. */
+/* ── Bible version picker ──────────────────────────────────────────────── */
+
+/* Stays at the top while a long list scrolls beneath it. */
+.version-filter-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.version-filter {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  border-radius: var(--radius-pill);
+  padding: 6px 12px;
+  font-size: 12.5px;
+}
+
+.version-group {
+  padding-bottom: var(--space-3);
+}
+
+.version-language {
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.version-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: none;
+  border: none;
+  border-radius: 0;
+  text-align: start;
+}
+
+.version-row + .version-row {
+  border-top: 1px solid var(--border);
+}
+
+.version-row:hover {
+  background: var(--bg-hover);
+}
+
+.version-row[aria-current="true"] {
+  background: var(--brand-soft);
+}
+
+.version-row > svg {
+  flex-shrink: 0;
+  color: var(--brand);
+}
+
+.version-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.version-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.version-name {
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.version-year {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.version-credit {
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
