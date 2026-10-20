@@ -26,20 +26,22 @@ const TOP_LEVEL_FILES = [
  */
 export const PACKAGE_DIRS = ["src", "styles", "bibles", "locales", "data"];
 
-/** File types a shipped folder may hold; anything else stays out. */
-const SHIPPED_EXTENSIONS = /\.(js|css|json|png|svg)$/;
-
 const root = fileURLToPath(new URL("../", import.meta.url));
 
-function filesUnder(dir) {
+/**
+ * Every file under a shipped folder, as repository-relative paths, sorted.
+ * Nothing is filtered, not by type and not dotfiles, so a stray file is never
+ * dropped silently: it ships, and scripts/validate-package.js fails on any
+ * type a package should not hold.
+ */
+export function filesUnder(dir) {
   const absolute = `${root}${dir}`;
   if (!existsSync(absolute)) return [];
   return readdirSync(absolute)
     .sort()
     .flatMap((name) => {
       const relative = `${dir}/${name}`;
-      if (statSync(`${root}${relative}`).isDirectory()) return filesUnder(relative);
-      return SHIPPED_EXTENSIONS.test(name) ? [relative] : [];
+      return statSync(`${root}${relative}`).isDirectory() ? filesUnder(relative) : [relative];
     });
 }
 

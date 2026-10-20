@@ -4,7 +4,17 @@
 
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { PACKAGE_FILES, FORBIDDEN_PATTERNS } from "./package-manifest.js";
+import { SUPPORTED_LANGUAGES } from "../src/i18n.js";
+import { PACKAGE_DIRS, PACKAGE_FILES, FORBIDDEN_PATTERNS, filesUnder } from "./package-manifest.js";
+
+// The only file types a browser extension package ships from the shipped folders.
+const ALLOWED_EXTENSIONS = /\.(js|css|json|png|svg)$/;
+
+// A dotfile or a file inside a dot-folder (.DS_Store, .notes.json, .cache/x.js) is litter.
+const HIDDEN_PATH = /(^|\/)\./;
+
+// The phone app's languages; the extension carries all of them.
+const EXPECTED_LANGUAGE_COUNT = 47;
 
 const root = new URL("../", import.meta.url);
 const resolve = (relative) => fileURLToPath(new URL(relative, root));
@@ -30,17 +40,42 @@ for (const file of PACKAGE_FILES) {
   }
 }
 
-// 3. Every src/*.js module is either shipped or deliberately excluded.
-const shippedSources = new Set(PACKAGE_FILES.filter((f) => f.startsWith("src/")));
-const { readdirSync } = await import("node:fs");
-for (const entry of readdirSync(resolve("src"))) {
-  if (!entry.endsWith(".js")) continue;
-  if (!shippedSources.has(`src/${entry}`)) {
-    note(`src/${entry} exists but is not in the package list`);
+// 3. Shipped folders exist, are not empty, and hold only the file types an
+// extension package should ship. The package list takes every file in them, so
+// a stray .txt, font, .html or dotfile would otherwise travel in the zip
+// unnoticed, and a renamed or deleted folder would otherwise ship nothing.
+for (const dir of PACKAGE_DIRS) {
+  if (!existsSync(resolve(dir))) {
+    note(`shipped folder is missing: ${dir}/`);
+    continue;
+  }
+  const files = filesUnder(dir);
+  if (files.length === 0) note(`shipped folder is empty: ${dir}/`);
+  for (const file of files) {
+    if (!ALLOWED_EXTENSIONS.test(file) || HIDDEN_PATH.test(file)) {
+      note(
+        `${file} is in a shipped folder but is not a visible .js, .css, .json, .png or .svg file`
+      );
+    }
   }
 }
 
-// 4. Local references inside shipped files resolve to shipped files.
+// 4. Every language has both translation files; a missing one would silently
+// fall back to English. A shortened language list would hide that, so its
+// length is checked too.
+if (SUPPORTED_LANGUAGES.length !== EXPECTED_LANGUAGE_COUNT) {
+  note(
+    `SUPPORTED_LANGUAGES has ${SUPPORTED_LANGUAGES.length} entries, expected ${EXPECTED_LANGUAGE_COUNT}`
+  );
+}
+for (const code of SUPPORTED_LANGUAGES) {
+  for (const kind of ["app", "ext"]) {
+    const file = `locales/${kind}/${code}.json`;
+    if (!existsSync(resolve(file))) note(`missing translation file: ${file}`);
+  }
+}
+
+// 5. Local references inside shipped files resolve to shipped files.
 const referencePattern = /(?:src|href)="\.\/([^"]+)"|from\s+"\.\/([^"]+)"|fetch\("([^"]+)"\)/g;
 for (const file of PACKAGE_FILES) {
   if (!/\.(html|js)$/.test(file)) continue;
@@ -63,7 +98,7 @@ for (const file of PACKAGE_FILES) {
   }
 }
 
-// 5. No remote code, and no dynamic evaluation.
+// 6. No remote code, and no dynamic evaluation.
 const REMOTE_PATTERNS = [
   [/<script[^>]+src=["']https?:/i, "remote script tag"],
   [/<link[^>]+href=["']https?:[^"']*\.css/i, "remote stylesheet"],

@@ -16,7 +16,7 @@
     "validate:manifest": "node scripts/validate-manifest.js",
     "validate:package": "node scripts/validate-package.js",
     "validate": "npm run validate:data && npm run validate:manifest && npm run validate:package",
-    "package": "node scripts/package.js",
+    "package": "npm run validate && node scripts/package.js",
     "check": "npm run lint && npm run validate && npm run test",
     "test:browser": "node scripts/smoke-test.js"
   },
