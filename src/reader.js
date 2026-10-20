@@ -89,6 +89,18 @@ export async function showPassage({ chapterIndex, verseIndex = null, record = tr
   }
 }
 
+/** Re-renders the current passage after cloud sync changed saved data, keeping the scroll position. */
+export async function refreshPassage() {
+  const view = byId("readingView");
+  const top = view?.scrollTop ?? 0;
+  await showPassage({
+    chapterIndex: state.chapterIndex,
+    verseIndex: state.verseIndex,
+    record: false,
+  });
+  if (view) view.scrollTop = top;
+}
+
 async function loadStoreQuietly() {
   try {
     return await loadStore();

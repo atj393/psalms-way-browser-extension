@@ -18,6 +18,7 @@
 //      it. Limits apply to what the reader types, not to what is stored.
 
 import { CHAPTER_COUNT } from "./data.js";
+import { stableJson } from "./syncMerge.js";
 
 // 3: notes are no longer trimmed or cut on read, history keeps one entry per
 // chapter (as the phone app does), and `carry` keeps the phone app's data this
@@ -288,6 +289,19 @@ export function migrateFromLegacy(legacy) {
 let cachedStore = null;
 
 /**
+ * The last value this page asked to write, recorded before the write: Chrome
+ * can report the change before the write's promise settles, and the page must
+ * still recognise its own save. Compared without key order, because Chrome
+ * hands stored objects back with their keys sorted.
+ */
+let lastWrittenJson = null;
+
+async function writeStore(next) {
+  lastWrittenJson = stableJson(next);
+  await writeRaw({ [STORE_KEY]: next });
+}
+
+/**
  * Read the whole store, migrating v1 data on first run after the upgrade.
  *
  * Migration is non-destructive and idempotent: the legacy keys are read but
@@ -316,7 +330,7 @@ export async function loadStore() {
     // Persist the migrated shape. A failure here is not fatal: the migration is
     // recomputed from the untouched legacy keys on the next open.
     try {
-      await writeRaw({ [STORE_KEY]: cachedStore });
+      await writeStore(cachedStore);
     } catch (error) {
       console.error("Psalms Way: could not persist migrated data", error);
     }
@@ -325,9 +339,15 @@ export async function loadStore() {
   return cachedStore;
 }
 
-/** Test seam. */
+/** Test seam, and how the popup forgets a cache that cloud sync outdated. */
 export function resetStoreCache() {
   cachedStore = null;
+}
+
+/** Whether a stored value is the one this page last wrote, i.e. not someone else's change. */
+export function matchesCache(value) {
+  const json = stableJson(value);
+  return json === lastWrittenJson || (cachedStore !== null && json === stableJson(cachedStore));
 }
 
 /**
@@ -340,7 +360,25 @@ export async function updateStore(mutator) {
   const current = await loadStore();
   const draft = structuredClone(current);
   const next = normaliseStore(mutator(draft) ?? draft);
-  await writeRaw({ [STORE_KEY]: next });
+  await writeStore(next);
+  cachedStore = next;
+  return next;
+}
+
+/**
+ * Read the store from disk, ignoring the cache. Cloud sync runs in the
+ * background worker while the popup may also be writing, so it must never
+ * work from a cache the popup has outdated.
+ */
+export async function readFreshStore() {
+  cachedStore = null;
+  return loadStore();
+}
+
+/** Write a whole store (cloud sync's combined data). */
+export async function saveStore(candidate) {
+  const next = normaliseStore(candidate);
+  await writeStore(next);
   cachedStore = next;
   return next;
 }

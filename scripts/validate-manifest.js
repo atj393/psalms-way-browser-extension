@@ -12,8 +12,20 @@ const manifestPath = fileURLToPath(new URL("manifest.json", root));
 
 /** Every permission this extension is allowed to request, with its reason. */
 const ALLOWED_PERMISSIONS = {
-  storage: "keeps favourites, notes, history and settings in chrome.storage.local",
+  storage: "keeps bookmarks, notes, history and settings in chrome.storage.local",
 };
+
+/**
+ * Permissions the extension may ask for at runtime, never at install, with
+ * their reason. Requesting them only on the reader's click means an update
+ * never disables the extension for existing users.
+ */
+const ALLOWED_OPTIONAL_PERMISSIONS = {
+  identity: "Google sign-in, asked for only when the reader connects sync with the phone app",
+};
+
+/** The one background worker allowed: optional cloud sync with the phone app. */
+const ALLOWED_BACKGROUND = "src/background.js";
 
 const problems = [];
 const note = (message) => problems.push(message);
@@ -61,6 +73,20 @@ if (!Array.isArray(permissions)) {
   }
 }
 
+const optionalPermissions = manifest.optional_permissions ?? [];
+if (!Array.isArray(optionalPermissions)) {
+  note("optional_permissions must be an array");
+} else {
+  for (const permission of optionalPermissions) {
+    if (!(permission in ALLOWED_OPTIONAL_PERMISSIONS)) {
+      note(
+        `optional permission "${permission}" is not in the approved list. ` +
+          `Add it to scripts/validate-manifest.js with a justification if it is genuinely needed.`
+      );
+    }
+  }
+}
+
 for (const field of ["host_permissions", "optional_host_permissions", "content_scripts"]) {
   if (manifest[field]) {
     note(`${field} is set. This extension must not read or modify any web page.`);
@@ -72,7 +98,14 @@ if (manifest.content_security_policy?.extension_pages?.includes("unsafe-eval")) 
 }
 
 if (manifest.background) {
-  note("a background service worker is declared but the extension does not need one");
+  if (
+    manifest.background.service_worker !== ALLOWED_BACKGROUND ||
+    manifest.background.type !== "module"
+  ) {
+    note(`the only background worker allowed is the module ${ALLOWED_BACKGROUND}, for cloud sync`);
+  } else if (!existsSync(fileURLToPath(new URL(ALLOWED_BACKGROUND, root)))) {
+    note(`the background worker is missing: ${ALLOWED_BACKGROUND}`);
+  }
 }
 
 // Action and icons

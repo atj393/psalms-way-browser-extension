@@ -183,11 +183,14 @@ do not lose your place.
 
 ## Privacy
 
-- The extension makes **no network requests at all**. Everything, including all
-  150 Psalms, is bundled inside it.
+- Without sync, the extension makes **no network requests at all**. Everything,
+  including all 150 Psalms, is bundled inside it.
 - It has **no permission to read the pages you visit** — it cannot see your
   browsing at all.
-- There is no account, no sign-in, no analytics and no tracking.
+- Signing in is optional and only for sync. There are no analytics and no tracking.
+- Sync stores your data in a private app folder in **your own Google Drive** that
+  only Psalms Way can see. It goes straight from your browser to Google; we never
+  receive it.
 - The only permission it asks for is `storage`, which is what keeps your
   favourites, notes, history and settings on your own machine.
 
@@ -195,13 +198,20 @@ do not lose your place.
 
 ## Common questions
 
-**Will my favourites and notes sync to my phone?**
-No. They stay on this browser. Use **Export…** and **Restore…** to move them
-yourself. The [Android app](https://github.com/atj393/psalms-way-app) is a
-separate product with its own data.
+**Will my bookmarks and notes sync to my phone?**
+Yes, if you choose. Open **Sync** in the toolbar and connect the same Google
+account you use in the Psalms Way phone app. Bookmarks, notes and history then
+stay the same on both: changes arrive when you open Psalms Way, and anything
+you change is sent within a few seconds. Deleting something on one device
+deletes it on the other. Highlights, favourite chapters, streaks, badges and
+challenges from the phone are kept safe here and appear in a later version.
+
+**What if this browser ends up with nothing saved?**
+Sync pauses rather than empty your Google account, and asks you to choose:
+**Get my data back** or **Sync anyway**.
 
 **Does it still work with no internet?**
-Yes, entirely. Nothing is ever downloaded.
+Yes, entirely. Sync catches up the next time you are online.
 
 **Will I lose my saved verses when I update the extension?**
 No. Favourites, history and settings saved by earlier versions are carried

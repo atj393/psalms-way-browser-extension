@@ -8,7 +8,8 @@ A Manifest V3 Chrome extension that puts all 150 Psalms in a browser popup. It
 works offline, requests one permission, and has no runtime dependencies.
 
 - **Version:** 2.0
-- **Type:** popup only — no background service worker, no content scripts
+- **Type:** popup, plus a background worker used only for optional sync with the
+  phone app (`src/background.js`); no content scripts
 - **Runtime dependencies:** none. `package.json` exists for development tooling
   only and is not shipped.
 
@@ -73,7 +74,13 @@ These are checked by lint, a validator or a test. Breaking one fails the build.
   `scripts/validate-manifest.js` with a justification.
 - **No `host_permissions` and no `content_scripts`.** The validator rejects both
   outright. Not reading the user's pages is the extension's main promise.
-- **No network request.** The smoke test fails if the popup makes one.
+- **No network request unless the reader connected sync.** The smoke test fails
+  if the popup makes one. Sync runs in the background worker and talks only to
+  Google (sign-in and the Drive app folder), only for a connected reader.
+- **Sync must combine exactly as the phone app does.** `src/syncMerge.js` is a
+  port of the phone's `services/backup/mergeBackup.ts` and must pass the same
+  cases: `test/fixtures/syncVectors.json` is a byte-for-byte copy of the
+  phone's `__tests__/fixtures/syncVectors.json`; change both together.
 - **No remote code.** Manifest V3 forbids it and the package validator checks.
 - `psalms.json` must stay 150 chapters of non-empty verse strings.
 
@@ -146,9 +153,10 @@ list uses a roving tabindex rather than putting each verse in the tab order.
 ## Not to be added
 
 Without a strong, stated reason: a framework or bundler, runtime dependencies,
-analytics or telemetry, an account requirement, a background service worker,
-content scripts, host permissions, or remote code. The extension's value is that
-it is small, fast, offline and trustworthy.
+analytics or telemetry, an account requirement, content scripts, host
+permissions, or remote code. The Google account for sync stays optional, and its
+`identity` permission is requested only when the reader connects. The
+extension's value is that it is small, fast, offline and trustworthy.
 
 ## Scripture text
 

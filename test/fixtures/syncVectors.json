@@ -1,0 +1,208 @@
+{
+  "about": "Shared combine cases for every Psalms Way client (phone app, browser extension). Each case gives base (what the device and the cloud last agreed on, or null), phone, cloud and the expected result. Missing fields mean empty lists, null streak/badges/challenges and empty settings. Only the fields listed in expected are compared.",
+  "version": 1,
+  "cases": [
+    {
+      "name": "a bookmark deleted on the phone stays deleted",
+      "base": {
+        "bookmarks": [
+          { "chapter": 1, "verse": 1 },
+          { "chapter": 2, "verse": 2 }
+        ]
+      },
+      "phone": { "bookmarks": [{ "chapter": 1, "verse": 1 }] },
+      "cloud": {
+        "bookmarks": [
+          { "chapter": 1, "verse": 1 },
+          { "chapter": 2, "verse": 2 }
+        ]
+      },
+      "expected": { "bookmarks": [{ "chapter": 1, "verse": 1 }] }
+    },
+    {
+      "name": "a bookmark deleted on another device stays deleted",
+      "base": {
+        "bookmarks": [
+          { "chapter": 1, "verse": 1 },
+          { "chapter": 2, "verse": 2 }
+        ]
+      },
+      "phone": {
+        "bookmarks": [
+          { "chapter": 1, "verse": 1 },
+          { "chapter": 2, "verse": 2 }
+        ]
+      },
+      "cloud": { "bookmarks": [{ "chapter": 1, "verse": 1 }] },
+      "expected": { "bookmarks": [{ "chapter": 1, "verse": 1 }] }
+    },
+    {
+      "name": "bookmarks added on both sides are all kept, the phone's first",
+      "base": { "bookmarks": [{ "chapter": 1, "verse": 1 }] },
+      "phone": {
+        "bookmarks": [
+          { "chapter": 3, "verse": 3 },
+          { "chapter": 1, "verse": 1 }
+        ]
+      },
+      "cloud": {
+        "bookmarks": [
+          { "chapter": 4, "verse": 4 },
+          { "chapter": 1, "verse": 1 }
+        ]
+      },
+      "expected": {
+        "bookmarks": [
+          { "chapter": 3, "verse": 3 },
+          { "chapter": 1, "verse": 1 },
+          { "chapter": 4, "verse": 4 }
+        ]
+      }
+    },
+    {
+      "name": "a favourite chapter removed on another device stays removed",
+      "base": { "favorites": [23, 91] },
+      "phone": { "favorites": [23, 91] },
+      "cloud": { "favorites": [91] },
+      "expected": { "favorites": [91] }
+    },
+    {
+      "name": "a highlight recoloured on another device takes the new colour",
+      "base": { "highlights": [{ "chapter": 5, "verse": 1, "color": "yellow" }] },
+      "phone": { "highlights": [{ "chapter": 5, "verse": 1, "color": "yellow" }] },
+      "cloud": { "highlights": [{ "chapter": 5, "verse": 1, "color": "green" }] },
+      "expected": { "highlights": [{ "chapter": 5, "verse": 1, "color": "green" }] }
+    },
+    {
+      "name": "a highlight recoloured on both sides keeps the phone's colour",
+      "base": { "highlights": [{ "chapter": 5, "verse": 1, "color": "yellow" }] },
+      "phone": { "highlights": [{ "chapter": 5, "verse": 1, "color": "blue" }] },
+      "cloud": { "highlights": [{ "chapter": 5, "verse": 1, "color": "green" }] },
+      "expected": { "highlights": [{ "chapter": 5, "verse": 1, "color": "blue" }] }
+    },
+    {
+      "name": "a note rewritten on another device replaces the unchanged one",
+      "base": {
+        "notes": [{ "chapter": 5, "verse": 1, "text": "First", "date": "2026-10-01T00:00:00.000Z" }]
+      },
+      "phone": {
+        "notes": [{ "chapter": 5, "verse": 1, "text": "First", "date": "2026-10-01T00:00:00.000Z" }]
+      },
+      "cloud": {
+        "notes": [
+          { "chapter": 5, "verse": 1, "text": "Rewritten", "date": "2026-10-02T00:00:00.000Z" }
+        ]
+      },
+      "expected": {
+        "notes": [
+          { "chapter": 5, "verse": 1, "text": "Rewritten", "date": "2026-10-02T00:00:00.000Z" }
+        ]
+      }
+    },
+    {
+      "name": "a note changed on both sides keeps both texts and the later date",
+      "base": {
+        "notes": [{ "chapter": 5, "verse": 1, "text": "First", "date": "2026-10-01T00:00:00.000Z" }]
+      },
+      "phone": {
+        "notes": [{ "chapter": 5, "verse": 1, "text": "Mine", "date": "2026-10-02T00:00:00.000Z" }]
+      },
+      "cloud": {
+        "notes": [
+          { "chapter": 5, "verse": 1, "text": "Theirs", "date": "2026-10-03T00:00:00.000Z" }
+        ]
+      },
+      "expected": {
+        "notes": [
+          { "chapter": 5, "verse": 1, "text": "Mine\n\nTheirs", "date": "2026-10-03T00:00:00.000Z" }
+        ]
+      }
+    },
+    {
+      "name": "a note deleted on the phone but edited elsewhere survives",
+      "base": {
+        "notes": [{ "chapter": 5, "verse": 1, "text": "First", "date": "2026-10-01T00:00:00.000Z" }]
+      },
+      "phone": { "bookmarks": [{ "chapter": 9, "verse": 9 }] },
+      "cloud": {
+        "bookmarks": [{ "chapter": 9, "verse": 9 }],
+        "notes": [
+          { "chapter": 5, "verse": 1, "text": "Edited", "date": "2026-10-02T00:00:00.000Z" }
+        ]
+      },
+      "expected": {
+        "notes": [
+          { "chapter": 5, "verse": 1, "text": "Edited", "date": "2026-10-02T00:00:00.000Z" }
+        ]
+      }
+    },
+    {
+      "name": "a note deleted on the phone and untouched elsewhere is gone",
+      "base": {
+        "notes": [{ "chapter": 5, "verse": 1, "text": "First", "date": "2026-10-01T00:00:00.000Z" }]
+      },
+      "phone": { "bookmarks": [{ "chapter": 9, "verse": 9 }] },
+      "cloud": {
+        "bookmarks": [{ "chapter": 9, "verse": 9 }],
+        "notes": [{ "chapter": 5, "verse": 1, "text": "First", "date": "2026-10-01T00:00:00.000Z" }]
+      },
+      "expected": { "notes": [] }
+    },
+    {
+      "name": "history cleared elsewhere is cleared, a new read on the phone is kept",
+      "base": {
+        "bookmarks": [{ "chapter": 9, "verse": 9 }],
+        "history": [{ "chapter": 10, "verse": 1, "date": "2026-10-01T00:00:00.000Z" }]
+      },
+      "phone": {
+        "bookmarks": [{ "chapter": 9, "verse": 9 }],
+        "history": [
+          { "chapter": 20, "verse": 1, "date": "2026-10-03T00:00:00.000Z" },
+          { "chapter": 10, "verse": 1, "date": "2026-10-01T00:00:00.000Z" }
+        ]
+      },
+      "cloud": { "bookmarks": [{ "chapter": 9, "verse": 9 }] },
+      "expected": { "history": [{ "chapter": 20, "verse": 1, "date": "2026-10-03T00:00:00.000Z" }] }
+    },
+    {
+      "name": "the same chapter read on both sides keeps the later read",
+      "base": { "history": [{ "chapter": 10, "verse": 1, "date": "2026-10-01T00:00:00.000Z" }] },
+      "phone": { "history": [{ "chapter": 10, "verse": 3, "date": "2026-10-02T00:00:00.000Z" }] },
+      "cloud": { "history": [{ "chapter": 10, "verse": 5, "date": "2026-10-03T00:00:00.000Z" }] },
+      "expected": { "history": [{ "chapter": 10, "verse": 5, "date": "2026-10-03T00:00:00.000Z" }] }
+    },
+    {
+      "name": "an empty cloud copy is treated as lost, not as everything deleted",
+      "base": { "bookmarks": [{ "chapter": 1, "verse": 1 }] },
+      "phone": { "bookmarks": [{ "chapter": 1, "verse": 1 }] },
+      "cloud": {},
+      "expected": { "bookmarks": [{ "chapter": 1, "verse": 1 }] }
+    },
+    {
+      "name": "without a base both sides are kept",
+      "base": null,
+      "phone": { "bookmarks": [{ "chapter": 1, "verse": 1 }] },
+      "cloud": { "bookmarks": [{ "chapter": 2, "verse": 2 }] },
+      "expected": {
+        "bookmarks": [
+          { "chapter": 1, "verse": 1 },
+          { "chapter": 2, "verse": 2 }
+        ]
+      }
+    },
+    {
+      "name": "a missing streak elsewhere never replaces the phone's",
+      "base": { "streak": { "lastDate": "2026-10-01", "count": 4, "longestStreak": 4 } },
+      "phone": { "streak": { "lastDate": "2026-10-01", "count": 4, "longestStreak": 4 } },
+      "cloud": { "streak": null },
+      "expected": { "streak": { "lastDate": "2026-10-01", "count": 4, "longestStreak": 4 } }
+    },
+    {
+      "name": "a challenge restarted on the phone wins over the unchanged copy",
+      "base": { "challenges": { "psalms30": { "completedDays": [0, 1, 2] } } },
+      "phone": { "challenges": { "psalms30": { "completedDays": [] } } },
+      "cloud": { "challenges": { "psalms30": { "completedDays": [0, 1, 2] } } },
+      "expected": { "challenges": { "psalms30": { "completedDays": [] } } }
+    }
+  ]
+}

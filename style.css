@@ -1088,3 +1088,23 @@ fieldset {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ── Sync with the phone app ── */
+.cloud-account {
+  margin: 0 0 var(--space-2);
+  font-weight: 600;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.cloud-alert {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: 8px;
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.btn-tool.needs-attention {
+  color: var(--danger);
+}

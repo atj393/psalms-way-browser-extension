@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Psalms Way",
   "version": "2.0",
-  "description": "All 150 Psalms in your toolbar. Daily Psalm, search, bookmarks, notes and history. Offline, private, no account.",
+  "description": "All 150 Psalms in your toolbar. Daily Psalm, search, bookmarks, notes and history. Offline, private, optional sync with your phone.",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
@@ -17,5 +17,10 @@
       "128": "icon128.png"
     }
   },
-  "permissions": ["storage"]
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "permissions": ["storage"],
+  "optional_permissions": ["identity"]
 }

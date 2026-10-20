@@ -4,7 +4,7 @@
 
 # Psalms Way
 
-**A Biblical pause before new beginnings. All 150 Psalms in the browser toolbar, with no network access.**
+**A Biblical pause before new beginnings. All 150 Psalms in the browser toolbar, offline, with optional sync to the Psalms Way phone app.**
 
 [![CI](https://github.com/atj393/psalms-way-browser-extension/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/atj393/psalms-way-browser-extension/actions/workflows/ci.yml)
 [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-Live-4285F4?logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/psalms-way-biblical-begin/aplafmlmecdjlmcgbibmlbjnilcomcnl)
@@ -17,8 +17,9 @@
 ---
 
 Psalms Way puts all 150 Psalms in a browser popup. The full text is bundled with
-the extension, so it opens instantly and works with the network disconnected. There
-is no account, no server, and no request of any kind.
+the extension, so it opens instantly and works with the network disconnected. An
+account is optional: connect the same Google account as the Psalms Way phone app
+and your bookmarks, notes and history stay the same on both.
 
 <div align="center">
 
@@ -74,19 +75,23 @@ See [USER_GUIDE.md](USER_GUIDE.md) for a walkthrough of each panel.
 
 ## Privacy
 
-The extension requests exactly one permission, `storage`.
+The extension requests one permission, `storage`. Connecting sync asks for one
+more, `identity` (Google sign-in), at that moment and not before.
 
-- **No network requests of any kind.** The Psalms text is bundled in
-  `psalms.json`. Export and restore read and write a local file you choose; they
-  do not upload anything. The browser smoke test fails the build if the popup
-  makes any request at all.
+- **No network requests unless you connect sync.** The Psalms text is bundled in
+  `psalms.json`. Export and restore read and write a local file you choose. The
+  browser smoke test fails the build if the popup makes any request.
+- **Sync is optional and goes only to your own Google Drive.** It uses a private
+  app folder that only Psalms Way can see (the `drive.appdata` scope), not your
+  files. Requests go straight from your browser to Google; there is no Psalms
+  Way server and we never receive your data.
 - **No host permissions and no content scripts**, so the extension cannot see,
   read or modify any page you visit. `scripts/validate-manifest.js` fails the
   build if either is ever added.
-- **No analytics, no accounts, no telemetry.**
-- Favourites, notes, history and settings are held in `chrome.storage.local` on
-  your own machine. They are not synced and are removed if you uninstall the
-  extension — export a backup first if you want to keep them.
+- **No analytics and no telemetry.** The Google account for sync is optional.
+- Bookmarks, notes, history and settings are held in `chrome.storage.local` on
+  your own machine. Without sync they are removed if you uninstall the extension;
+  connect sync or export a backup first if you want to keep them.
 
 ## How it is built
 

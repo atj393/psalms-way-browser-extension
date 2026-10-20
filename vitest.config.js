@@ -20,12 +20,17 @@ export default defineConfig({
       // already proves.
       include: [
         "src/backup.js",
+        "src/cloudSync.js",
         "src/data.js",
         "src/dates.js",
         "src/dom.js",
+        "src/drive.js",
+        "src/googleAuth.js",
         "src/icons.js",
         "src/search.js",
         "src/storage.js",
+        "src/syncMerge.js",
+        "src/syncModel.js",
       ],
       thresholds: {
         lines: 90,

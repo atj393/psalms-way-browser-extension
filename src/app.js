@@ -8,12 +8,20 @@
 import { byId, toast, reportError, focusFirst, hydrateIcons } from "./dom.js";
 import { getData, parseChapterInput, wrapChapter, CHAPTER_COUNT } from "./data.js";
 import { getDailyChapterIndex } from "./dates.js";
-import { getHistory, getSettings, isStorageAvailable } from "./storage.js";
+import {
+  STORE_KEY,
+  getHistory,
+  getSettings,
+  isStorageAvailable,
+  matchesCache,
+  resetStoreCache,
+} from "./storage.js";
 import {
   showPassage,
   showRandomChapter,
   showRandomVerse,
   getCurrentChapter,
+  refreshPassage,
   setNoteEditorOpener,
 } from "./reader.js";
 import {
@@ -35,6 +43,13 @@ import {
   initAppearance,
   paintSettingsControls,
 } from "./settings.js";
+import {
+  CLOUD_STATE_KEY,
+  paintCloudButton,
+  refreshCloud,
+  renderCloud,
+  sendCloud,
+} from "./cloud.js";
 
 /** Panel id and the toolbar button that opens it, per view. */
 const VIEWS = {
@@ -42,6 +57,7 @@ const VIEWS = {
   search: { panel: "searchPanel", trigger: "btnSearch" },
   library: { panel: "libraryPanel", trigger: "btnLibrary" },
   history: { panel: "historyPanel", trigger: "btnHistory" },
+  cloud: { panel: "cloudPanel", trigger: "btnCloud" },
   settings: { panel: "settingsPanel", trigger: "btnSettings" },
   note: { panel: "notePanel", trigger: null },
 };
@@ -233,6 +249,10 @@ function wire() {
   byId("btnCloseHistory").addEventListener("click", closePanel);
   byId("btnClearHistory").addEventListener("click", confirmClearHistory);
 
+  // Sync with the phone app
+  byId("btnCloud").addEventListener("click", () => openPanel("cloud", () => renderCloud()));
+  byId("btnCloseCloud").addEventListener("click", closePanel);
+
   // Settings
   byId("btnSettings").addEventListener("click", () =>
     openPanel("settings", async () => paintSettingsControls(await getSettings()))
@@ -273,6 +293,41 @@ function wire() {
   document.addEventListener("keydown", onGlobalKeyDown);
 }
 
+// ─── Cloud sync ───────────────────────────────────────────────────────────────
+
+/** Saved data changed outside this page (cloud sync): show the new state. */
+async function refreshViews() {
+  if (currentView === "reading") await refreshPassage();
+  else if (currentView === "library") await renderLibrary();
+  else if (currentView === "history") await renderHistory();
+}
+
+function onStorageChanged(changes, area) {
+  if (area !== "local") return;
+  const store = changes[STORE_KEY];
+  // This page's own saves arrive here too; only someone else's change needs a redraw.
+  if (store && !matchesCache(store.newValue)) {
+    resetStoreCache();
+    refreshViews().catch((error) => console.error("Psalms Way: could not show synced data", error));
+  }
+  if (changes[CLOUD_STATE_KEY]) {
+    refreshCloud({ panelOpen: currentView === "cloud" }).catch((error) =>
+      console.error("Psalms Way: could not show the sync state", error)
+    );
+  }
+}
+
+/**
+ * Brings in what the phone saved since the last open. Does nothing, and sends
+ * nothing anywhere, unless the reader connected a Google account.
+ */
+async function startCloudSync() {
+  if (!globalThis.chrome?.runtime?.sendMessage) return;
+  chrome.storage?.onChanged?.addListener(onStorageChanged);
+  paintCloudButton(await sendCloud("status"));
+  await sendCloud("autoSync");
+}
+
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 
 export async function start() {
@@ -304,6 +359,8 @@ export async function start() {
 
   const opening = await resolveOpeningPassage();
   await showPassage({ ...opening, record: false });
+
+  startCloudSync().catch((error) => console.error("Psalms Way: cloud sync could not start", error));
 }
 
 if (typeof document !== "undefined") {

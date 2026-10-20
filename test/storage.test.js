@@ -30,6 +30,23 @@ describe("defaults", () => {
   });
 });
 
+describe("telling this page's saves from cloud sync's", () => {
+  it("recognises its own save even when Chrome hands the keys back sorted", async () => {
+    installChromeMock({});
+    await store.toggleFavourite(1, 1);
+    const saved = (await globalThis.chrome.storage.local.get(STORE_KEY))[STORE_KEY];
+    const reordered = Object.fromEntries(Object.entries(saved).reverse());
+    expect(store.matchesCache(reordered)).toBe(true);
+  });
+
+  it("does not mistake someone else's change for its own", async () => {
+    installChromeMock({});
+    await store.toggleFavourite(1, 1);
+    const saved = (await globalThis.chrome.storage.local.get(STORE_KEY))[STORE_KEY];
+    expect(store.matchesCache({ ...saved, favourites: [] })).toBe(false);
+  });
+});
+
 // ─── Migration from the shipped 1.1 schema ───────────────────────────────────
 describe("migration from version 1.1", () => {
   /** Exactly what released version 1.1 writes. */

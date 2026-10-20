@@ -15,10 +15,16 @@ export const PACKAGE_FILES = [
   "icon48.png",
   "icon128.png",
   "src/app.js",
+  "src/background.js",
   "src/backup.js",
+  "src/cloud.js",
+  "src/cloudSync.js",
+  "src/config.js",
   "src/data.js",
   "src/dates.js",
   "src/dom.js",
+  "src/drive.js",
+  "src/googleAuth.js",
   "src/icons.js",
   "src/notes.js",
   "src/panels.js",
@@ -26,6 +32,8 @@ export const PACKAGE_FILES = [
   "src/search.js",
   "src/settings.js",
   "src/storage.js",
+  "src/syncMerge.js",
+  "src/syncModel.js",
 ];
 
 /** Paths that must never appear in a package. */

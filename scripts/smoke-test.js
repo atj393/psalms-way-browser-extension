@@ -670,6 +670,29 @@ try {
   await evaluate("document.getElementById('btnToggleToolbar').click()");
   await sleep(250);
 
+  // ── Sync with the phone app ──────────────────────────────────────────────
+  section("Sync");
+  await evaluate("document.getElementById('btnCloud').click()");
+  await sleep(600);
+  check(
+    "the Sync panel opens",
+    (await evaluate("document.getElementById('cloudPanel').hidden")) === false
+  );
+  const syncText = await evaluate("document.getElementById('cloudBody').textContent");
+  check(
+    "it offers to connect, or says sync is unavailable in this build",
+    /Connect Google account|not available/.test(syncText),
+    syncText.slice(0, 120)
+  );
+  check(
+    "the background worker answers the popup",
+    (await evaluate(
+      "chrome.runtime.sendMessage({ cmd: 'status' }).then(s => typeof s.configured)"
+    )) === "boolean"
+  );
+  await evaluate("document.getElementById('btnCloseCloud').click()");
+  await sleep(250);
+
   // ── Layout ───────────────────────────────────────────────────────────────
   section("Layout");
   await evaluate(

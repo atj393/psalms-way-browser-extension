@@ -110,6 +110,16 @@
         <button
           class="btn-tool"
           type="button"
+          id="btnCloud"
+          title="Sync with your phone"
+          aria-pressed="false"
+          data-icon="cloudOff"
+        >
+          <span class="btn-tool-label" id="btnCloudLabel">Sync</span>
+        </button>
+        <button
+          class="btn-tool"
+          type="button"
           id="btnSettings"
           title="Settings"
           aria-pressed="false"
@@ -224,6 +234,23 @@
         </div>
       </div>
       <div class="panel-body" id="historyBody" tabindex="-1" data-autofocus></div>
+    </section>
+
+    <!-- ── Sync with the phone app ── -->
+    <section class="panel" id="cloudPanel" aria-labelledby="cloudHeading" hidden>
+      <div class="panel-head">
+        <h2 class="panel-heading" id="cloudHeading">Sync with your phone</h2>
+        <button
+          class="btn-quiet"
+          type="button"
+          id="btnCloseCloud"
+          title="Close sync"
+          aria-label="Close sync"
+          data-icon="close"
+          data-icon-size="16"
+        ></button>
+      </div>
+      <div class="panel-body settings-body" id="cloudBody" tabindex="-1" data-autofocus></div>
     </section>
 
     <!-- ── Settings ── -->
