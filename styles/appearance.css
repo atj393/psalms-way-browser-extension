@@ -1,1 +1,82 @@
-/* appearance: filled by its wave 1 task. */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Accent colours
+
+   The phone app's five accents, with its light and dark primaries. Green is the
+   base palette in style.css, so it needs no override here. Every other accent
+   replaces the three brand variables twice: once for light and sepia (the light
+   primary) and once for dark (the dark primary). --brand-text is not repeated:
+   style.css already gives white on light and sepia and near-black on dark.
+
+   Derived values: strong is the primary 12% darker (dark theme: 12% lighter),
+   soft is the primary at 10% opacity (dark theme: 16%). Button text on the
+   primary and on strong stays above 4.5:1 for every accent in every theme.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root[data-accent="blue"] {
+  --brand: #0057a8;
+  --brand-soft: rgba(0, 87, 168, 0.1);
+  --brand-strong: #004d94;
+}
+
+:root[data-accent="blue"][data-theme="dark"] {
+  --brand: #adc6ff;
+  --brand-soft: rgba(173, 198, 255, 0.16);
+  --brand-strong: #b7cdff;
+}
+
+:root[data-accent="red"] {
+  --brand: #9b1919;
+  --brand-soft: rgba(155, 25, 25, 0.1);
+  --brand-strong: #881616;
+}
+
+:root[data-accent="red"][data-theme="dark"] {
+  --brand: #ffb4ab;
+  --brand-soft: rgba(255, 180, 171, 0.16);
+  --brand-strong: #ffbdb5;
+}
+
+:root[data-accent="amber"] {
+  --brand: #8b5000;
+  --brand-soft: rgba(139, 80, 0, 0.1);
+  --brand-strong: #7a4600;
+}
+
+:root[data-accent="amber"][data-theme="dark"] {
+  --brand: #ffb961;
+  --brand-soft: rgba(255, 185, 97, 0.16);
+  --brand-strong: #ffc174;
+}
+
+:root[data-accent="purple"] {
+  --brand: #6b3fa0;
+  --brand-soft: rgba(107, 63, 160, 0.1);
+  --brand-strong: #5e378d;
+}
+
+:root[data-accent="purple"][data-theme="dark"] {
+  --brand: #d4bbff;
+  --brand-soft: rgba(212, 187, 255, 0.16);
+  --brand-strong: #d9c3ff;
+}
+
+/* ── Swatches in Settings: each shows its accent's light primary ── */
+.accent-btn[data-accent="green"] {
+  background: #3a6b38;
+}
+
+.accent-btn[data-accent="blue"] {
+  background: #0057a8;
+}
+
+.accent-btn[data-accent="red"] {
+  background: #9b1919;
+}
+
+.accent-btn[data-accent="amber"] {
+  background: #8b5000;
+}
+
+.accent-btn[data-accent="purple"] {
+  background: #6b3fa0;
+}

@@ -9,13 +9,43 @@ import {
   replaceUserData,
   THEMES,
   FONT_SIZES,
+  ACCENTS,
 } from "./storage.js";
 import { createBackup, parseBackup, backupFileName, MAX_BACKUP_BYTES } from "./backup.js";
 
 // ─── Appearance ───────────────────────────────────────────────────────────────
 
+/** The system-scheme query and listener while "auto" is chosen, otherwise null. */
+let systemWatch = null;
+
+function stopFollowingSystem() {
+  if (!systemWatch) return;
+  systemWatch.query.removeEventListener("change", systemWatch.listener);
+  systemWatch = null;
+}
+
+/**
+ * Set the theme on <html>. The stylesheet only knows light, sepia and dark, so
+ * "auto" is resolved here from the system's colour scheme and kept up to date
+ * until another theme is chosen.
+ */
 export function applyTheme(theme) {
-  document.documentElement.setAttribute("data-theme", THEMES.includes(theme) ? theme : "light");
+  stopFollowingSystem();
+  const root = document.documentElement;
+  if (theme === "auto") {
+    const query = window.matchMedia("(prefers-color-scheme: dark)");
+    const listener = () => root.setAttribute("data-theme", query.matches ? "dark" : "light");
+    query.addEventListener("change", listener);
+    systemWatch = { query, listener };
+    listener();
+    return;
+  }
+  root.setAttribute("data-theme", THEMES.includes(theme) ? theme : "light");
+}
+
+/** Set the accent colour on <html>; styles/appearance.css does the rest. */
+export function applyAccent(accent) {
+  document.documentElement.setAttribute("data-accent", ACCENTS.includes(accent) ? accent : "green");
 }
 
 export function applyFontSize(size) {
@@ -45,10 +75,29 @@ export function paintSettingsControls(settings) {
     button.classList.toggle("is-active", active);
     button.setAttribute("aria-pressed", active ? "true" : "false");
   }
+  for (const button of document.querySelectorAll(".accent-btn")) {
+    button.setAttribute(
+      "aria-pressed",
+      button.dataset.accent === settings.accent ? "true" : "false"
+    );
+  }
 }
 
-/** Apply stored settings to the document at startup. */
+/** Make each accent swatch save and apply its colour. Called once, from initAppearance. */
+function wireAccentButtons() {
+  for (const button of document.querySelectorAll("#accentControls .accent-btn[data-accent]")) {
+    button.addEventListener("click", () =>
+      changeSetting(
+        { accent: button.dataset.accent },
+        { apply: () => applyAccent(button.dataset.accent) }
+      )
+    );
+  }
+}
+
+/** Apply stored settings to the document at startup, and wire the accent swatches. */
 export async function initAppearance() {
+  wireAccentButtons();
   let settings;
   try {
     settings = await getSettings();
@@ -56,9 +105,10 @@ export async function initAppearance() {
     // Appearance is not worth blocking the popup for; fall back to defaults and
     // let the reading view report the underlying storage problem.
     console.error("Psalms Way: could not read settings", error);
-    settings = { theme: "light", fontSize: "medium", toolbarCollapsed: false };
+    settings = { theme: "light", fontSize: "medium", toolbarCollapsed: false, accent: "green" };
   }
   applyTheme(settings.theme);
+  applyAccent(settings.accent);
   applyFontSize(settings.fontSize);
   applyToolbarCollapsed(Boolean(settings.toolbarCollapsed));
   paintSettingsControls(settings);
@@ -160,6 +210,7 @@ export async function importBackup(file) {
   try {
     const next = await replaceUserData(parsed.data);
     applyTheme(next.settings.theme);
+    applyAccent(next.settings.accent);
     applyFontSize(next.settings.fontSize);
     applyToolbarCollapsed(next.settings.toolbarCollapsed);
     paintSettingsControls(next.settings);

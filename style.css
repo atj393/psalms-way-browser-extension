@@ -22,11 +22,13 @@
   --border-strong: #d2d2ca;
 
   /* Brand */
-  /* The phone app's green, so both read as one product. */
+  /* The phone app's green, so both read as one product. styles/appearance.css
+     overrides these for the other four accents. Strong is 12% darker than the
+     primary (dark theme: 12% lighter) and soft is the primary at 10% (dark: 16%). */
   --brand: #3a6b38;
   --brand-text: #ffffff;
   --brand-soft: rgba(58, 107, 56, 0.1);
-  --brand-strong: #2d552b;
+  --brand-strong: #335e31;
 
   /* Feedback */
   --danger: #c62828;
@@ -59,6 +61,7 @@
   --shadow-panel: 0 8px 28px rgba(0, 0, 0, 0.18);
 }
 
+/* Sepia changes the paper only. Its brand colours come from the accent's light primary. */
 :root[data-theme="sepia"] {
   --bg: #f6f1e7;
   --bg-sunken: #efe8da;
@@ -69,10 +72,6 @@
   --text-muted: #857255;
   --border: #ddd0b7;
   --border-strong: #c9b898;
-  --brand: #8a6512;
-  --brand-text: #fdfaf3;
-  --brand-soft: rgba(138, 101, 18, 0.12);
-  --brand-strong: #6f5210;
   --danger: #a3352b;
   --danger-soft: rgba(163, 53, 43, 0.1);
   --mark-bg: #e8cf8e;
@@ -90,9 +89,9 @@
   --border: #33363a;
   --border-strong: #45484d;
   --brand: #9fd49c;
-  --brand-text: #003a00;
+  --brand-text: #1b1b1a;
   --brand-soft: rgba(159, 212, 156, 0.16);
-  --brand-strong: #bbefb5;
+  --brand-strong: #abd9a8;
   --danger: #f2837c;
   --danger-soft: rgba(242, 131, 124, 0.14);
   --mark-bg: #6a5514;
