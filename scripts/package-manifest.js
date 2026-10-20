@@ -5,8 +5,11 @@
 // tests, tooling, documentation, screenshots and audit notes stay in the
 // repository and out of the zip.
 
-/** Files that must be present in the package, in the order they are added. */
-export const PACKAGE_FILES = [
+import { existsSync, readdirSync, statSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
+/** Top-level files that ship, in the order they are added. */
+const TOP_LEVEL_FILES = [
   "manifest.json",
   "popup.html",
   "style.css",
@@ -14,27 +17,34 @@ export const PACKAGE_FILES = [
   "icon16.png",
   "icon48.png",
   "icon128.png",
-  "src/app.js",
-  "src/background.js",
-  "src/backup.js",
-  "src/cloud.js",
-  "src/cloudSync.js",
-  "src/config.js",
-  "src/data.js",
-  "src/dates.js",
-  "src/dom.js",
-  "src/drive.js",
-  "src/googleAuth.js",
-  "src/icons.js",
-  "src/notes.js",
-  "src/panels.js",
-  "src/reader.js",
-  "src/search.js",
-  "src/settings.js",
-  "src/storage.js",
-  "src/syncMerge.js",
-  "src/syncModel.js",
 ];
+
+/**
+ * Folders whose files all ship: the code, the per-feature stylesheets, the
+ * Bible versions, the translations and the prayers. Listing folders rather
+ * than files keeps a new module or version from being forgotten.
+ */
+export const PACKAGE_DIRS = ["src", "styles", "bibles", "locales", "data"];
+
+/** File types a shipped folder may hold; anything else stays out. */
+const SHIPPED_EXTENSIONS = /\.(js|css|json|png|svg)$/;
+
+const root = fileURLToPath(new URL("../", import.meta.url));
+
+function filesUnder(dir) {
+  const absolute = `${root}${dir}`;
+  if (!existsSync(absolute)) return [];
+  return readdirSync(absolute)
+    .sort()
+    .flatMap((name) => {
+      const relative = `${dir}/${name}`;
+      if (statSync(`${root}${relative}`).isDirectory()) return filesUnder(relative);
+      return SHIPPED_EXTENSIONS.test(name) ? [relative] : [];
+    });
+}
+
+/** Every file in the package, in the order it is added. */
+export const PACKAGE_FILES = [...TOP_LEVEL_FILES, ...PACKAGE_DIRS.flatMap(filesUnder)];
 
 /** Paths that must never appear in a package. */
 export const FORBIDDEN_PATTERNS = [

@@ -24,8 +24,48 @@ describe("defaults", () => {
       favourites: [],
       notes: [],
       history: [],
-      settings: { theme: "light", fontSize: "medium", lang: "en", toolbarCollapsed: false },
+      settings: {
+        theme: "light",
+        fontSize: "medium",
+        lang: "en",
+        toolbarCollapsed: false,
+        accent: "green",
+        bibleVersion: null,
+        uiLanguage: "auto",
+        compareVersions: ["kjv", "web"],
+      },
       carry: {},
+    });
+  });
+
+  it("keeps valid new settings and replaces invalid ones with defaults", () => {
+    const valid = store.sanitiseSettings({
+      theme: "auto",
+      accent: "purple",
+      bibleVersion: "luther1912",
+      uiLanguage: "de",
+      compareVersions: ["asv", "web"],
+    });
+    expect(valid).toMatchObject({
+      theme: "auto",
+      accent: "purple",
+      bibleVersion: "luther1912",
+      uiLanguage: "de",
+      compareVersions: ["asv", "web"],
+    });
+    const invalid = store.sanitiseSettings({
+      theme: "neon",
+      accent: "pink",
+      bibleVersion: "../etc",
+      uiLanguage: "english",
+      compareVersions: ["kjv"],
+    });
+    expect(invalid).toMatchObject({
+      theme: "light",
+      accent: "green",
+      bibleVersion: null,
+      uiLanguage: "auto",
+      compareVersions: ["kjv", "web"],
     });
   });
 });
@@ -80,7 +120,7 @@ describe("migration from version 1.1", () => {
       { chapterIndex: 1, verseIndex: 2, viewedAt: 1730000300000 },
       { chapterIndex: 22, verseIndex: null, viewedAt: 1730000200000 },
     ]);
-    expect(loaded.settings).toEqual({
+    expect(loaded.settings).toMatchObject({
       theme: "dark",
       fontSize: "large",
       lang: "en",
@@ -152,7 +192,7 @@ describe("migration from version 1.1", () => {
       { chapterIndex: 10, verseIndex: 0, addedAt: 1730000000000 },
     ]);
     // Invalid settings fall back to defaults rather than propagating.
-    expect(loaded.settings).toEqual({
+    expect(loaded.settings).toMatchObject({
       theme: "light",
       fontSize: "medium",
       lang: "en",

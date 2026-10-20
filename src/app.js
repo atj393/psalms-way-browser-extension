@@ -13,6 +13,7 @@ import {
   getHistory,
   getSettings,
   isStorageAvailable,
+  loadStore,
   matchesCache,
   resetStoreCache,
 } from "./storage.js";
@@ -21,7 +22,10 @@ import {
   showRandomChapter,
   showRandomVerse,
   getCurrentChapter,
+  getCurrentVerse,
+  refreshFavChapter,
   refreshPassage,
+  setCompareOpener,
   setNoteEditorOpener,
 } from "./reader.js";
 import {
@@ -50,6 +54,14 @@ import {
   renderCloud,
   sendCloud,
 } from "./cloud.js";
+import { applyTranslations, currentLanguage, initI18n } from "./i18n.js";
+import { currentVersion, initVersions, loadCatalogue, versionLabel } from "./versions.js";
+import { renderVersionPicker } from "./versionPicker.js";
+import { openToday, renderToday } from "./today.js";
+import { renderCompare } from "./compare.js";
+import { renderPrayers } from "./prayers.js";
+import { recordVisit, renderProgress } from "./progress.js";
+import { toggleFavoriteChapter } from "./phoneData.js";
 
 /** Panel id and the toolbar button that opens it, per view. */
 const VIEWS = {
@@ -57,6 +69,11 @@ const VIEWS = {
   search: { panel: "searchPanel", trigger: "btnSearch" },
   library: { panel: "libraryPanel", trigger: "btnLibrary" },
   history: { panel: "historyPanel", trigger: "btnHistory" },
+  today: { panel: "todayPanel", trigger: "btnTodaysPsalm" },
+  version: { panel: "versionPanel", trigger: "btnVersion" },
+  compare: { panel: "comparePanel", trigger: "btnCompare" },
+  prayers: { panel: "prayersPanel", trigger: "btnPrayers" },
+  progress: { panel: "progressPanel", trigger: "btnProgress" },
   cloud: { panel: "cloudPanel", trigger: "btnCloud" },
   settings: { panel: "settingsPanel", trigger: "btnSettings" },
   note: { panel: "notePanel", trigger: null },
@@ -215,10 +232,46 @@ function wire() {
     );
   });
 
-  byId("btnTodaysPsalm").addEventListener("click", () => {
-    showView("reading");
-    showPassage({ chapterIndex: getDailyChapterIndex() });
+  byId("btnTodaysPsalm").addEventListener("click", () =>
+    openToday({
+      navigate: goToPassage,
+      showPanel: () => openPanel("today", () => renderToday({ navigate: goToPassage })),
+    })
+  );
+  byId("btnCloseToday").addEventListener("click", closePanel);
+
+  // Bible version
+  const openVersions = () =>
+    openPanel("version", () => renderVersionPicker({ onChosen: afterVersionChosen }));
+  byId("btnVersion").addEventListener("click", openVersions);
+  byId("versionSetting").addEventListener("click", openVersions);
+  byId("btnCloseVersion").addEventListener("click", closePanel);
+
+  // Chapter favourite
+  byId("btnFavChapter").addEventListener("click", async () => {
+    try {
+      await toggleFavoriteChapter(getCurrentChapter());
+      refreshFavChapter(await loadStore());
+    } catch (error) {
+      reportError(error, "That Psalm could not be saved to Favourites.");
+    }
   });
+
+  // Compare, Prayers, Progress
+  byId("btnCompare").addEventListener("click", () =>
+    openPanel("compare", () =>
+      renderCompare({ chapterIndex: getCurrentChapter(), verseIndex: getCurrentVerse() })
+    )
+  );
+  byId("btnCloseCompare").addEventListener("click", closePanel);
+  byId("btnPrayers").addEventListener("click", () =>
+    openPanel("prayers", () => renderPrayers({ navigate: goToPassage }))
+  );
+  byId("btnClosePrayers").addEventListener("click", closePanel);
+  byId("btnProgress").addEventListener("click", () =>
+    openPanel("progress", () => renderProgress({ navigate: goToPassage }))
+  );
+  byId("btnCloseProgress").addEventListener("click", closePanel);
 
   // Search
   byId("btnSearch").addEventListener("click", () =>
@@ -293,6 +346,29 @@ function wire() {
   document.addEventListener("keydown", onGlobalKeyDown);
 }
 
+// ─── Bible version ────────────────────────────────────────────────────────────
+
+/** Shows the current version on the header chip and in Settings. */
+async function paintVersion() {
+  const module = currentVersion();
+  const label = byId("btnVersionLabel");
+  if (label) label.textContent = versionLabel(module);
+  const entry = (await loadCatalogue()).find((v) => v.module === module);
+  const setting = byId("versionSetting");
+  if (setting && entry) setting.textContent = entry.name;
+}
+
+/** After the reader picks a version: repaint, and show the same passage in it. */
+async function afterVersionChosen() {
+  await paintVersion();
+  showView("reading");
+  await showPassage({
+    chapterIndex: getCurrentChapter(),
+    verseIndex: getCurrentVerse(),
+    record: false,
+  });
+}
+
 // ─── Cloud sync ───────────────────────────────────────────────────────────────
 
 /** Saved data changed outside this page (cloud sync): show the new state. */
@@ -340,6 +416,9 @@ export async function start() {
   setEditorCloser(() => {
     showView("reading");
   });
+  setCompareOpener((chapterIndex, verseIndex) =>
+    openPanel("compare", () => renderCompare({ chapterIndex, verseIndex }))
+  );
 
   hydrateIcons();
   wire();
@@ -349,6 +428,19 @@ export async function start() {
   }
 
   await initAppearance();
+
+  try {
+    const settings = await getSettings();
+    await initI18n(settings.uiLanguage);
+    applyTranslations();
+    await initVersions(settings, currentLanguage());
+    await paintVersion();
+  } catch (error) {
+    console.error("Psalms Way: could not prepare the language or version", error);
+  }
+  recordVisit().catch((error) =>
+    console.error("Psalms Way: could not record today's visit", error)
+  );
 
   try {
     await getData();

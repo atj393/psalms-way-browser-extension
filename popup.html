@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <title>Psalms Way</title>
     <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./styles/appearance.css" />
+    <link rel="stylesheet" href="./styles/versions.css" />
+    <link rel="stylesheet" href="./styles/library.css" />
+    <link rel="stylesheet" href="./styles/today.css" />
+    <link rel="stylesheet" href="./styles/compare.css" />
+    <link rel="stylesheet" href="./styles/prayers.css" />
+    <link rel="stylesheet" href="./styles/progress.css" />
   </head>
 
   <body>
@@ -11,6 +18,28 @@
     <header class="header">
       <h1 class="title">Psalms Way</h1>
       <div class="header-actions">
+        <button
+          class="chip"
+          type="button"
+          id="btnVersion"
+          title="Bible version"
+          aria-haspopup="dialog"
+          aria-pressed="false"
+          data-icon="chevronDown"
+          data-icon-size="12"
+        >
+          <span id="btnVersionLabel">NIV</span>
+        </button>
+        <button
+          class="btn-icon"
+          type="button"
+          id="btnCloud"
+          title="Sync with your phone"
+          aria-label="Sync with your phone"
+          aria-pressed="false"
+          data-icon="cloudOff"
+          data-icon-size="18"
+        ></button>
         <button class="button" type="button" id="btnVerse">One Verse</button>
         <button class="button" type="button" id="btnChapter">New Chapter</button>
       </div>
@@ -18,7 +47,19 @@
 
     <!-- ── Chapter bar ── -->
     <div class="chapter-bar">
-      <h2 class="chapter-title" id="chapterTitle" aria-live="polite">Psalm</h2>
+      <div class="chapter-heading">
+        <h2 class="chapter-title" id="chapterTitle" aria-live="polite">Psalm</h2>
+        <button
+          class="btn-nav btn-fav-chapter"
+          type="button"
+          id="btnFavChapter"
+          title="Add this Psalm to Favourites"
+          aria-label="Add this Psalm to Favourites"
+          aria-pressed="false"
+          data-icon="heart"
+          data-icon-size="16"
+        ></button>
+      </div>
       <div class="chapter-nav">
         <label class="sr-only" for="txtChapter">Go to Psalm number</label>
         <input
@@ -110,12 +151,32 @@
         <button
           class="btn-tool"
           type="button"
-          id="btnCloud"
-          title="Sync with your phone"
+          id="btnCompare"
+          title="Compare versions"
           aria-pressed="false"
-          data-icon="cloudOff"
+          data-icon="compare"
         >
-          <span class="btn-tool-label" id="btnCloudLabel">Sync</span>
+          <span class="btn-tool-label">Compare</span>
+        </button>
+        <button
+          class="btn-tool"
+          type="button"
+          id="btnPrayers"
+          title="Prayers"
+          aria-pressed="false"
+          data-icon="candle"
+        >
+          <span class="btn-tool-label">Prayers</span>
+        </button>
+        <button
+          class="btn-tool"
+          type="button"
+          id="btnProgress"
+          title="Progress"
+          aria-pressed="false"
+          data-icon="progress"
+        >
+          <span class="btn-tool-label">Progress</span>
         </button>
         <button
           class="btn-tool"
@@ -204,6 +265,26 @@
           class="tab"
           type="button"
           role="tab"
+          data-tab="highlights"
+          aria-selected="false"
+          tabindex="-1"
+        >
+          Highlights
+        </button>
+        <button
+          class="tab"
+          type="button"
+          role="tab"
+          data-tab="chapters"
+          aria-selected="false"
+          tabindex="-1"
+        >
+          Favourites
+        </button>
+        <button
+          class="tab"
+          type="button"
+          role="tab"
           data-tab="notes"
           aria-selected="false"
           tabindex="-1"
@@ -234,6 +315,91 @@
         </div>
       </div>
       <div class="panel-body" id="historyBody" tabindex="-1" data-autofocus></div>
+    </section>
+
+    <!-- ── Today ── -->
+    <section class="panel" id="todayPanel" aria-labelledby="todayHeading" hidden>
+      <div class="panel-head">
+        <h2 class="panel-heading" id="todayHeading">Today</h2>
+        <button
+          class="btn-quiet"
+          type="button"
+          id="btnCloseToday"
+          title="Close Today"
+          aria-label="Close Today"
+          data-icon="close"
+          data-icon-size="16"
+        ></button>
+      </div>
+      <div class="panel-body" id="todayBody" tabindex="-1" data-autofocus></div>
+    </section>
+
+    <!-- ── Bible version ── -->
+    <section class="panel" id="versionPanel" aria-labelledby="versionHeading" hidden>
+      <div class="panel-head">
+        <h2 class="panel-heading" id="versionHeading">Bible version</h2>
+        <button
+          class="btn-quiet"
+          type="button"
+          id="btnCloseVersion"
+          title="Close Bible version"
+          aria-label="Close Bible version"
+          data-icon="close"
+          data-icon-size="16"
+        ></button>
+      </div>
+      <div class="panel-body" id="versionBody" tabindex="-1" data-autofocus></div>
+    </section>
+
+    <!-- ── Compare ── -->
+    <section class="panel" id="comparePanel" aria-labelledby="compareHeading" hidden>
+      <div class="panel-head">
+        <h2 class="panel-heading" id="compareHeading">Compare</h2>
+        <button
+          class="btn-quiet"
+          type="button"
+          id="btnCloseCompare"
+          title="Close Compare"
+          aria-label="Close Compare"
+          data-icon="close"
+          data-icon-size="16"
+        ></button>
+      </div>
+      <div class="panel-body" id="compareBody" tabindex="-1" data-autofocus></div>
+    </section>
+
+    <!-- ── Prayers ── -->
+    <section class="panel" id="prayersPanel" aria-labelledby="prayersHeading" hidden>
+      <div class="panel-head">
+        <h2 class="panel-heading" id="prayersHeading">Prayers</h2>
+        <button
+          class="btn-quiet"
+          type="button"
+          id="btnClosePrayers"
+          title="Close Prayers"
+          aria-label="Close Prayers"
+          data-icon="close"
+          data-icon-size="16"
+        ></button>
+      </div>
+      <div class="panel-body" id="prayersBody" tabindex="-1" data-autofocus></div>
+    </section>
+
+    <!-- ── Progress ── -->
+    <section class="panel" id="progressPanel" aria-labelledby="progressHeading" hidden>
+      <div class="panel-head">
+        <h2 class="panel-heading" id="progressHeading">Progress</h2>
+        <button
+          class="btn-quiet"
+          type="button"
+          id="btnCloseProgress"
+          title="Close Progress"
+          aria-label="Close Progress"
+          data-icon="close"
+          data-icon-size="16"
+        ></button>
+      </div>
+      <div class="panel-body" id="progressBody" tabindex="-1" data-autofocus></div>
     </section>
 
     <!-- ── Sync with the phone app ── -->
@@ -280,6 +446,9 @@
             <button class="theme-btn" type="button" data-theme="dark" aria-pressed="false">
               Dark
             </button>
+            <button class="theme-btn" type="button" data-theme="auto" aria-pressed="false">
+              Auto
+            </button>
           </div>
         </fieldset>
 
@@ -315,6 +484,63 @@
             </button>
           </div>
         </fieldset>
+
+        <fieldset class="settings-row">
+          <legend class="settings-label">Accent colour</legend>
+          <div class="accent-controls" id="accentControls">
+            <button
+              class="accent-btn"
+              type="button"
+              data-accent="green"
+              aria-pressed="false"
+              aria-label="Green"
+            ></button>
+            <button
+              class="accent-btn"
+              type="button"
+              data-accent="blue"
+              aria-pressed="false"
+              aria-label="Blue"
+            ></button>
+            <button
+              class="accent-btn"
+              type="button"
+              data-accent="red"
+              aria-pressed="false"
+              aria-label="Red"
+            ></button>
+            <button
+              class="accent-btn"
+              type="button"
+              data-accent="amber"
+              aria-pressed="false"
+              aria-label="Amber"
+            ></button>
+            <button
+              class="accent-btn"
+              type="button"
+              data-accent="purple"
+              aria-pressed="false"
+              aria-label="Purple"
+            ></button>
+          </div>
+        </fieldset>
+
+        <div class="settings-block">
+          <label class="settings-label" for="languageSelect">Language</label>
+          <select class="select" id="languageSelect">
+            <option value="auto">Automatic (browser language)</option>
+          </select>
+        </div>
+
+        <div class="settings-block">
+          <h3 class="settings-label">Bible version</h3>
+          <div class="button-row">
+            <button class="button button-large button-quiet" type="button" id="versionSetting">
+              New International Version (1984)
+            </button>
+          </div>
+        </div>
 
         <div class="settings-block">
           <h3 class="settings-label">Your data</h3>

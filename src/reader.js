@@ -36,6 +36,21 @@ export function setNoteEditorOpener(fn) {
   onOpenNoteEditor = fn;
 }
 
+let onOpenCompare = () => {};
+
+/** Injected by app.js: fn(chapterIndex, verseIndex) opens the Compare panel. */
+export function setCompareOpener(fn) {
+  onOpenCompare = fn;
+}
+
+/** Opens Compare for a verse (the verse actions' Compare button). */
+export function openCompareFor(chapterIndex, verseIndex) {
+  onOpenCompare(chapterIndex, verseIndex);
+}
+
+/** Paints the chapter-bar heart for the current chapter. Task 3 fills this in. */
+export function refreshFavChapter(_store) {}
+
 // ─── Rendering ────────────────────────────────────────────────────────────────
 
 /**

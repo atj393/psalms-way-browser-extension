@@ -48,11 +48,8 @@ export function paintCloudButton(status) {
   const button = byId("btnCloud");
   if (!button) return;
   const name = { ok: "cloudCheck", attention: "cloudAlert" }[status?.icon] ?? "cloudOff";
-  const label = byId("btnCloudLabel");
-  button.replaceChildren(
-    icon(name, { size: 20 }),
-    label ?? el("span", { class: "btn-tool-label", text: "Sync" })
-  );
+  // An icon-only button in the header.
+  button.replaceChildren(icon(name, { size: 18 }));
   button.classList.toggle("needs-attention", status?.icon === "attention");
   button.title =
     status?.icon === "ok"

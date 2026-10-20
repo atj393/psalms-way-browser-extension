@@ -208,7 +208,64 @@ fieldset {
 
 .header-actions {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
+}
+
+/* The Bible version chip: the current version, opens the picker. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 96px;
+  padding: 4px 8px 4px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--bg-raised);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.chip > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip svg {
+  order: 2;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.chip:hover,
+.chip[aria-pressed="true"] {
+  border-color: var(--brand);
+}
+
+/* Round icon buttons in the header (sync status). */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-soft);
+  line-height: 0;
+}
+
+.btn-icon:hover,
+.btn-icon[aria-pressed="true"] {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.btn-icon.needs-attention {
+  color: var(--danger);
 }
 
 /* ── Buttons ───────────────────────────────────────────────────────────── */
@@ -301,6 +358,17 @@ fieldset {
   gap: var(--space-3);
   padding: var(--space-2) var(--space-4);
   flex-shrink: 0;
+}
+
+.chapter-heading {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.btn-fav-chapter[aria-pressed="true"] {
+  color: var(--danger);
 }
 
 .chapter-title {
@@ -866,7 +934,7 @@ fieldset {
 
 .settings-row .settings-controls {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   margin-top: var(--space-2);
 }
 
@@ -1228,4 +1296,35 @@ fieldset {
 
 .btn-tool.needs-attention {
   color: var(--danger);
+}
+
+/* ── Accent colours and language (laid out here; colours in styles/appearance.css) ── */
+.accent-controls {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.accent-btn {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--bg);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+
+.accent-btn[aria-pressed="true"] {
+  box-shadow: 0 0 0 2px var(--text);
+}
+
+.select {
+  width: 100%;
+  margin-top: var(--space-2);
+  padding: 7px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
 }

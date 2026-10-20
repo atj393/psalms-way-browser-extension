@@ -8,7 +8,16 @@ package-lock.json
 # enormous diff and risk touching verse text.
 psalms.json
 
+# Data copied from the phone app byte for byte (Bible versions, its translations,
+# prayers). Formatting them would make every re-copy a diff.
+bibles/
+locales/app/
+data/
+
 # Community documents and editor settings are left as their authors wrote them.
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
 .vscode/
+
+# Local plan-execution notes (git-ignored).
+.superpowers/

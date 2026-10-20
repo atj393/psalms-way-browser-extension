@@ -70,6 +70,18 @@ export function isVerseRef(data, chapterIndex, verseIndex) {
   );
 }
 
+/**
+ * Whether a version includes this chapter. A few versions are incomplete
+ * (one has 137 psalms), so the reader asks before rendering.
+ */
+export function hasChapter(data, chapterIndex) {
+  return (
+    isChapterRef(data, chapterIndex) &&
+    Array.isArray(data[chapterIndex]) &&
+    data[chapterIndex].length > 0
+  );
+}
+
 export function isChapterRef(data, chapterIndex) {
   return (
     Array.isArray(data) &&

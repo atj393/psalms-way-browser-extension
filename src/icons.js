@@ -74,6 +74,9 @@ const ICONS = {
   chevronLeft: { paths: ["M15 4l-7 8 7 8"] },
   chevronRight: { paths: ["M9 4l7 8-7 8"] },
   chevronDown: { paths: ["M4 8l8 8 8-8"] },
+  compare: { paths: ["M4 4h7v16H4z", "M13 4h7v16h-7z"] },
+  candle: { paths: ["M12 2.5c1.6 2 1.6 3.6 0 5-1.6-1.4-1.6-3 0-5z", "M9 9.5h6V21H9z"] },
+  progress: { paths: ["M4 20V11", "M10 20V5", "M16 20v-6", "M3 20.5h18"] },
   check: { paths: ["M20 6L9 17l-5-5"] },
   trash: {
     paths: [

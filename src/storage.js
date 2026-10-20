@@ -41,8 +41,11 @@ export const NOTES_MAX = 2500;
 /** The phone app's data kept untouched until this extension shows it. */
 const CARRY_KEYS = ["favorites", "highlights", "streak", "badges", "challenges", "settings"];
 
-export const THEMES = ["light", "sepia", "dark"];
+export const THEMES = ["light", "sepia", "dark", "auto"];
 export const FONT_SIZES = ["small", "medium", "large"];
+/** The phone app's five accent colours. */
+export const ACCENTS = ["green", "blue", "red", "amber", "purple"];
+const MODULE_PATTERN = /^[a-z0-9_]+$/;
 
 /** A storage operation that genuinely failed. Surfaced to the user. */
 export class StorageError extends Error {
@@ -60,6 +63,12 @@ export function defaultSettings() {
     fontSize: "medium",
     lang: "en",
     toolbarCollapsed: false,
+    accent: "green",
+    /** The Bible version's module key; null until chosen from the browser language. */
+    bibleVersion: null,
+    /** "auto" follows the browser's language. */
+    uiLanguage: "auto",
+    compareVersions: ["kjv", "web"],
   };
 }
 
@@ -172,6 +181,22 @@ export function sanitiseSettings(value) {
     lang: typeof value.lang === "string" && /^[a-z]{2}$/.test(value.lang) ? value.lang : base.lang,
     toolbarCollapsed:
       typeof value.toolbarCollapsed === "boolean" ? value.toolbarCollapsed : base.toolbarCollapsed,
+    accent: ACCENTS.includes(value.accent) ? value.accent : base.accent,
+    bibleVersion:
+      typeof value.bibleVersion === "string" && MODULE_PATTERN.test(value.bibleVersion)
+        ? value.bibleVersion
+        : base.bibleVersion,
+    uiLanguage:
+      value.uiLanguage === "auto" ||
+      (typeof value.uiLanguage === "string" && /^[a-z]{2}$/.test(value.uiLanguage))
+        ? value.uiLanguage
+        : base.uiLanguage,
+    compareVersions:
+      Array.isArray(value.compareVersions) &&
+      value.compareVersions.length === 2 &&
+      value.compareVersions.every((m) => typeof m === "string" && MODULE_PATTERN.test(m))
+        ? [...value.compareVersions]
+        : base.compareVersions,
   };
 }
 

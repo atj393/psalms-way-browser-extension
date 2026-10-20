@@ -18,19 +18,20 @@ export default defineConfig({
       // extension in Chrome; counting them here would mean either a
       // meaningless number or jsdom tests that re-assert what the browser
       // already proves.
-      include: [
-        "src/backup.js",
-        "src/cloudSync.js",
-        "src/data.js",
-        "src/dates.js",
-        "src/dom.js",
-        "src/drive.js",
-        "src/googleAuth.js",
-        "src/icons.js",
-        "src/search.js",
-        "src/storage.js",
-        "src/syncMerge.js",
-        "src/syncModel.js",
+      include: ["src/**/*.js"],
+      exclude: [
+        "src/app.js",
+        "src/background.js",
+        "src/cloud.js",
+        "src/compare.js",
+        "src/notes.js",
+        "src/panels.js",
+        "src/prayers.js",
+        "src/progress.js",
+        "src/reader.js",
+        "src/settings.js",
+        "src/today.js",
+        "src/versionPicker.js",
       ],
       thresholds: {
         lines: 90,
