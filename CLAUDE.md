@@ -7,7 +7,7 @@ Guidance for Claude Code working on this repository.
 A Manifest V3 Chrome extension that puts all 150 Psalms in a browser popup. It
 works offline, requests one permission, and has no runtime dependencies.
 
-- **Version:** 2.0
+- **Version:** 3.0
 - **Type:** popup, plus a background worker used only for optional sync with the
   phone app (`src/background.js`); no content scripts
 - **Runtime dependencies:** none. `package.json` exists for development tooling
