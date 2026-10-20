@@ -531,6 +531,11 @@ fieldset {
   color: var(--text);
 }
 
+/* Keep the text clear of the bookmark and note markers in the top-right corner. */
+.verse:has(.verse-marker) .verse-body {
+  padding-right: 36px;
+}
+
 .verse-body:hover {
   background: var(--bg-hover);
 }
