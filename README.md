@@ -41,7 +41,7 @@ is no account, no server, and no request of any kind.
 
 **Your library**
 
-- **Favourites** — save any verse and find it again.
+- **Bookmarks** — keep any verse and find it again.
 - **Notes** — write a short note on a verse, edit it, delete it, and jump back to
   the verse from the Library.
 - **History** — recently read passages, newest first.

@@ -565,8 +565,8 @@ fieldset {
   line-height: 0;
 }
 
-.verse-marker-heart {
-  color: var(--danger);
+.verse-marker-bookmark {
+  color: var(--brand);
 }
 .verse-marker-note {
   color: var(--text-muted);
@@ -602,9 +602,9 @@ fieldset {
 }
 
 .btn-action.is-fav {
-  color: var(--danger);
-  border-color: var(--danger);
-  background: var(--danger-soft);
+  color: var(--brand);
+  border-color: var(--brand);
+  background: var(--brand-soft);
 }
 
 .btn-action.has-note {

@@ -116,7 +116,7 @@ export async function exportBackup() {
   // Revoke on the next turn so the download has taken the reference.
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 
-  toast(`Exported ${store.favourites.length} saved, ${store.notes.length} notes`, "success");
+  toast(`Exported ${store.favourites.length} bookmarks, ${store.notes.length} notes`, "success");
 }
 
 // ─── Restore ──────────────────────────────────────────────────────────────────
@@ -150,7 +150,7 @@ export async function importBackup(file) {
   const confirmed = await confirmDialog({
     title: "Replace your data?",
     message:
-      `This backup holds ${counts.favourites} saved verses, ${counts.notes} notes and ` +
+      `This backup holds ${counts.favourites} bookmarks, ${counts.notes} notes and ` +
       `${counts.history} history entries. Restoring replaces what is on this browser now.`,
     confirmLabel: "Restore",
     destructive: true,

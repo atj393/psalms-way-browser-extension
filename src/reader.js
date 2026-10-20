@@ -167,7 +167,7 @@ function renderVerseRow(chapterIndex, verseIndex, text, store) {
   body.setAttribute("aria-label", `${formatReference(chapterIndex, verseIndex)}. ${text}`);
 
   const markers = el("span", { class: "verse-markers" });
-  if (isFav) markers.appendChild(markerIcon("heart", "Saved"));
+  if (isFav) markers.appendChild(markerIcon("bookmark", "Bookmarked"));
   if (note) markers.appendChild(markerIcon("note", "Has a note"));
 
   const row = el("li", { class: "verse", tabindex: "-1" }, [body, markers]);
@@ -180,7 +180,7 @@ function renderVerseRow(chapterIndex, verseIndex, text, store) {
 
 function markerIcon(name, label) {
   const wrapper = el("span", { class: `verse-marker verse-marker-${name}`, title: label });
-  wrapper.appendChild(icon(name, { size: 12, filled: name === "heart" }));
+  wrapper.appendChild(icon(name, { size: 12, filled: name === "bookmark" }));
   const sr = el("span", { class: "sr-only", text: ` ${label}` });
   wrapper.appendChild(sr);
   return wrapper;
@@ -219,7 +219,7 @@ async function refreshVerseMarkers(row, chapterIndex, verseIndex) {
   if (!markers) return;
   markers.replaceChildren();
   if (hasFavourite(store, chapterIndex, verseIndex)) {
-    markers.appendChild(markerIcon("heart", "Saved"));
+    markers.appendChild(markerIcon("bookmark", "Bookmarked"));
   }
   if (findNote(store, chapterIndex, verseIndex)) {
     markers.appendChild(markerIcon("note", "Has a note"));
@@ -243,11 +243,11 @@ export async function buildVerseActions(chapterIndex, verseIndex, text, { onChan
   const paintFav = (value) => {
     favBtn.classList.toggle("is-fav", value);
     favBtn.setAttribute("aria-pressed", value ? "true" : "false");
-    favBtn.title = value ? "Remove from Favourites" : "Add to Favourites";
+    favBtn.title = value ? "Remove bookmark" : "Bookmark this verse";
     favBtn.setAttribute("aria-label", favBtn.title);
     favBtn.replaceChildren(
-      icon("heart", { size: 15, filled: value }),
-      el("span", { class: "btn-action-label", text: value ? "Saved" : "Save" })
+      icon("bookmark", { size: 15, filled: value }),
+      el("span", { class: "btn-action-label", text: value ? "Bookmarked" : "Bookmark" })
     );
   };
   paintFav(isFav);
@@ -259,13 +259,13 @@ export async function buildVerseActions(chapterIndex, verseIndex, text, { onChan
       paintFav(nowFavourite);
       toast(
         nowFavourite
-          ? `${formatReference(chapterIndex, verseIndex)} saved`
+          ? `${formatReference(chapterIndex, verseIndex)} bookmarked`
           : `${formatReference(chapterIndex, verseIndex)} removed`,
         "success"
       );
       onChanged?.();
     } catch (error) {
-      reportError(error, "That verse could not be saved.");
+      reportError(error, "That bookmark could not be saved.");
     } finally {
       favBtn.disabled = false;
     }

@@ -290,7 +290,7 @@ export async function start() {
   wire();
 
   if (!isStorageAvailable()) {
-    toast("Saving is unavailable, so favourites and notes will not be kept.", "error");
+    toast("Saving is unavailable, so bookmarks and notes will not be kept.", "error");
   }
 
   await initAppearance();

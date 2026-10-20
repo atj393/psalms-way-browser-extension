@@ -1,5 +1,5 @@
 // ─── List panels ──────────────────────────────────────────────────────────────
-// Search results, the Library (favourites and notes) and reading history are
+// Search results, the Library (bookmarks and notes) and reading history are
 // all the same shape: a scrolling list of verse references with a preview and
 // an optional action. They share one row builder rather than three near-copies.
 
@@ -173,7 +173,7 @@ async function renderFavourites() {
   try {
     [favourites, data] = await Promise.all([getFavourites(), getData()]);
   } catch (error) {
-    reportError(error, "Your saved verses could not be read.");
+    reportError(error, "Your bookmarks could not be read.");
     return;
   }
 
@@ -183,8 +183,8 @@ async function renderFavourites() {
     paint(
       "libraryBody",
       emptyState(
-        "No saved verses yet",
-        "Open a Psalm, select a verse, and choose Save to keep it here."
+        "No bookmarks yet",
+        "Open a Psalm, select a verse, and choose Bookmark to keep it here."
       )
     );
     return;
@@ -201,7 +201,7 @@ async function renderFavourites() {
           onOpen: () => navigate({ chapterIndex, verseIndex }),
           action: {
             icon: "close",
-            label: `Remove ${formatReference(chapterIndex, verseIndex)} from Favourites`,
+            label: `Remove the bookmark on ${formatReference(chapterIndex, verseIndex)}`,
             onClick: async () => {
               try {
                 await removeFavourite(chapterIndex, verseIndex);
@@ -327,7 +327,7 @@ export async function renderHistory() {
 export async function confirmClearHistory() {
   const confirmed = await confirmDialog({
     title: "Clear reading history?",
-    message: "Every entry will be removed. Your saved verses and notes are not affected.",
+    message: "Every entry will be removed. Your bookmarks and notes are not affected.",
     confirmLabel: "Clear history",
     destructive: true,
   });

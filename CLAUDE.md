@@ -86,9 +86,10 @@ These are checked by lint, a validator or a test. Breaking one fails the build.
   companion Android app. Do not write `Psalms 23:1`.
 - Chapter and verse indices are **0-based everywhere in code** and 1-based only
   in what the reader sees. `formatReference()` does the conversion.
-- Saved verses are **Favourites**, British spelling, one concept. The Android app
-  has both "Bookmarks" and "Favorites"; that is deliberately not copied. See
-  `docs/OVERNIGHT_AUDIT.md`.
+- Saved verses are **Bookmarks**, as in the Android app, because the two now sync
+  (see `docs/superpowers/specs/2026-10-13-phone-extension-connection-roadmap.md`).
+  The phone's whole-chapter Favorites are kept in the store's `carry` slot until
+  this extension shows them. Code still names verse bookmarks `favourites`.
 - User-facing errors go through `toast()` or `reportError()` in `src/dom.js`.
   They are one sentence and never contain a stack trace. Technical detail goes to
   `console.error`.
@@ -108,7 +109,9 @@ not reintroduce `catch {}` on a write path.
 **Stored data is untrusted.** Users upgrade across versions, restore backups and
 edit storage by hand. Everything read from storage goes through a sanitiser in
 `src/storage.js`; malformed records are dropped, not repaired into something
-surprising, and never allowed to throw mid-render.
+surprising, and never allowed to throw mid-render. Valid records are never changed
+on read (no trimming, shortening or dropped duplicates): cloud sync would upload
+the change as if the reader had made it. Limits apply to what the reader types.
 
 **Migration must stay non-destructive.** Version 1.1 wrote three separate keys
 (`psalmsway_favourites`, `psalmsway_history`, `psalmsway_settings`). `loadStore()`

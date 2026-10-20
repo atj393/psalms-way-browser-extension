@@ -25,6 +25,7 @@ describe("defaults", () => {
       notes: [],
       history: [],
       settings: { theme: "light", fontSize: "medium", lang: "en", toolbarCollapsed: false },
+      carry: {},
     });
   });
 });
@@ -57,9 +58,10 @@ describe("migration from version 1.1", () => {
       { chapterIndex: 22, verseIndex: 0, addedAt: 1730000000000 },
       { chapterIndex: 90, verseIndex: 3, addedAt: 1730000100000 },
     ]);
+    // Newest first, one per chapter, as the phone app keeps it.
     expect(loaded.history).toEqual([
-      { chapterIndex: 22, verseIndex: null, viewedAt: 1730000200000 },
       { chapterIndex: 1, verseIndex: 2, viewedAt: 1730000300000 },
+      { chapterIndex: 22, verseIndex: null, viewedAt: 1730000200000 },
     ]);
     expect(loaded.settings).toEqual({
       theme: "dark",
@@ -193,6 +195,55 @@ describe("stored data validation", () => {
     expect(result.favourites[0].addedAt).toBe(1000);
   });
 
+  it("never shortens, trims or caps a stored note, so synced phone notes stay intact", () => {
+    const long = `  ${"Long reflection. ".repeat(900)}\n`;
+    const result = store.normaliseStore({
+      notes: [{ chapterIndex: 1, verseIndex: 1, text: long, createdAt: 1000, updatedAt: 2000 }],
+    });
+    expect(result.notes[0].text).toBe(long);
+  });
+
+  it("joins two notes on one verse instead of dropping one", () => {
+    const result = store.normaliseStore({
+      notes: [
+        { chapterIndex: 1, verseIndex: 1, text: "Mine", createdAt: 1000, updatedAt: 1000 },
+        { chapterIndex: 1, verseIndex: 1, text: "Theirs", createdAt: 1000, updatedAt: 3000 },
+      ],
+    });
+    expect(result.notes).toHaveLength(1);
+    expect(result.notes[0].text).toBe("Mine\n\nTheirs");
+    expect(result.notes[0].updatedAt).toBe(3000);
+  });
+
+  it("keeps the phone app's other data untouched through every change", async () => {
+    const carry = {
+      favorites: [23],
+      highlights: [{ chapter: 5, verse: 1, color: "green" }],
+      streak: { lastDate: "2026-10-20", count: 3 },
+      badges: { day1: "2026-10-18T08:00:00.000Z" },
+      challenges: { psalms30: { completedDays: [0, 1] } },
+      settings: { fontSize: 20 },
+    };
+    installChromeMock({
+      [STORE_KEY]: { schemaVersion: 3, favourites: [], notes: [], history: [], carry },
+    });
+    await store.toggleFavourite(22, 0);
+    await store.saveNote(22, 0, "A note");
+    await store.addHistoryEntry(22, 0);
+    store.resetStoreCache();
+    expect((await store.loadStore()).carry).toEqual(carry);
+  });
+
+  it("keeps one history entry per chapter on read", () => {
+    const result = store.normaliseStore({
+      history: [
+        { chapterIndex: 5, verseIndex: 1, viewedAt: 1000 },
+        { chapterIndex: 5, verseIndex: 7, viewedAt: 3000 },
+      ],
+    });
+    expect(result.history).toEqual([{ chapterIndex: 5, verseIndex: 7, viewedAt: 3000 }]);
+  });
+
   it("caps history at the maximum", () => {
     const many = Array.from({ length: HISTORY_MAX + 40 }, (_, i) => ({
       chapterIndex: i % 150,
@@ -293,10 +344,10 @@ describe("history", () => {
     expect(history[0]).toEqual({ chapterIndex: 5, verseIndex: null, viewedAt: 3000 });
   });
 
-  it("treats a chapter and a verse in it as different entries", () => {
+  it("keeps one entry per chapter, with the latest place, as the phone app does", () => {
     let history = store.applyHistoryEntry([], 5, null, 1000);
     history = store.applyHistoryEntry(history, 5, 2, 2000);
-    expect(history).toHaveLength(2);
+    expect(history).toEqual([{ chapterIndex: 5, verseIndex: 2, viewedAt: 2000 }]);
   });
 
   it("caps the list", () => {

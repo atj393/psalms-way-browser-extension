@@ -50,11 +50,11 @@ A whole Psalm chosen at random.
 
 Click any verse and three buttons appear beneath it:
 
-|          |                                                      |
-| -------- | ---------------------------------------------------- |
-| **Save** | Add it to your Favourites. Click again to remove it. |
-| **Note** | Write a note about it.                               |
-| **Copy** | Copy the verse and its reference, ready to paste.    |
+|              |                                                     |
+| ------------ | --------------------------------------------------- |
+| **Bookmark** | Add it to your Bookmarks. Click again to remove it. |
+| **Note**     | Write a note about it.                              |
+| **Copy**     | Copy the verse and its reference, ready to paste.   |
 
 Copied text looks like this:
 
@@ -92,9 +92,9 @@ Press **Escape** to close Search.
 
 Your Library holds the verses you have kept, in two tabs.
 
-### Favourites
+### Bookmarks
 
-Every verse you have saved, newest first. Click one to open it. Click the **✕**
+Every verse you have bookmarked, newest first. Click one to open it. Click the **✕**
 on the right to remove it.
 
 ### Notes
@@ -116,7 +116,7 @@ the Library.
 
 To delete a note, either clear the box and save, or use **Delete** in the editor.
 
-Notes can be up to 2,000 characters, and you can keep up to 500 of them.
+Notes can be up to 10,000 characters each.
 
 ---
 

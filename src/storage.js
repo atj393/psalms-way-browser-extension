@@ -12,10 +12,17 @@
 //      backups, and edit storage by hand during development. Every record is
 //      validated on read; anything malformed is dropped rather than allowed to
 //      throw halfway through rendering.
+//   3. Valid data is never changed on read. Cloud sync brings in what the phone
+//      app saved, and anything altered here (a trimmed or shortened note, a
+//      dropped duplicate) would be uploaded back as if the reader had edited
+//      it. Limits apply to what the reader types, not to what is stored.
 
 import { CHAPTER_COUNT } from "./data.js";
 
-export const SCHEMA_VERSION = 2;
+// 3: notes are no longer trimmed or cut on read, history keeps one entry per
+// chapter (as the phone app does), and `carry` keeps the phone app's data this
+// extension does not show yet.
+export const SCHEMA_VERSION = 3;
 
 const STORE_KEY = "psalmsway";
 
@@ -25,8 +32,13 @@ const LEGACY_HISTORY = "psalmsway_history";
 const LEGACY_SETTINGS = "psalmsway_settings";
 
 export const HISTORY_MAX = 50;
-export const NOTE_MAX_LENGTH = 2000;
-export const NOTES_MAX = 500;
+/** The longest note the editor accepts. Longer notes written on the phone are kept as they are. */
+export const NOTE_MAX_LENGTH = 10000;
+/** More than the 2,461 verses in the Psalms (one note each), so it only stops absurd input. */
+export const NOTES_MAX = 2500;
+
+/** The phone app's data kept untouched until this extension shows it. */
+const CARRY_KEYS = ["favorites", "highlights", "streak", "badges", "challenges", "settings"];
 
 export const THEMES = ["light", "sepia", "dark"];
 export const FONT_SIZES = ["small", "medium", "large"];
@@ -57,6 +69,7 @@ export function defaultStore() {
     notes: [],
     history: [],
     settings: defaultSettings(),
+    carry: {},
   };
 }
 
@@ -136,8 +149,8 @@ export function sanitiseNote(entry) {
   const { chapterIndex, verseIndex } = entry;
   if (!isChapterIndex(chapterIndex) || !isVerseIndex(verseIndex)) return null;
   if (typeof entry.text !== "string") return null;
-  const text = entry.text.trim().slice(0, NOTE_MAX_LENGTH);
-  if (text === "") return null;
+  const text = entry.text;
+  if (text.trim() === "") return null;
   const createdAt = coerceTimestamp(entry.createdAt);
   return {
     id: typeof entry.id === "string" && entry.id ? entry.id : makeNoteId(chapterIndex, verseIndex),
@@ -172,7 +185,7 @@ function sanitiseList(value, sanitiser, limit) {
   return out;
 }
 
-/** Deduplicate favourites/notes that point at the same verse, keeping the first. */
+/** Deduplicate favourites that point at the same verse, keeping the first. */
 function dedupeByVerse(list) {
   const seen = new Set();
   return list.filter((item) => {
@@ -183,13 +196,62 @@ function dedupeByVerse(list) {
   });
 }
 
+/** Two texts as one, without repeating either; the phone app's rule. */
+export function combineNoteText(first, second) {
+  if (first.includes(second)) return first;
+  if (second.includes(first)) return second;
+  return `${first}\n\n${second}`;
+}
+
+/** Two notes on one verse become one, so neither text is lost. */
+function joinNotesByVerse(list) {
+  const byVerse = new Map();
+  for (const note of list) {
+    const key = `${note.chapterIndex}:${note.verseIndex}`;
+    const first = byVerse.get(key);
+    if (!first) {
+      byVerse.set(key, note);
+      continue;
+    }
+    byVerse.set(key, {
+      ...first,
+      text: combineNoteText(first.text, note.text),
+      updatedAt: Math.max(first.updatedAt, note.updatedAt),
+    });
+  }
+  return [...byVerse.values()];
+}
+
+/** Keeps one entry per chapter, the most recent, newest first (as the phone app stores it). */
+function onePerChapter(history) {
+  const seen = new Set();
+  return [...history]
+    .sort((a, b) => b.viewedAt - a.viewedAt)
+    .filter((entry) => {
+      if (seen.has(entry.chapterIndex)) return false;
+      seen.add(entry.chapterIndex);
+      return true;
+    });
+}
+
+/** Keeps the phone app's values as they are; only JSON-safe objects survive storage anyway. */
+function sanitiseCarry(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const carry = {};
+  for (const key of CARRY_KEYS) {
+    if (Object.hasOwn(value, key)) carry[key] = value[key];
+  }
+  return carry;
+}
+
 export function makeNoteId(chapterIndex, verseIndex) {
   return `n_${chapterIndex}_${verseIndex}`;
 }
 
 /**
- * Normalise any candidate object into a valid v2 store.
- * Never throws: unusable pieces fall back to their defaults.
+ * Normalise any candidate object (a v2 or v3 store) into a valid v3 store.
+ * Never throws: unusable pieces fall back to their defaults, and valid records
+ * are kept exactly as they are.
  */
 export function normaliseStore(candidate) {
   const base = defaultStore();
@@ -197,9 +259,13 @@ export function normaliseStore(candidate) {
   return {
     schemaVersion: SCHEMA_VERSION,
     favourites: dedupeByVerse(sanitiseList(candidate.favourites, sanitiseFavourite)),
-    notes: dedupeByVerse(sanitiseList(candidate.notes, sanitiseNote, NOTES_MAX)),
-    history: sanitiseList(candidate.history, sanitiseHistoryEntry, HISTORY_MAX),
+    notes: joinNotesByVerse(sanitiseList(candidate.notes, sanitiseNote, NOTES_MAX)),
+    history: onePerChapter(sanitiseList(candidate.history, sanitiseHistoryEntry)).slice(
+      0,
+      HISTORY_MAX
+    ),
     settings: sanitiseSettings(candidate.settings),
+    carry: sanitiseCarry(candidate.carry),
   };
 }
 
@@ -402,14 +468,13 @@ export async function getHistory() {
  * Record a reading event.
  *
  * History tracks what the reader *opened*: a chapter, or a specific verse when
- * one was singled out. Re-opening something moves it to the top instead of
- * adding a duplicate, so the list stays a useful record of distinct passages
- * rather than a click log.
+ * one was singled out. Like the phone app, it keeps one entry per chapter:
+ * re-opening a chapter, or a verse in it, moves that chapter to the top with
+ * the latest place, so the list stays a useful record rather than a click log
+ * and matches the phone once synced.
  */
 export function applyHistoryEntry(history, chapterIndex, verseIndex, now = Date.now()) {
-  const withoutDuplicate = history.filter(
-    (h) => !(h.chapterIndex === chapterIndex && h.verseIndex === verseIndex)
-  );
+  const withoutDuplicate = history.filter((h) => h.chapterIndex !== chapterIndex);
   withoutDuplicate.unshift({ chapterIndex, verseIndex, viewedAt: now });
   return withoutDuplicate.slice(0, HISTORY_MAX);
 }
@@ -444,7 +509,7 @@ export async function updateSettings(patch) {
 
 // ─── Backup ───────────────────────────────────────────────────────────────────
 
-/** Replace all user data at once. Used by restore. */
+/** Replace all user data at once. Used by restore; the phone app's carried data stays. */
 export async function replaceUserData(data) {
   return updateStore((draft) => ({
     ...draft,
