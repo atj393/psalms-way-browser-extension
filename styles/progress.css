@@ -1,1 +1,509 @@
-/* progress: filled by its wave 1 task. */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Progress panel — streak and stats, badges, challenges, one challenge.
+   Only theme tokens are used for colour, so light, sepia and dark need no
+   rules of their own. Spacing is logical (inline/start) so right-to-left
+   languages mirror without a second set of rules.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--space-4) var(--space-6);
+}
+
+.progress-detail {
+  gap: var(--space-4);
+}
+
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.progress-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.progress-heading {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.progress-count {
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+.progress-card {
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+}
+
+.progress-card-title {
+  margin: 0 0 var(--space-3);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+/* Native <progress>, so assistive technology reads its value. */
+.progress-bar {
+  display: block;
+  width: 100%;
+  height: 6px;
+  border: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--border-strong);
+}
+
+.progress-bar::-webkit-progress-bar {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+
+.progress-bar::-webkit-progress-value {
+  background: var(--brand);
+  border-radius: 3px;
+}
+
+/* ── Streak ────────────────────────────────────────────────────────────── */
+.progress-streak {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.progress-streak-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.progress-streak-line {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.progress-streak-number {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--brand);
+}
+
+.progress-streak-label {
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.progress-streak-longest {
+  margin-top: var(--space-2);
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+/* ── Last seven days ───────────────────────────────────────────────────── */
+.progress-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-2);
+}
+
+.progress-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
+.progress-day-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  color: var(--brand-text);
+}
+
+.progress-day.is-read .progress-day-dot {
+  border-color: var(--brand);
+  background: var(--brand);
+}
+
+.progress-day.is-read {
+  font-weight: 700;
+  color: var(--brand);
+}
+
+.progress-day.is-today .progress-day-label {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Reading totals ────────────────────────────────────────────────────── */
+.progress-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  font-size: 13px;
+}
+
+.progress-total-row + .progress-total-row {
+  border-top: 1px solid var(--border);
+}
+
+.progress-totals {
+  margin: 0;
+}
+
+.progress-total-row dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+/* ── Badges ────────────────────────────────────────────────────────────── */
+.progress-badges {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.progress-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  background: var(--bg-sunken);
+  overflow-wrap: anywhere;
+}
+
+.progress-badge.is-earned {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.progress-badge-emoji,
+.progress-challenge-emoji,
+.progress-detail-emoji,
+.progress-finished-emoji,
+.progress-wait-emoji {
+  font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+  line-height: 1;
+}
+
+.progress-badge-emoji {
+  font-size: 30px;
+}
+
+/* A locked badge is greyed out, its description still readable. */
+.progress-badge.is-locked .progress-badge-emoji {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.progress-badge-name {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+.progress-badge.is-locked .progress-badge-name {
+  color: var(--text-soft);
+}
+
+.progress-badge-note {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-soft);
+}
+
+/* ── Challenge cards ───────────────────────────────────────────────────── */
+.progress-challenges {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.progress-challenge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: start;
+  color: var(--text);
+  background: var(--bg-sunken);
+}
+
+.progress-challenge:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+}
+
+.progress-challenge.is-started {
+  border-color: var(--brand);
+}
+
+.progress-challenge.is-done {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--text);
+}
+
+.progress-challenge > svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.progress-challenge.is-done > svg {
+  color: var(--brand);
+}
+
+.progress-challenge-emoji {
+  flex-shrink: 0;
+  width: 36px;
+  font-size: 30px;
+  text-align: center;
+}
+
+.progress-challenge-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.progress-challenge-name {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.progress-challenge-meta {
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+
+.progress-challenge-status {
+  font-weight: 700;
+  color: var(--brand);
+}
+
+/* ── One challenge ─────────────────────────────────────────────────────── */
+.progress-back {
+  align-self: flex-start;
+}
+
+:root[dir="rtl"] .progress-back svg,
+:root[dir="rtl"] .progress-challenge > svg {
+  transform: scaleX(-1);
+}
+
+.progress-detail-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.progress-detail-emoji {
+  font-size: 40px;
+}
+
+.progress-detail-name {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.progress-detail-name:focus {
+  outline: none;
+}
+
+.progress-detail-meta {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.progress-desc {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.progress-now-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.progress-now-day {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.progress-now-count {
+  font-size: 11.5px;
+  color: var(--text-soft);
+}
+
+.progress-verse-ref {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+.progress-verse-text {
+  margin-top: var(--space-3);
+  font-family: var(--font-read);
+  font-size: var(--size-read);
+  line-height: var(--line-read);
+  color: var(--text);
+}
+
+.progress-verse-missing {
+  margin-top: var(--space-3);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.progress-wait,
+.progress-finished {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.progress-wait-emoji {
+  font-size: 34px;
+}
+
+.progress-finished {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.progress-finished-emoji {
+  font-size: 44px;
+}
+
+.progress-wait-title,
+.progress-finished-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.progress-wait-hint,
+.progress-finished-date {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+/* Long button labels wrap instead of running out of the popup. */
+.progress .button {
+  white-space: normal;
+  text-align: center;
+}
+
+.progress .button:disabled {
+  cursor: not-allowed;
+}
+
+.progress .button:disabled:hover {
+  background: var(--brand);
+}
+
+.progress-reset {
+  align-self: flex-start;
+}
+
+/* ── Day list ──────────────────────────────────────────────────────────── */
+.progress-days {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2) var(--space-3);
+}
+
+.progress-day-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 5px 9px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.progress-day-row.is-done {
+  color: var(--text);
+}
+
+.progress-day-row.is-next {
+  border-color: var(--brand);
+  font-weight: 700;
+  color: var(--text);
+  background: var(--brand-soft);
+}
+
+.progress-day-mark {
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+  width: 14px;
+  color: var(--brand);
+}
+
+.progress-day-ref {
+  margin-inline-start: auto;
+  color: var(--text-muted);
+}
+
+.progress-day-row.is-done .progress-day-ref,
+.progress-day-row.is-next .progress-day-ref {
+  color: var(--text-soft);
+}
