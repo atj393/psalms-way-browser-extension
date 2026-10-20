@@ -461,6 +461,29 @@ describe("failures are reported, never swallowed", () => {
     });
   });
 
+  it("keeps both changes when two are made at the same time", async () => {
+    installChromeMock({});
+    await store.loadStore();
+    await Promise.all([store.toggleFavourite(1, 1), store.toggleFavourite(2, 2)]);
+    store.resetStoreCache();
+    expect(await store.isFavourite(1, 1)).toBe(true);
+    expect(await store.isFavourite(2, 2)).toBe(true);
+  });
+
+  it("still runs the next change after one fails", async () => {
+    const area = installChromeMock({});
+    await store.loadStore();
+    area.rejectNextSet();
+    const results = await Promise.allSettled([
+      store.toggleFavourite(1, 1),
+      store.toggleFavourite(2, 2),
+    ]);
+    expect(results.map((result) => result.status)).toEqual(["rejected", "fulfilled"]);
+    store.resetStoreCache();
+    expect(await store.isFavourite(1, 1)).toBe(false);
+    expect(await store.isFavourite(2, 2)).toBe(true);
+  });
+
   it("leaves the cache matching disk after a failed write", async () => {
     const area = installChromeMock({});
     await store.loadStore();

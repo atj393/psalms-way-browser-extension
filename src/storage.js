@@ -376,18 +376,34 @@ export function matchesCache(value) {
 }
 
 /**
+ * This page's store changes run one at a time. Two changes started together
+ * (the daily streak at start-up and a bookmark, say) would otherwise both copy
+ * the same store and the second write would undo the first. A failed change
+ * still rejects for its own caller; the queue only moves on past it.
+ */
+let pendingWrite = Promise.resolve();
+
+function oneAtATime(task) {
+  const run = pendingWrite.then(task);
+  pendingWrite = run.catch(() => {});
+  return run;
+}
+
+/**
  * Apply a change to the store and persist it.
  * The mutator receives a draft it may modify in place or replace by returning
  * a new object. The cache is only advanced once the write succeeds, so a failed
  * save leaves the in-memory state matching what is actually on disk.
  */
-export async function updateStore(mutator) {
-  const current = await loadStore();
-  const draft = structuredClone(current);
-  const next = normaliseStore(mutator(draft) ?? draft);
-  await writeStore(next);
-  cachedStore = next;
-  return next;
+export function updateStore(mutator) {
+  return oneAtATime(async () => {
+    const current = await loadStore();
+    const draft = structuredClone(current);
+    const next = normaliseStore(mutator(draft) ?? draft);
+    await writeStore(next);
+    cachedStore = next;
+    return next;
+  });
 }
 
 /**
@@ -401,11 +417,13 @@ export async function readFreshStore() {
 }
 
 /** Write a whole store (cloud sync's combined data). */
-export async function saveStore(candidate) {
-  const next = normaliseStore(candidate);
-  await writeStore(next);
-  cachedStore = next;
-  return next;
+export function saveStore(candidate) {
+  return oneAtATime(async () => {
+    const next = normaliseStore(candidate);
+    await writeStore(next);
+    cachedStore = next;
+    return next;
+  });
 }
 
 // ─── Favourites ───────────────────────────────────────────────────────────────
