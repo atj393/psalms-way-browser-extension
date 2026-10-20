@@ -1,10 +1,11 @@
 // ─── List panels ──────────────────────────────────────────────────────────────
-// Search results, the Library (bookmarks and notes) and reading history are
-// all the same shape: a scrolling list of verse references with a preview and
-// an optional action. They share one row builder rather than three near-copies.
+// Search results, the Library (bookmarks, highlights, favourite Psalms and
+// notes) and reading history are all the same shape: a scrolling list of
+// references with a preview and an optional action. They share one row builder
+// rather than several near-copies.
 
 import { el, iconButton, emptyState, toast, reportError, confirmDialog, byId } from "./dom.js";
-import { formatReference, getData, isVerseRef } from "./data.js";
+import { CHAPTER_COUNT, formatReference, getData, isVerseRef } from "./data.js";
 import { formatTimestamp } from "./dates.js";
 import { searchVerses, splitMatches, truncate, SEARCH_MIN_QUERY } from "./search.js";
 import {
@@ -13,8 +14,18 @@ import {
   getFavourites,
   getHistory,
   getNotes,
+  loadStore,
   removeFavourite,
 } from "./storage.js";
+import {
+  HIGHLIGHT_COLORS,
+  getFavoriteChapters,
+  getHighlights,
+  setHighlight,
+  toggleFavoriteChapter,
+} from "./phoneData.js";
+import { highlightLabel, refreshFavChapter, refreshPassage } from "./reader.js";
+import { t } from "./i18n.js";
 
 let navigate = () => {};
 
@@ -33,10 +44,11 @@ export function setNavigator(fn) {
  * @param {Array<{text:string,match:boolean}>|string} options.preview segments or plain text
  * @param {string} [options.meta] right-aligned secondary text, e.g. a timestamp
  * @param {string} [options.note] the reader's own note, shown beneath
+ * @param {string} [options.swatch] a highlight colour, shown as a dot before the reference
  * @param {() => void} options.onOpen
  * @param {{label: string, icon: string, onClick: () => void}} [options.action]
  */
-function listRow({ reference, preview, meta, note, onOpen, action }) {
+function listRow({ reference, preview, meta, note, swatch, onOpen, action }) {
   const previewEl = el("span", { class: "row-preview" });
   if (typeof preview === "string") {
     previewEl.textContent = preview;
@@ -52,7 +64,14 @@ function listRow({ reference, preview, meta, note, onOpen, action }) {
 
   const body = el("button", { type: "button", class: "row-body", onClick: onOpen }, [
     el("span", { class: "row-top" }, [
-      el("span", { class: "row-ref", text: reference }),
+      el("span", { class: "row-ref" }, [
+        swatch
+          ? el("span", { class: "hl-dot", "aria-hidden": "true", "data-highlight": swatch })
+          : null,
+        // The dot is colour alone; this is what a screen reader gets instead.
+        swatch ? el("span", { class: "sr-only", text: `${highlightLabel(swatch)} ` }) : null,
+        reference,
+      ]),
       meta ? el("span", { class: "row-meta", text: meta }) : null,
     ]),
     previewEl,
@@ -143,9 +162,20 @@ export async function runSearch(rawQuery) {
   );
 }
 
-// ─── Library: favourites and notes ────────────────────────────────────────────
+// ─── Library: bookmarks, highlights, favourite Psalms and notes ───────────────
 
-/** @type {"favourites"|"notes"} */
+/**
+ * Tab id (the `data-tab` in popup.html) to its list. "favourites" is the verse
+ * bookmarks; "chapters" is the whole-Psalm favourites the heart adds to.
+ */
+const LIBRARY_TABS = {
+  favourites: () => renderFavourites(),
+  highlights: () => renderHighlights(),
+  chapters: () => renderFavouriteChapters(),
+  notes: () => renderNotes(),
+};
+
+/** @type {keyof LIBRARY_TABS} */
 let libraryTab = "favourites";
 
 export function getLibraryTab() {
@@ -153,6 +183,7 @@ export function getLibraryTab() {
 }
 
 export async function showLibraryTab(tab) {
+  if (!Object.hasOwn(LIBRARY_TABS, tab)) throw new Error(`Unknown Library tab: ${tab}`);
   libraryTab = tab;
   for (const button of document.querySelectorAll("#libraryTabs [role='tab']")) {
     const selected = button.dataset.tab === tab;
@@ -160,7 +191,7 @@ export async function showLibraryTab(tab) {
     button.tabIndex = selected ? 0 : -1;
     button.classList.toggle("is-active", selected);
   }
-  await (tab === "favourites" ? renderFavourites() : renderNotes());
+  await LIBRARY_TABS[tab]();
 }
 
 export async function renderLibrary() {
@@ -214,6 +245,168 @@ async function renderFavourites() {
           },
         })
       )
+    )
+  );
+}
+
+/**
+ * Runs the repaint that follows a removal that already succeeded. If the repaint
+ * fails, say so on its own terms: the removal is not what went wrong.
+ */
+async function repaintAfterRemoval(repaint) {
+  try {
+    await repaint();
+  } catch (error) {
+    reportError(
+      error,
+      t(
+        "libraryRefreshError",
+        {},
+        "Removed, but the Library could not be refreshed. Close and reopen it."
+      )
+    );
+  }
+}
+
+async function renderHighlights() {
+  let store;
+  let data;
+  try {
+    [store, data] = await Promise.all([loadStore(), getData()]);
+  } catch (error) {
+    reportError(error, t("highlightsReadError", {}, "Your highlights could not be read."));
+    return;
+  }
+
+  // The phone stores 1-based chapter and verse. Highlights carry no date, so
+  // they are listed in reading order.
+  const usable = getHighlights(store)
+    .filter(
+      (h) => HIGHLIGHT_COLORS.includes(h?.color) && isVerseRef(data, h.chapter - 1, h.verse - 1)
+    )
+    .sort((a, b) => a.chapter - b.chapter || a.verse - b.verse);
+
+  if (usable.length === 0) {
+    paint(
+      "libraryBody",
+      emptyState(
+        t("noHighlights", {}, "No highlights yet"),
+        t("noHighlightsHint", {}, "Select a verse and choose Highlight to colour it.")
+      )
+    );
+    return;
+  }
+
+  paint(
+    "libraryBody",
+    listContainer(
+      usable.map(({ chapter, verse, color }) => {
+        const chapterIndex = chapter - 1;
+        const verseIndex = verse - 1;
+        const reference = formatReference(chapterIndex, verseIndex);
+        return listRow({
+          reference,
+          swatch: color,
+          preview: truncate(data[chapterIndex][verseIndex], 110),
+          onOpen: () => navigate({ chapterIndex, verseIndex }),
+          action: {
+            icon: "close",
+            label: t("removeHighlightOn", { reference }, "Remove the highlight on {{reference}}"),
+            onClick: async () => {
+              try {
+                await setHighlight(chapterIndex, verseIndex, null);
+              } catch (error) {
+                reportError(
+                  error,
+                  t("highlightRemoveError", {}, "That highlight could not be removed.")
+                );
+                return;
+              }
+              toast(
+                t("highlightCleared", { reference }, "Highlight removed from {{reference}}"),
+                "success"
+              );
+              await repaintAfterRemoval(async () => {
+                await renderHighlights();
+                // The Psalm being read sits behind this panel; drop its tint too.
+                await refreshPassage();
+              });
+            },
+          },
+        });
+      })
+    )
+  );
+}
+
+async function renderFavouriteChapters() {
+  let store;
+  let data;
+  try {
+    [store, data] = await Promise.all([loadStore(), getData()]);
+  } catch (error) {
+    reportError(error, t("favouritesReadError", {}, "Your favourite Psalms could not be read."));
+    return;
+  }
+
+  const chapters = getFavoriteChapters(store).filter((c) => c >= 1 && c <= CHAPTER_COUNT);
+
+  if (chapters.length === 0) {
+    paint(
+      "libraryBody",
+      emptyState(
+        t("noFavouritePsalms", {}, "No favourite Psalms yet"),
+        t("noFavouritePsalmsHint", {}, "Click the heart beside a Psalm's title to keep it here.")
+      )
+    );
+    return;
+  }
+
+  paint(
+    "libraryBody",
+    listContainer(
+      chapters.map((chapter) => {
+        const chapterIndex = chapter - 1;
+        const reference = formatReference(chapterIndex);
+        return listRow({
+          reference,
+          // A version that lacks this Psalm has no first verse; the row stays so it can be removed.
+          preview: truncate(data[chapterIndex]?.[0] ?? "", 110),
+          onOpen: () => navigate({ chapterIndex, verseIndex: null }),
+          action: {
+            icon: "close",
+            label: t(
+              "removeChapterFavourite",
+              { reference },
+              "Remove {{reference}} from Favourites"
+            ),
+            onClick: async () => {
+              try {
+                await toggleFavoriteChapter(chapterIndex);
+              } catch (error) {
+                reportError(
+                  error,
+                  t("favouriteRemoveError", {}, "That Psalm could not be removed from Favourites.")
+                );
+                return;
+              }
+              toast(
+                t(
+                  "chapterFavouriteRemoved",
+                  { reference },
+                  "{{reference}} removed from Favourites"
+                ),
+                "success"
+              );
+              await repaintAfterRemoval(async () => {
+                await renderFavouriteChapters();
+                // The heart in the chapter bar stays visible behind this panel.
+                refreshFavChapter(await loadStore());
+              });
+            },
+          },
+        });
+      })
     )
   );
 }

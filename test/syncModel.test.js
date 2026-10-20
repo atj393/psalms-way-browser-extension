@@ -39,6 +39,17 @@ describe("converting between this browser and the phone app", () => {
     expect(toPhoneData(store)).toEqual(phoneData);
   });
 
+  it("keeps a bookmark and a highlight on the same verse through a round trip", () => {
+    const store = normaliseStore({
+      favourites: [{ chapterIndex: 22, verseIndex: 3, addedAt: 1700000000000 }],
+      carry: { highlights: [{ chapter: 23, verse: 4, color: "pink" }], favorites: [23] },
+    });
+    const again = fromPhoneData(store, toPhoneData(store));
+    expect(again.favourites).toEqual(store.favourites);
+    expect(again.carry.highlights).toEqual([{ chapter: 23, verse: 4, color: "pink" }]);
+    expect(again.carry.favorites).toEqual([23]);
+  });
+
   it("shows the phone's bookmarks, notes and history in this browser's terms", () => {
     const store = fromPhoneData(defaultStore(), phoneData);
     expect(
