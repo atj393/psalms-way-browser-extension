@@ -1,4 +1,4 @@
-# CLAUDE.md — Psalms Way! browser extension
+# CLAUDE.md — Psalms Way browser extension
 
 Guidance for Claude Code working on this repository.
 

@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "Development tooling for the Psalms Way! browser extension. The shipped extension has no runtime dependencies.",
+  "description": "Development tooling for the Psalms Way browser extension. The shipped extension has no runtime dependencies.",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",

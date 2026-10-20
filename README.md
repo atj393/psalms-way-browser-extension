@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="icon128.png" alt="Psalms Way! icon" width="96" height="96" />
+<img src="icon128.png" alt="Psalms Way icon" width="96" height="96" />
 
-# Psalms Way!
+# Psalms Way
 
 **A Biblical pause before new beginnings. All 150 Psalms in the browser toolbar, with no network access.**
 
@@ -16,7 +16,7 @@
 
 ---
 
-Psalms Way! puts all 150 Psalms in a browser popup. The full text is bundled with
+Psalms Way puts all 150 Psalms in a browser popup. The full text is bundled with
 the extension, so it opens instantly and works with the network disconnected. There
 is no account, no server, and no request of any kind.
 

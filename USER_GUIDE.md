@@ -1,11 +1,11 @@
-# Psalms Way! — user guide
+# Psalms Way — user guide
 
 All 150 Psalms, one click away in your browser toolbar. Everything works offline
 and stays on your own computer.
 
 ## Getting started
 
-Click the Psalms Way! icon in your toolbar. The popup opens on whatever you read
+Click the Psalms Way icon in your toolbar. The popup opens on whatever you read
 last, or on Today's Psalm the first time.
 
 The popup has three parts:

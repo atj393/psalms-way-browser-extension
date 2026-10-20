@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Psalms Way! - Biblical Beginnings",
+  "name": "Psalms Way",
   "version": "2.0",
-  "description": "All 150 Psalms in your toolbar. Daily Psalm, search, favourites, notes and history. Offline, private, no account.",
+  "description": "All 150 Psalms in your toolbar. Daily Psalm, search, bookmarks, notes and history. Offline, private, no account.",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
@@ -10,7 +10,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Psalms Way!",
+    "default_title": "Psalms Way",
     "default_icon": {
       "16": "icon16.png",
       "48": "icon48.png",
