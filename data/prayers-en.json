@@ -1,0 +1,477 @@
+{
+  "categories": [
+    { "id": "morning", "name": "Morning", "i18nKey": "prayerCatMorning" },
+    { "id": "noon", "name": "Noon", "i18nKey": "prayerCatNoon" },
+    { "id": "evening", "name": "Evening", "i18nKey": "prayerCatEvening" },
+    { "id": "night", "name": "Night", "i18nKey": "prayerCatNight" },
+    { "id": "travel", "name": "Travel", "i18nKey": "prayerCatTravel" },
+    { "id": "exam", "name": "Exams & Study", "i18nKey": "prayerCatExam" },
+    { "id": "work", "name": "Work", "i18nKey": "prayerCatWork" },
+    { "id": "interview", "name": "Interview", "i18nKey": "prayerCatInterview" },
+    { "id": "children", "name": "For Children", "i18nKey": "prayerCatChildren" },
+    { "id": "marriage", "name": "For Marriage", "i18nKey": "prayerCatMarriage" },
+    { "id": "husband", "name": "For Husband", "i18nKey": "prayerCatHusband" },
+    { "id": "wife", "name": "For Wife", "i18nKey": "prayerCatWife" },
+    { "id": "healing", "name": "Healing", "i18nKey": "prayerCatHealing" },
+    { "id": "peace", "name": "Peace & Anxiety", "i18nKey": "prayerCatPeace" },
+    { "id": "guidance", "name": "Guidance", "i18nKey": "prayerCatGuidance" },
+    { "id": "hope", "name": "Hope & Future", "i18nKey": "prayerCatHope" },
+{ "id": "patience", "name": "Patience & Waiting", "i18nKey": "prayerCatPatience" },
+{ "id": "wisdom", "name": "Wisdom & Decisions", "i18nKey": "prayerCatWisdom" },
+{ "id": "service", "name": "Serving Others", "i18nKey": "prayerCatService" }
+  ],
+  "prayers": [
+    {
+      "id": "morning_001",
+      "categoryId": "morning",
+      "title": "A Prayer to Start the Day",
+      "prayer": "Lord Jesus, thank You for the gift of this new morning and the breath in my lungs. I offer every moment of this day to You, seeking to follow wherever You lead. Please guide my steps away from distraction and toward Your holy purpose. Guard my heart against worry, filling it instead with Your perfect and steady peace. Let Your light shine through me so that others may see Your love in everything I do. Amen.",
+      "occasion": "daily",
+      "tags": ["gratitude", "guidance"],
+      "psalmsReference": ["5:3", "143:8"]
+    },
+    {
+      "id": "morning_002",
+      "categoryId": "morning",
+      "title": "Prayer for Strength This Morning",
+      "prayer": "Jesus, I come to You this morning acknowledging that I cannot face this day on my own strength. I do not know exactly what challenges lie ahead, but I find comfort in knowing that You hold my hand. Please grant me the physical and spiritual energy I need to serve those around me with genuine kindness. Give me the courage to face every trial with a joyful heart, knowing Your grace is always sufficient for me. Help me to be a pillar of hope and a source of strength for someone else today. Amen.",
+      "occasion": "daily",
+      "tags": ["strength", "courage"],
+      "psalmsReference": ["28:7", "59:16"]
+    },
+    {
+      "id": "morning_003",
+      "categoryId": "morning",
+      "title": "Prayer of Thanksgiving at Dawn",
+      "prayer": "Lord, thank You for the beauty of the dawn and the promise of a fresh start in Your presence. You are the source of all goodness, and I praise You for Your unending faithfulness to me. Your mercies are new every single morning, and I am humbled by Your constant, pursuing love. I choose to enter this day with a heart full of gratitude and a spirit of deep praise. May my life be a living song of thanks to You, my King and my dearest Savior. Amen.",
+      "occasion": "daily",
+      "tags": ["gratitude", "praise"],
+      "psalmsReference": ["92:1", "57:8"]
+    },
+    {
+      "id": "noon_001",
+      "categoryId": "noon",
+      "title": "A Midday Prayer for Focus",
+      "prayer": "Jesus, I pause in the middle of this busy day to refocus my eyes and my heart on You. The noise around me is loud, but I seek the quietness and the clarity found only in Your presence. Please clear away the fog of distraction and help me prioritize the things that truly matter for Your kingdom. Give me the perseverance to finish my tasks with a heart of integrity and infectious joy. I rely on Your divine wisdom to navigate the rest of this afternoon with grace. Amen.",
+      "occasion": "daily",
+      "tags": ["focus", "perseverance"],
+      "psalmsReference": ["55:17", "119:105"]
+    },
+    {
+      "id": "noon_002",
+      "categoryId": "noon",
+      "title": "Prayer for Rest at Noon",
+      "prayer": "Lord Jesus, I take these few moments in the middle of my work to find my true rest and refuge in You. I step away from my heavy responsibilities for a moment to breathe in Your life-giving Spirit. Please refresh my tired body and renew my mind so that I can finish the day with renewed strength. Help me to remember that my worth is not tied to my productivity, but to Your infinite love for me. I find my peace in Your presence and I am ready to face the rest of the day by Your side. Amen.",
+      "occasion": "daily",
+      "tags": ["rest", "peace"],
+      "psalmsReference": ["23:2", "62:1"]
+    },
+    {
+      "id": "evening_001",
+      "categoryId": "evening",
+      "title": "Evening Prayer of Reflection",
+      "prayer": "Jesus, as the sun sets and the day begins to slow down, I look back on Your many blessings. I thank You for being with me in every conversation, every task, and every quiet moment I experienced today. Forgive me for the times I strayed from Your path or spoke words that did not honor Your name. I release the successes and the failures of this day into Your capable and loving hands. Let Your grace cover my mistakes and Your peace prepare my heart for a night of rest. Amen.",
+      "occasion": "daily",
+      "tags": ["reflection", "gratitude"],
+      "psalmsReference": ["141:2", "63:6"]
+    },
+    {
+      "id": "evening_002",
+      "categoryId": "evening",
+      "title": "Prayer for Family at Evening",
+      "prayer": "Lord Jesus, I ask that You would pour out Your special blessing over my home and my family tonight. Let Your peace settle over every room and quiet any tension or worry that we may be carrying. Keep my loved ones safe under Your protective wings and remind us of Your great love for each of us. Help us to speak words of kindness to one another as we end our day together. We thank You for the gift of family and for the bond we share through You. Amen.",
+      "occasion": "daily",
+      "tags": ["family", "protection"],
+      "psalmsReference": ["127:1", "121:7"]
+    },
+    {
+      "id": "night_001",
+      "categoryId": "night",
+      "title": "A Bedtime Prayer for Peace",
+      "prayer": "Jesus, as the day comes to a complete close, I lay down every heavy burden and worry at Your feet. I trust You completely to watch over my mind and my home while I fall fast asleep. Please quiet the noise of the world and the racing thoughts that try to keep me awake. Grant me a deep, restorative sleep that prepares my body and spirit for tomorrow’s calling. I surrender all my cares to You, knowing that You never slumber and You never sleep. Amen.",
+      "occasion": "daily",
+      "tags": ["peace", "sleep"],
+      "psalmsReference": ["4:8", "91:1"]
+    },
+    {
+      "id": "night_002",
+      "categoryId": "night",
+      "title": "Prayer of Surrender Before Sleep",
+      "prayer": "Lord, I surrender my plans, my fears, and my future into Your loving hands before I close my eyes. I realize that I cannot control the world, but I can trust the One who created it. Please take the weight of tomorrow’s to-do list off my shoulders and let me rest in Your sovereignty. I trust that You are working all things together for my good, even while I am resting. Cover me with Your wings and let me wake up refreshed and grounded in Your love. Amen.",
+      "occasion": "daily",
+      "tags": ["trust", "surrender"],
+      "psalmsReference": ["31:5", "16:1"]
+    },
+    {
+      "id": "travel_001",
+      "categoryId": "travel",
+      "title": "Prayer for Safe Travels",
+      "prayer": "Lord Jesus, I ask for Your divine protection as I begin this journey and set out on the road. Be the pilot of my path and keep a watchful eye over every mile that I travel today. Please guard me and those traveling with me from any unforeseen danger or sudden harm. Grant me a spirit of patience and peace, even if delays or difficulties should arise. Lead us safely to our destination, and let our time away be filled with Your many blessings. Amen.",
+      "occasion": "situational",
+      "tags": ["safety", "protection"],
+      "psalmsReference": ["121:8", "91:11"]
+    },
+    {
+      "id": "travel_002",
+      "categoryId": "travel",
+      "title": "Prayer Before a Long Journey",
+      "prayer": "Lord, I pray for Your guiding hand to be upon us as we prepare for this long journey ahead. Please give us a spirit of excitement and joy as we set out on this new adventure together. Grant us safety on the roads or in the air, and protect our health throughout the duration of our trip. Help us to be kind and patient travelers, showing Your love to everyone we encounter along the way. We look forward to the memories we will make and the ways You will meet us on the road. Amen.",
+      "occasion": "situational",
+      "tags": ["journey", "guidance"],
+      "psalmsReference": ["139:9", "32:8"]
+    },
+    {
+      "id": "exam_001",
+      "categoryId": "exam",
+      "title": "Prayer Before an Exam",
+      "prayer": "Lord Jesus, I bring my nerves and my preparations to You as I head into this important exam. Please calm my racing heart and replace my anxiety with Your steady and quiet peace. Help my mind to stay sharp and recall the information that I have studied so diligently over these weeks. I ask for clarity of thought and the ability to express my knowledge with confidence and truth. Whatever the outcome may be, I trust that my worth is found in You alone and not in a grade. Amen.",
+      "occasion": "situational",
+      "tags": ["wisdom", "clarity"],
+      "psalmsReference": ["119:98", "111:10"]
+    },
+    {
+      "id": "exam_002",
+      "categoryId": "exam",
+      "title": "Prayer for Concentration While Studying",
+      "prayer": "Lord Jesus, I ask for the gift of deep concentration and focus as I spend this time studying and learning. Please remove any distractions that would steal my time or my mental energy during this session. Help me to understand the complex concepts and to retain the information I am currently reviewing. I pray that You would refresh my mind when I feel tired and give me the discipline to keep going. May my studies be fruitful and lead me toward the future You have prepared for me. Amen.",
+      "occasion": "situational",
+      "tags": ["focus", "understanding"],
+      "psalmsReference": ["119:18", "25:5"]
+    },
+    {
+      "id": "work_001",
+      "categoryId": "work",
+      "title": "Prayer Before Starting Work",
+      "prayer": "Lord Jesus, I dedicate my labor and my talents to You as I begin this new workday. Please give me the wisdom to handle my tasks with excellence and a spirit of true diligence. Help me to be a source of encouragement and light to my colleagues and my supervisors today. When pressure rises, remind me to lean on Your strength rather than my own limited understanding. May the work of my hands bring glory to Your name and serve the needs of others around me. Amen.",
+      "occasion": "situational",
+      "tags": ["diligence", "purpose"],
+      "psalmsReference": ["90:17", "128:2"]
+    },
+    {
+      "id": "work_002",
+      "categoryId": "work",
+      "title": "Prayer for Patience at Work",
+      "prayer": "Jesus, I ask for an extra measure of Your patience and Your grace as I navigate my workplace today. Help me to respond to difficult people or stressful situations with a heart of kindness and understanding. When I feel frustrated or unappreciated, remind me that I am ultimately working for You and not for man. Let my attitude be a reflection of Your humility and Your love, even when things go wrong. Grant me a spirit of peace that influences those around me for the better. Amen.",
+      "occasion": "situational",
+      "tags": ["patience", "humility"],
+      "psalmsReference": ["37:7", "40:1"]
+    },
+    {
+      "id": "interview_001",
+      "categoryId": "interview",
+      "title": "Prayer Before a Job Interview",
+      "prayer": "Jesus, I stand before this new opportunity and ask for Your favor and Your divine guidance. Please grant me the right words to say and the confidence to present myself honestly and clearly. Help me to trust that You have gone before me and have already prepared the way for my future. If this job is part of Your perfect plan for me, I pray for an open door and a warm welcome. I rest in the truth that Your will for my career is always perfect and good. Amen.",
+      "occasion": "situational",
+      "tags": ["confidence", "favor"],
+      "psalmsReference": ["5:12", "90:17"]
+    },
+    {
+      "id": "interview_002",
+      "categoryId": "interview",
+      "title": "Prayer for God's Will in Career",
+      "prayer": "Lord Jesus, as I think about my career and the opportunities before me, I seek Your will above all else. Please direct my steps toward the path where I can serve You best and provide for my family's needs. If this current opportunity is not where You want me, I ask that You would clearly and firmly close the door. Grant me the peace to wait for Your 'yes' and the faith to trust Your 'no' as a form of protection. I want my professional life to be a beautiful extension of my service to You. Amen.",
+      "occasion": "situational",
+      "tags": ["guidance", "trust"],
+      "psalmsReference": ["37:5", "25:4"]
+    },
+    {
+      "id": "children_001",
+      "categoryId": "children",
+      "title": "A Parent's Prayer for Their Child",
+      "prayer": "Jesus, I lift my precious child to You and ask for Your hand of protection to be upon them today. Surround them with Your holy angels and keep them safe from the negative influences of this world. Teach them to hear Your voice and to walk in the path of truth from a very young age. Grant me the wisdom and the patience I need to lead them with a heart of grace and love. May their life be a beautiful reflection of Your goodness and Your shining light. Amen.",
+      "occasion": "daily",
+      "tags": ["protection", "blessing"],
+      "psalmsReference": ["127:3", "115:14"]
+    },
+    {
+      "id": "children_002",
+      "categoryId": "children",
+      "title": "Prayer for a Child's Health",
+      "prayer": "Lord Jesus, I ask for Your special protection and healing over my child’s health and well-being. Please strengthen their body and protect them from any illness or harm that may come their way. I pray for Your peace to rest upon them, giving them sound sleep and a happy, vibrant spirit. Grant me the wisdom to care for them well and the faith to trust You with their physical growth. We rest in the knowledge that they are always safe in Your big, loving hands. Amen.",
+      "occasion": "situational",
+      "tags": ["healing", "comfort"],
+      "psalmsReference": ["103:2", "147:3"]
+    },
+    {
+      "id": "marriage_001",
+      "categoryId": "marriage",
+      "title": "Prayer for a Strong Marriage",
+      "prayer": "Jesus, I invite You to be the firm foundation and the constant center of our marriage. Help us to love each other with the same selfless and sacrificial love that You have shown us. Give us the humility to admit our faults and the grace to forgive one another quickly when we stumble. Strengthen our bond so that we may face every season of life as a united and faithful team. May our home always be a sanctuary of Your peace, Your joy, and Your kindness. Amen.",
+      "occasion": "daily",
+      "tags": ["love", "unity"],
+      "psalmsReference": ["128:1", "133:1"]
+    },
+    {
+      "id": "marriage_002",
+      "categoryId": "marriage",
+      "title": "Prayer for Reconciliation",
+      "prayer": "Lord Jesus, I bring the tension and the hurt within our marriage to You and ask for Your healing touch. Please soften our hearts toward one another and help us to lay aside our pride and our defensiveness. Grant us the words to speak with kindness and the ears to listen with true, deep understanding. We invite Your Holy Spirit to move between us, restoring the love and the joy we once shared. Help us to build a future together that is even stronger and more beautiful than our past. Amen.",
+      "occasion": "situational",
+      "tags": ["forgiveness", "healing"],
+      "psalmsReference": ["51:10", "147:3"]
+    },
+    {
+      "id": "husband_001",
+      "categoryId": "husband",
+      "title": "Prayer for My Husband's Strength",
+      "prayer": "Lord Jesus, I pray for my husband and ask that You fill him with Your supernatural strength today. Give him the wisdom to lead our family with a heart of humility, integrity, and service. Protect his mind from the stresses of work and his heart from the many temptations of the world. Encourage his spirit when he is weary and remind him that he is deeply loved by You and by me. May he grow daily in his relationship with You and find his greatest joy in Your presence. Amen.",
+      "occasion": "daily",
+      "tags": ["strength", "leadership"],
+      "psalmsReference": ["20:1", "1:1"]
+    },
+    {
+      "id": "husband_002",
+      "categoryId": "husband",
+      "title": "Prayer for My Husband's Faith",
+      "prayer": "Jesus, I pray that my husband would develop a deep and unshakable hunger for Your presence and Your Word. May he find his primary identity and his greatest confidence in being a beloved child of God. I ask that You would surround him with godly mentors who will sharpen his faith and encourage his walk. Give him the spiritual discernment to recognize Your truth in a world full of many conflicting voices. May his life be a bold and beautiful testimony of Your transforming power and Your grace. Amen.",
+      "occasion": "daily",
+      "tags": ["faith", "wisdom"],
+      "psalmsReference": ["119:11", "27:14"]
+    },
+    {
+      "id": "wife_001",
+      "categoryId": "wife",
+      "title": "Prayer for My Wife's Joy",
+      "prayer": "Jesus, I ask that You pour out Your abundant and refreshing joy into my wife’s heart today. Let her feel the incredible depth of Your love and the beauty of her worth in Your eyes. I pray that You would refresh her spirit and give her a sense of peace in the midst of her responsibilities. Surround her with kindness and let her see the positive impact she has on everyone around her. May our home be a place where she feels truly cherished, supported, and celebrated every day. Amen.",
+      "occasion": "daily",
+      "tags": ["joy", "peace"],
+      "psalmsReference": ["16:11", "30:5"]
+    },
+    {
+      "id": "wife_002",
+      "categoryId": "wife",
+      "title": "Prayer for My Wife's Health",
+      "prayer": "Lord Jesus, I lift my wife’s physical and emotional health to You, asking for Your sustaining power. Please grant her the energy she needs for her daily tasks and the deep rest she needs to stay strong. Protect her from exhaustion and shield her from any sickness that would try to steal her vitality and spirit. I pray that she would feel Your peace guarding her heart and Your strength undergirding every step she takes. Thank You for the gift she is to our family; please keep her well in Your care. Amen.",
+      "occasion": "daily",
+      "tags": ["health", "protection"],
+      "psalmsReference": ["121:5", "91:4"]
+    },
+    {
+      "id": "healing_001",
+      "categoryId": "healing",
+      "title": "Prayer for Physical Healing",
+      "prayer": "Lord Jesus, You are the Great Physician who has all power over sickness, disease, and pain. I come to You today asking for Your healing touch to restore my body to full and vibrant health. Please remove any discomfort and strengthen my system by Your miraculous and loving grace. I trust in Your perfect timing and Your plan for my well-being and the rest of my life. Fill me with hope and patience as I wait for Your restorative work to be made complete. Amen.",
+      "occasion": "situational",
+      "tags": ["healing", "faith"],
+      "psalmsReference": ["30:2", "103:3"]
+    },
+    {
+      "id": "healing_002",
+      "categoryId": "healing",
+      "title": "Prayer for a Broken Heart",
+      "prayer": "Jesus, I come to You with a heart that feels heavy and broken by the difficult circumstances of life. You are the one who heals the brokenhearted and binds up our deepest and most painful wounds. Please wrap Your arms of comfort around me and let me feel the warmth of Your presence tonight. Help me to trust that You can make something beautiful out of these ashes and this season of pain. Give me the hope to believe that better days are coming and the strength to keep moving forward. Amen.",
+      "occasion": "situational",
+      "tags": ["comfort", "emotions"],
+      "psalmsReference": ["34:18", "147:3"]
+    },
+    {
+      "id": "peace_001",
+      "categoryId": "peace",
+      "title": "Prayer When Feeling Overwhelmed",
+      "prayer": "Jesus, when the waves of life feel too high and the wind feels too strong, I look to You. You are my anchor in every storm and the only one who can truly calm my restless soul. Please take away this heavy feeling of being overwhelmed and replace it with Your steady peace. Help me to take just one step at a time, trusting that You are walking right beside me. I breathe in Your grace and I breathe out my fears, knowing You are in total control. Amen.",
+      "occasion": "situational",
+      "tags": ["peace", "anxiety"],
+      "psalmsReference": ["61:2", "18:2"]
+    },
+    {
+      "id": "peace_002",
+      "categoryId": "peace",
+      "title": "Prayer for a Mind at Rest",
+      "prayer": "Lord Jesus, I ask for Your perfect peace to guard my mind and my heart against the spirit of anxiety. Help me to focus on things that are true, noble, right, pure, and lovely, as Your Word instructs us. When my thoughts begin to spiral, remind me of Your promises and Your past faithfulness to me. I choose to cast every single care upon You, knowing that You are more than able to handle them. Let Your calmness flow through me, grounding me in Your love and Your sovereign, daily care. Amen.",
+      "occasion": "daily",
+      "tags": ["trust", "calm"],
+      "psalmsReference": ["131:2", "94:19"]
+    },
+    {
+      "id": "guidance_001",
+      "categoryId": "guidance",
+      "title": "Prayer for a Hard Decision",
+      "prayer": "Lord Jesus, I am at a crossroads and I desperately need Your divine wisdom to know which way to go. Please quiet the noise of my own desires so that I can clearly hear Your gentle direction. I ask that You would open the right doors and firmly close the ones that lead away from Your will. Give me the courage to obey Your promptings, even when the path ahead looks uncertain or difficult. I trust that You are leading me toward a future filled with hope, peace, and purpose. Amen.",
+      "occasion": "situational",
+      "tags": ["wisdom", "direction"],
+      "psalmsReference": ["119:105", "25:9"]
+    },
+    {
+      "id": "guidance_002",
+      "categoryId": "guidance",
+      "title": "Prayer to Hear Your Voice",
+      "prayer": "Jesus, help me to develop a heart that is sensitive and perfectly tuned to the frequency of Your voice. In a world full of loud opinions and constant noise, I long to hear Your gentle and steady whisper. Please give me a spirit of stillness so that I can wait patiently for Your timing and Your truth. Teach me how to discern Your leadings from my own impulsive thoughts or the pressures of those around me. I want my life to be a faithful response to Your call, guided by Your hand every day. Amen.",
+      "occasion": "daily",
+      "tags": ["listening", "faith"],
+      "psalmsReference": ["85:8", "143:10"]
+    },
+    {
+      "id": "praise_001",
+      "categoryId": "morning",
+      "title": "A Simple Act of Praise",
+      "prayer": "Jesus, my heart overflows with praise for who You are and all the wonderful things You have done. You are the King of kings, yet You call me Your friend and welcome me into Your presence. I worship You for Your holiness, Your power, and the incredible sacrifice You made for me on the cross. Thank You for the beauty of Your creation and the gift of eternal life that You offer so freely. I choose to lift Your name high today, for You alone are worthy of all my glory and praise. Amen.",
+      "occasion": "daily",
+      "tags": ["praise", "worship"],
+      "psalmsReference": ["100:1", "150:6"]
+    },
+    {
+      "id": "finances_001",
+      "categoryId": "peace",
+      "title": "Prayer for Financial Trust",
+      "prayer": "Lord Jesus, I bring my financial needs and my worries about the future to Your throne of grace. You are Jireh, my Provider, and I trust that You know exactly what I need before I even ask. Please grant me the wisdom to manage my resources well and the heart to be generous to others in need. I choose to let go of fear and instead hold onto Your promise to care for Your children. Thank You for Your faithfulness in providing for me yesterday, today, and forevermore. Amen.",
+      "occasion": "situational",
+      "tags": ["provision", "trust"],
+      "psalmsReference": ["34:10", "23:1"]
+    },
+    {
+      "id": "friends_001",
+      "categoryId": "guidance",
+      "title": "Prayer for Godly Friendships",
+      "prayer": "Jesus, I thank You for the gift of community and the friends You have placed in my life. I ask that You would bring people across my path who will challenge me to grow closer to You. Help me to be a source of life, encouragement, and truth to everyone I call a friend. May our relationships be centered on Your love and marked by genuine kindness and loyalty. Guard our hearts from gossip or jealousy, and let our bond reflect the unity of Your kingdom. Amen.",
+      "occasion": "daily",
+      "tags": ["relationships", "community"],
+      "psalmsReference": ["133:1", "101:6"]
+    },
+    {
+      "id": "repentance_001",
+      "categoryId": "night",
+      "title": "Prayer for a Clean Heart",
+      "prayer": "Lord Jesus, I come before You with a humble heart, asking for Your forgiveness for the mistakes I’ve made. I am sorry for the times I have let anger, pride, or selfishness guide my actions or my words today. Please wash me clean and create in me a heart that beats in perfect rhythm with Yours. Help me to turn away from my sins and walk more closely in Your light from this moment on. I thank You for Your unending mercy and the grace that always gives me a second chance. Amen.",
+      "occasion": "daily",
+      "tags": ["forgiveness", "mercy"],
+      "psalmsReference": ["51:1", "103:12"]
+    },
+    [
+    {
+      "id": "hope_001",
+      "categoryId": "hope",
+      "title": "A Prayer for a Bright Future",
+      "prayer": "Lord Jesus, I place my future and my dreams into Your nail-scarred hands today. When I feel uncertain about what lies ahead, remind me that Your plans for me are filled with hope and purpose. Please take away any fear of the unknown and replace it with a deep, quiet confidence in Your sovereignty. I trust that You are opening the right paths for me at the exact right moment. Thank You for being the light that guides me through every season of my life. Amen.",
+      "occasion": "daily",
+      "tags": ["hope", "trust"],
+      "psalmsReference": ["33:22", "130:5"]
+    },
+    {
+      "id": "patience_001",
+      "categoryId": "patience",
+      "title": "Prayer for a Waiting Heart",
+      "prayer": "Jesus, give me the grace to wait patiently for Your timing, even when my heart is restless. I know that Your delays are not denials, but often a way to prepare me for what is coming. Help me to be still and find peace in the present moment rather than rushing into the next. Strengthen my faith so that I can trust Your wisdom more than my own timeline. I rest in the truth that You are working behind the scenes for my ultimate good. Amen.",
+      "occasion": "situational",
+      "tags": ["patience", "waiting"],
+      "psalmsReference": ["27:14", "37:7"]
+    },
+    {
+      "id": "wisdom_001",
+      "categoryId": "wisdom",
+      "title": "Prayer for Spiritual Discernment",
+      "prayer": "Lord, I ask for Your divine wisdom to see the world through Your eyes today. Help me to discern the truth in every situation and to make choices that honor Your holy name. Please quiet the distractions around me so that I can follow the gentle leading of Your Spirit. Give me a heart that values Your Word above the opinions and pressures of this world. I thank You for promising to give wisdom generously to all who ask for it in faith. Amen.",
+      "occasion": "daily",
+      "tags": ["wisdom", "truth"],
+      "psalmsReference": ["111:10", "119:130"]
+    },
+    {
+      "id": "service_001",
+      "categoryId": "service",
+      "title": "A Prayer to Serve with Love",
+      "prayer": "Jesus, help me to be Your hands and feet to those I encounter throughout this day. Soften my heart toward the needs of others and give me a spirit of true, humble service. May I look for opportunities to show kindness and to speak words of life to those who are hurting. Remove any selfishness from my heart and replace it with Your sacrificial and unending love. Let my life be a small reflection of the great love You have shown to all of us. Amen.",
+      "occasion": "daily",
+      "tags": ["service", "kindness"],
+      "psalmsReference": ["100:2", "116:16"]
+    },
+    {
+      "id": "strength_003",
+      "categoryId": "morning",
+      "title": "Prayer for Emotional Stability",
+      "prayer": "Lord Jesus, I ask for Your steadying hand over my emotions and my thoughts this morning. When I feel tossed about by the circumstances of life, be the rock that keeps me grounded and secure. Help me to respond with grace and self-control rather than reacting out of fear or sudden frustration. Fill me with a peace that surpasses all understanding, guarding my heart in every situation. I trust that You are my anchor and my safe harbor in every emotional storm. Amen.",
+      "occasion": "daily",
+      "tags": ["peace", "stability"],
+      "psalmsReference": ["62:2", "112:7"]
+    },
+    {
+      "id": "hope_002",
+      "categoryId": "hope",
+      "title": "Prayer for Light in the Darkness",
+      "prayer": "Jesus, when the shadows of life feel long, remind me that You are the Light that can never be extinguished. Please shine Your truth into the dark corners of my heart and take away any lingering despair. Give me the strength to keep moving forward, even when I cannot see the entire path ahead. I hold onto the promise that Your joy comes with the morning, no matter how long the night may feel. I choose to put my hope in You, my Savior and my eternal King. Amen.",
+      "occasion": "situational",
+      "tags": ["hope", "light"],
+      "psalmsReference": ["18:28", "42:11"]
+    },
+    {
+      "id": "humility_001",
+      "categoryId": "guidance",
+      "title": "Prayer for a Humble Spirit",
+      "prayer": "Lord, teach me the beauty of humility and help me to follow Your example of lowliness and grace. Remove any pride that blocks my relationship with You or causes distance between me and others. Help me to truly value the needs of those around me and to seek Your glory instead of my own. Grant me a heart that is easy to teach and a spirit that is quick to listen and slow to speak. May I find my true greatness in being a faithful servant of Your kingdom. Amen.",
+      "occasion": "daily",
+      "tags": ["humility", "character"],
+      "psalmsReference": ["25:9", "149:4"]
+    },
+    {
+      "id": "protection_001",
+      "categoryId": "night",
+      "title": "Prayer for Divine Protection",
+      "prayer": "Jesus, I ask that You would place a hedge of protection around my mind, my body, and my spirit tonight. Guard me against the spiritual battles of the enemy and keep me safe in the shadow of Your wings. I thank You that You are my fortress and my high tower, where I can always find safety. Let Your presence be a shield that wards off fear and grants me a night of perfect, uninterrupted rest. I trust in Your power to keep me and my loved ones secure at all times. Amen.",
+      "occasion": "daily",
+      "tags": ["protection", "safety"],
+      "psalmsReference": ["91:4", "5:12"]
+    },
+    {
+      "id": "loneliness_001",
+      "categoryId": "peace",
+      "title": "Prayer for the Lonely Heart",
+      "prayer": "Lord Jesus, when I feel alone or forgotten by the world, remind me that You are always right here with me. You have promised never to leave me nor forsake me, and I cling to that beautiful truth today. Fill the empty spaces in my heart with the warmth of Your Holy Spirit and Your comforting presence. Help me to find community and connection with others who love and follow You. I thank You for being the friend who sticks closer than a brother and who knows my heart completely. Amen.",
+      "occasion": "situational",
+      "tags": ["loneliness", "comfort"],
+      "psalmsReference": ["25:16", "68:6"]
+    },
+    {
+      "id": "joy_001",
+      "categoryId": "morning",
+      "title": "Prayer for a Heart of Joy",
+      "prayer": "Jesus, I ask that You would awaken a deep and infectious joy within my soul this morning. Let this joy be based on Your unchanging character rather than my shifting circumstances or my daily feelings. Help me to find reasons to smile and to share the light of Your happiness with everyone I meet. May Your presence be my greatest delight and the source of my strength throughout the day. I choose to rejoice in You today, for You have done great things for me. Amen.",
+      "occasion": "daily",
+      "tags": ["joy", "praise"],
+      "psalmsReference": ["5:11", "126:3"]
+    },
+    {
+      "id": "anger_001",
+      "categoryId": "peace",
+      "title": "Prayer to Release Anger",
+      "prayer": "Lord, I bring my feelings of anger and frustration to You and ask for Your help in letting them go. Please soften the hard edges of my heart and replace my bitterness with Your gentle and forgiving love. Help me to see those who have wronged me through Your eyes of compassion and infinite grace. Grant me the self-control to keep my words kind and my spirit calm, even when I feel provoked. I choose to trust You with my justice and to rest in Your perfect peace. Amen.",
+      "occasion": "situational",
+      "tags": ["forgiveness", "anger"],
+      "psalmsReference": ["37:8", "4:4"]
+    },
+    {
+      "id": "health_003",
+      "categoryId": "healing",
+      "title": "Prayer for Physical Renewal",
+      "prayer": "Jesus, I ask for Your renewing power to touch my body and restore my physical strength today. Please heal any areas of weakness and give me the vitality I need to fulfill the tasks You have set before me. I thank You that You are the one who redeems my life and crowns me with love and compassion. Help me to treat my body with respect and to find the rest and nourishment I need to stay healthy. I trust in Your life-giving Spirit to sustain me in every way. Amen.",
+      "occasion": "daily",
+      "tags": ["health", "strength"],
+      "psalmsReference": ["103:5", "73:26"]
+    },
+    {
+      "id": "new_beginnings_001",
+      "categoryId": "hope",
+      "title": "Prayer for a New Beginning",
+      "prayer": "Lord Jesus, I thank You for the opportunity to start fresh and for the new chapter You are opening in my life. Please guide my steps as I walk into this unknown territory, and give me the courage to let go of the past. Help me to learn from my previous mistakes while keeping my eyes fixed forward on Your promises. May this new season be marked by Your grace, Your favor, and a deeper relationship with You. I trust that You are making all things new and that Your plan for me is good. Amen.",
+      "occasion": "situational",
+      "tags": ["new start", "guidance"],
+      "psalmsReference": ["32:8", "121:8"]
+    },
+    {
+      "id": "faith_001",
+      "categoryId": "guidance",
+      "title": "Prayer for Increasing Faith",
+      "prayer": "Jesus, I ask that You would strengthen my faith and help me to trust You more deeply than I ever have before. When doubts arise, remind me of Your past faithfulness and the many ways You have provided for me. Help me to walk by faith and not by sight, believing in Your promises even when I cannot see the outcome. Grant me a heart that is fully surrendered to Your will and confident in Your perfect power. I believe, Lord; please help me overcome any lingering unbelief in my soul. Amen.",
+      "occasion": "daily",
+      "tags": ["faith", "trust"],
+      "psalmsReference": ["18:30", "62:2"]
+    },
+    {
+      "id": "church_001",
+      "categoryId": "service",
+      "title": "Prayer for the Body of Christ",
+      "prayer": "Lord Jesus, I lift up my brothers and sisters in the faith and ask for Your blessing over the global Church. Please unite us in Your love and help us to set aside our differences for the sake of Your Gospel. Grant our leaders wisdom, integrity, and a heart of service as they guide Your people. May we be a bold and beautiful witness of Your grace to a world that desperately needs Your hope. Let Your kingdom come and Your will be done through us, Your faithful followers. Amen.",
+      "occasion": "daily",
+      "tags": ["church", "unity"],
+      "psalmsReference": ["122:1", "133:1"]
+    }
+]
+  ]
+}

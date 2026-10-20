@@ -1,1 +1,107 @@
-/* prayers: filled by its wave 1 task. */
+/* ═══ Prayers ═══════════════════════════════════════════════════════════════
+   Three levels share one panel body: categories, a category's prayers, and one
+   prayer. The rows reuse the shared list look (.rows, .row, .row-body in
+   style.css); only what is particular to prayers is styled here, and every
+   colour comes from the theme variables. */
+
+/* ── Back and heading ──────────────────────────────────────────────────── */
+.prayer-nav {
+  padding: var(--space-3) var(--space-5) 0;
+}
+
+.prayer-heading {
+  margin: var(--space-3) var(--space-5) var(--space-2);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+/* ── Rows: a category, or a prayer ─────────────────────────────────────── */
+.prayer-row-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.prayer-row-main svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.prayer-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.prayer-row-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.prayer-row-sub {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+/* ── One prayer ────────────────────────────────────────────────────────── */
+.prayer-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-2) var(--space-5) var(--space-6);
+}
+
+.prayer-text {
+  font-family: var(--font-read);
+  font-size: var(--size-read);
+  line-height: 1.6;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.prayer-refs-label {
+  margin: 0 0 var(--space-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.prayer-ref-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.prayer-ref {
+  padding: 5px 12px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+button.prayer-ref:hover {
+  background: var(--brand);
+  color: var(--brand-text);
+}
+
+/* A reference the reader cannot open: shown, but not a control. */
+.prayer-ref.is-plain {
+  background: var(--bg-sunken);
+  color: var(--text-soft);
+}
+
+.prayer-copy {
+  align-self: flex-start;
+}
