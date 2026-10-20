@@ -6,6 +6,7 @@
 // backup cannot introduce markup.
 
 import { icon } from "./icons.js";
+import { t } from "./i18n.js";
 
 /**
  * Create an element.
@@ -128,7 +129,7 @@ export function reportError(error, fallbackMessage) {
     error && typeof error.message === "string" && error.name !== "TypeError"
       ? error.message
       : fallbackMessage;
-  toast(message || "Something went wrong.", "error");
+  toast(message || t("somethingWentWrong", {}, "Something went wrong."), "error");
 }
 
 // ─── Focus management ─────────────────────────────────────────────────────────
@@ -178,8 +179,8 @@ export function focusFirst(root) {
 export function confirmDialog({
   title,
   message,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel = t("confirm", {}, "Confirm"),
+  cancelLabel = t("cancel", {}, "Cancel"),
   destructive = false,
 }) {
   return new Promise((resolve) => {

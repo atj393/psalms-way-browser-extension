@@ -45,7 +45,7 @@ async function draw(chapterIndex, verseIndex, focusSlot) {
   const metaOf = (module) =>
     catalogue.find((version) => version.module === module) ?? { module, name: module };
   const pickSelect = (module, slot) =>
-    versionSelect(others, module, (next) => {
+    versionSelect(others, module, slot, (next) => {
       const compareVersions = [...picks];
       compareVersions[slot] = next;
       return choose(compareVersions, chapterIndex, verseIndex, slot);
@@ -94,12 +94,18 @@ async function verseIn(module, chapterIndex, verseIndex) {
 
 const loadFailedText = () => t("compareVersionLoadFailed", {}, "This version could not be loaded.");
 
-function versionSelect(versions, chosen, onPick) {
+/** The two selects need names that tell them apart, for someone who cannot see which card is which. */
+const slotLabel = (slot) =>
+  slot === 0
+    ? t("compareFirstVersion", {}, "First version")
+    : t("compareSecondVersion", {}, "Second version");
+
+function versionSelect(versions, chosen, slot, onPick) {
   return el(
     "select",
     {
       class: "select compare-select",
-      "aria-label": t("a11ySelectBibleVersion", {}, "Select bible version"),
+      "aria-label": slotLabel(slot),
       onChange: (event) => {
         onPick(event.target.value).catch((error) =>
           reportError(error, t("compareFailed", {}, "Compare could not be shown."))

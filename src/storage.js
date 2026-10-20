@@ -18,6 +18,7 @@
 //      it. Limits apply to what the reader types, not to what is stored.
 
 import { CHAPTER_COUNT } from "./data.js";
+import { t } from "./i18n.js";
 import { stableJson } from "./syncMerge.js";
 
 // 3: notes are no longer trimmed or cut on read, history keeps one entry per
@@ -88,7 +89,10 @@ export function defaultStore() {
 function storageArea() {
   const area = globalThis.chrome?.storage?.local;
   if (!area) {
-    throw new StorageError("Browser storage is unavailable.", "unavailable");
+    throw new StorageError(
+      t("storageErrUnavailable", {}, "Browser storage is unavailable."),
+      "unavailable"
+    );
   }
   return area;
 }
@@ -102,7 +106,11 @@ async function readRaw(keys) {
     return await storageArea().get(keys);
   } catch (error) {
     if (error instanceof StorageError) throw error;
-    throw new StorageError("Could not read saved data.", "read_failed", error);
+    throw new StorageError(
+      t("storageErrRead", {}, "Could not read saved data."),
+      "read_failed",
+      error
+    );
   }
 }
 
@@ -113,9 +121,17 @@ async function writeRaw(items) {
     if (error instanceof StorageError) throw error;
     const message = String(error?.message ?? "");
     if (/quota/i.test(message)) {
-      throw new StorageError("There is no room left in browser storage.", "quota_exceeded", error);
+      throw new StorageError(
+        t("storageErrQuota", {}, "There is no room left in browser storage."),
+        "quota_exceeded",
+        error
+      );
     }
-    throw new StorageError("Changes could not be saved.", "write_failed", error);
+    throw new StorageError(
+      t("storageErrWrite", {}, "Changes could not be saved."),
+      "write_failed",
+      error
+    );
   }
 }
 
@@ -498,7 +514,14 @@ export async function saveNote(chapterIndex, verseIndex, text) {
     return null;
   }
   if (trimmed.length > NOTE_MAX_LENGTH) {
-    throw new StorageError(`Notes are limited to ${NOTE_MAX_LENGTH} characters.`, "note_too_long");
+    throw new StorageError(
+      t(
+        "storageErrNoteLength",
+        { count: NOTE_MAX_LENGTH },
+        `Notes are limited to ${NOTE_MAX_LENGTH} characters.`
+      ),
+      "note_too_long"
+    );
   }
 
   let saved = null;
@@ -513,7 +536,10 @@ export async function saveNote(chapterIndex, verseIndex, text) {
       saved = existing;
     } else {
       if (draft.notes.length >= NOTES_MAX) {
-        throw new StorageError(`You can keep up to ${NOTES_MAX} notes.`, "notes_limit");
+        throw new StorageError(
+          t("storageErrNotesLimit", { count: NOTES_MAX }, `You can keep up to ${NOTES_MAX} notes.`),
+          "notes_limit"
+        );
       }
       saved = {
         id: makeNoteId(chapterIndex, verseIndex),

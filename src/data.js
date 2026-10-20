@@ -3,6 +3,7 @@
 // checks. Loading and caching the versions is versions.js's job; everything is
 // offline, because every version ships inside the extension package.
 
+import { t } from "./i18n.js";
 import { currentVersion, getVersionData, resetVersions } from "./versions.js";
 
 export const CHAPTER_COUNT = 150;
@@ -72,11 +73,12 @@ export function isChapterRef(data, chapterIndex) {
 }
 
 /**
- * Format a scripture reference.
+ * Format a scripture reference, in the reader's language.
  *
  * Singular "Psalm 23:1", not "Psalms 23:1". "Psalms" is the book; an individual
  * chapter is "a Psalm". This matches the companion Android app, which formats
- * references the same way.
+ * references the same way, and takes the words from the phone's own wording
+ * (`psalmTitle`, `psalmSubtitle`) so a language can order them as it needs.
  *
  * @param {number} chapterIndex 0-based
  * @param {number|null} [verseIndex] 0-based, omit for a whole chapter
@@ -84,8 +86,8 @@ export function isChapterRef(data, chapterIndex) {
 export function formatReference(chapterIndex, verseIndex = null) {
   const chapter = chapterIndex + 1;
   return verseIndex === null || verseIndex === undefined
-    ? `Psalm ${chapter}`
-    : `Psalm ${chapter}:${verseIndex + 1}`;
+    ? t("psalmTitle", { chapter }, "Psalm {{chapter}}")
+    : t("psalmSubtitle", { chapter, verse: verseIndex + 1 }, "Psalm {{chapter}}:{{verse}}");
 }
 
 /** Reference plus text, as copied to the clipboard and written into backups. */

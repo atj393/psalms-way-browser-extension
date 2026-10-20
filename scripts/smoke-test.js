@@ -693,6 +693,111 @@ try {
   await evaluate("document.getElementById('btnCloseCloud').click()");
   await sleep(250);
 
+  // ── Interface language ───────────────────────────────────────────────────
+  section("Language");
+  const chooseLanguage = async (code) => {
+    await evaluate(
+      `(() => { const s = document.getElementById('languageSelect'); s.value = '${code}'; s.dispatchEvent(new Event('change', { bubbles: true })); })()`
+    );
+    await waitFor(`document.documentElement.lang === '${code}'`);
+    await sleep(300);
+  };
+  await evaluate("document.getElementById('btnSettings').click()");
+  await sleep(300);
+  check(
+    "the Language select offers Automatic and the 47 languages by their own names",
+    (await evaluate("document.getElementById('languageSelect').options.length")) === 48 &&
+      (await evaluate(
+        "[...document.getElementById('languageSelect').options].some((o) => o.value === 'de' && o.textContent === 'Deutsch')"
+      ))
+  );
+  await chooseLanguage("ar");
+  check(
+    "choosing Arabic makes the page right to left",
+    (await evaluate("document.documentElement.dir")) === "rtl"
+  );
+  check(
+    "the fixed text is in Arabic at once, and so is the Psalm on screen",
+    await evaluate(`(async () => {
+      const phone = await (await fetch('locales/app/ar.json')).json();
+      const reader = await import('./src/reader.js');
+      const chapter = String(reader.getCurrentChapter() + 1);
+      const verse = reader.getCurrentVerse();
+      const expected = (verse === null ? phone.psalmTitle : phone.psalmSubtitle)
+        .replace('{{chapter}}', chapter)
+        .replace('{{verse}}', String((verse ?? 0) + 1));
+      return document.getElementById('settingsHeading').textContent === phone.settings &&
+        document.getElementById('chapterTitle').textContent === expected;
+    })()`)
+  );
+  check(
+    "the Bible's own language and direction are on the verse text, not on the reading view",
+    (await evaluate("document.getElementById('readingView').hasAttribute('dir')")) === false &&
+      (await evaluate(
+        "document.querySelector('.verse-text, .single-verse-text').hasAttribute('dir')"
+      ))
+  );
+  check(
+    "the popup still fits its width in a right-to-left language",
+    await evaluate("document.documentElement.scrollWidth <= document.documentElement.clientWidth")
+  );
+  await reload();
+  check(
+    "the language persists across reopening",
+    (await evaluate("document.documentElement.lang")) === "ar" &&
+      (await evaluate("document.documentElement.dir")) === "rtl"
+  );
+  // Long words in some languages must not push a control out of its row or past the edge.
+  const fitsWithinItsRow = `(() => {
+    const inside = (selector) => {
+      const box = document.querySelector(selector);
+      const style = getComputedStyle(box);
+      const rect = box.getBoundingClientRect();
+      const left = rect.left + parseFloat(style.paddingLeft);
+      const right = rect.right - parseFloat(style.paddingRight);
+      return [...box.children].every((child) => {
+        const r = child.getBoundingClientRect();
+        return r.width === 0 || (r.left >= left - 1 && r.right <= right + 1);
+      });
+    };
+    return ['.header', '.chapter-bar', '.toolbar'].every(inside);
+  })()`;
+  const LONG_LANGUAGES = { de: "German", ta: "Tamil", ml: "Malayalam" };
+  for (const [code, name] of Object.entries(LONG_LANGUAGES)) {
+    await evaluate("document.getElementById('btnSettings').click()");
+    await sleep(300);
+    await chooseLanguage(code);
+    await evaluate("document.getElementById('btnLibrary').click()");
+    await sleep(300);
+    check(
+      `the Library tabs do not scroll sideways in ${name}`,
+      await evaluate(
+        "(() => { const t = document.getElementById('libraryTabs'); return t.scrollWidth <= t.clientWidth; })()"
+      )
+    );
+    check(
+      `the popup does not scroll sideways in ${name}`,
+      await evaluate("document.documentElement.scrollWidth <= document.documentElement.clientWidth")
+    );
+    check(
+      `the header, chapter bar and toolbar keep every control inside their row in ${name}`,
+      await evaluate(fitsWithinItsRow)
+    );
+    await evaluate("document.getElementById('btnCloseLibrary').click()");
+    await sleep(200);
+  }
+  await evaluate("document.getElementById('btnSettings').click()");
+  await sleep(300);
+  await chooseLanguage("en");
+  check(
+    "going back to English makes it left to right again",
+    (await evaluate("document.documentElement.dir")) === "ltr"
+  );
+  await evaluate(
+    "(async () => { const s = await import('./src/storage.js'); await s.updateSettings({ uiLanguage: 'auto' }); })()"
+  );
+  await reload();
+
   // ── Layout ───────────────────────────────────────────────────────────────
   section("Layout");
   await evaluate(

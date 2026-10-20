@@ -10,6 +10,7 @@ import {
   getVersionData,
   initVersions,
   loadCatalogue,
+  readingTextAttributes,
   resetVersions,
   setCurrentVersion,
   versionLabel,
@@ -356,15 +357,23 @@ describe("initVersions", () => {
     expect(currentVersion()).toBe("modern");
   });
 
-  it("points the reading view at the version's language and direction", async () => {
+  it("describes the text of the version it chose, for the reader to mark it with", async () => {
+    installChromeMock();
+    serveRepoFiles();
+
+    await initVersions({ bibleVersion: "wlc" }, "en");
+    expect(readingTextAttributes()).toEqual({ lang: "he", dir: "rtl" });
+  });
+
+  it("leaves the page alone: the Bible text is marked where it is drawn, not on the reading view", async () => {
     installChromeMock();
     serveRepoFiles();
     document.body.append(Object.assign(document.createElement("div"), { id: "readingView" }));
 
     await initVersions({ bibleVersion: "wlc" }, "en");
     const view = document.getElementById("readingView");
-    expect(view.getAttribute("dir")).toBe("rtl");
-    expect(view.getAttribute("lang")).toBe("he");
+    expect(view.hasAttribute("dir")).toBe(false);
+    expect(view.hasAttribute("lang")).toBe(false);
   });
 });
 
@@ -397,23 +406,26 @@ describe("setCurrentVersion", () => {
     expect(currentVersion()).toBe("modern");
   });
 
-  it("switches the reading view between right-to-left and left-to-right", async () => {
+  it("switches the text between right-to-left and left-to-right", async () => {
     installChromeMock();
     serveRepoFiles();
-    document.body.append(Object.assign(document.createElement("div"), { id: "readingView" }));
-    const view = document.getElementById("readingView");
 
     await setCurrentVersion("wlc");
-    expect([view.getAttribute("dir"), view.getAttribute("lang")]).toEqual(["rtl", "he"]);
+    expect(readingTextAttributes()).toEqual({ lang: "he", dir: "rtl" });
 
     await setCurrentVersion("kjv");
-    expect([view.getAttribute("dir"), view.getAttribute("lang")]).toEqual(["ltr", "en"]);
+    expect(readingTextAttributes()).toEqual({ lang: "en", dir: "ltr" });
   });
 
-  it("works where there is no reading view", async () => {
-    installChromeMock();
+  it("keeps the old version's description when the choice fails", async () => {
+    const local = installChromeMock();
     serveRepoFiles();
-    await expect(setCurrentVersion("wlc")).resolves.toBeUndefined();
+    await setCurrentVersion("wlc");
+    await store.loadStore();
+    local.rejectNextSet();
+
+    await expect(setCurrentVersion("kjv")).rejects.toBeInstanceOf(store.StorageError);
+    expect(readingTextAttributes()).toEqual({ lang: "he", dir: "rtl" });
   });
 
   it("works where there is no document at all, as in the background worker", async () => {
@@ -422,6 +434,20 @@ describe("setCurrentVersion", () => {
     vi.stubGlobal("document", undefined);
     await expect(setCurrentVersion("wlc")).resolves.toBeUndefined();
     expect(currentVersion()).toBe("wlc");
+  });
+});
+
+describe("readingTextAttributes", () => {
+  it("is empty until a version has been chosen, so the text takes the page's own language", () => {
+    expect(readingTextAttributes()).toEqual({});
+  });
+
+  it("is empty again after a reset", async () => {
+    installChromeMock();
+    serveRepoFiles();
+    await setCurrentVersion("wlc");
+    resetVersions();
+    expect(readingTextAttributes()).toEqual({});
   });
 });
 

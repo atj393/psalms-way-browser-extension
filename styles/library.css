@@ -164,11 +164,19 @@
   margin-top: var(--space-4);
 }
 
-/* ── Library tabs: four now, so let a long translation scroll, not clip ── */
+/* ── Library tabs: four now, so a long translation shares the row and wraps ── */
+/* The tabs share the row (440 px is about 100 px each), take a little less padding than
+   a lone tab would, and let a long label break onto a second line, so nothing scrolls
+   sideways and nothing is cut off. A word is only broken when it cannot fit its tab. */
 .tabs {
-  overflow-x: auto;
+  gap: var(--space-1);
 }
 
 .tab {
-  white-space: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-inline: var(--space-2);
+  hyphens: auto;
+  overflow-wrap: anywhere;
+  text-align: center;
 }

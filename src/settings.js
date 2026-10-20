@@ -1,7 +1,10 @@
 // ─── Settings ─────────────────────────────────────────────────────────────────
-// Appearance, plus export and restore of personal data.
+// Appearance, the interface language, and export and restore of personal data.
 
 import { el, byId, toast, reportError, confirmDialog } from "./dom.js";
+import { repaintCloudButton } from "./cloud.js";
+import { SUPPORTED_LANGUAGES, applyTranslations, initI18n, languageName, t } from "./i18n.js";
+import { refreshPassage } from "./reader.js";
 import {
   getSettings,
   updateSettings,
@@ -58,7 +61,9 @@ export function applyToolbarCollapsed(collapsed) {
   wrapper.classList.toggle("is-collapsed", collapsed);
   wrapper.hidden = collapsed;
   button.setAttribute("aria-expanded", collapsed ? "false" : "true");
-  button.title = collapsed ? "Show toolbar" : "Hide toolbar";
+  button.title = collapsed
+    ? t("toolbarShow", {}, "Show toolbar")
+    : t("toolbarHide", {}, "Hide toolbar");
   button.setAttribute("aria-label", button.title);
   button.classList.toggle("is-collapsed", collapsed);
 }
@@ -81,6 +86,64 @@ export function paintSettingsControls(settings) {
       button.dataset.accent === settings.accent ? "true" : "false"
     );
   }
+  const language = byId("languageSelect");
+  if (language) {
+    // A saved language the extension does not have is shown as Automatic, which is what it does.
+    const known = [...language.options].some((option) => option.value === settings.uiLanguage);
+    language.value = known ? settings.uiLanguage : "auto";
+  }
+}
+
+/**
+ * Puts the current language on what the popup draws without being asked: the marked-up
+ * text, and the buttons whose names follow their state, which are set from code.
+ */
+export function paintLanguage() {
+  applyTranslations();
+  applyToolbarCollapsed(byId("toolbarWrapper").classList.contains("is-collapsed"));
+  repaintCloudButton();
+}
+
+/**
+ * Shows a newly chosen interface language: load it, then redraw the text and the Psalm
+ * behind Settings. A panel that is closed is drawn again when it is next opened.
+ */
+export async function applyLanguage(setting) {
+  await initI18n(setting);
+  paintLanguage();
+  await refreshPassage();
+}
+
+/**
+ * Fills the Language select, once: "Automatic" (already in the markup) and then every
+ * language under its own name, so a reader who cannot read the current language can
+ * still find theirs. Choosing one saves it and calls `onChanged(setting)`, which loads
+ * the language and redraws the page. A save that fails is reported (by changeSetting)
+ * and the language still applies for this visit, as with the other settings.
+ *
+ * @param {{onChanged: (setting: string) => (void|Promise<void>)}} options
+ */
+export function initLanguageSelect({ onChanged }) {
+  const select = byId("languageSelect");
+  if (!select) return;
+  // Alphabetical by English name, so the order does not depend on the script of the names.
+  const english = new Intl.DisplayNames(["en"], { type: "language" });
+  const codes = [...SUPPORTED_LANGUAGES].sort((a, b) =>
+    (english.of(a) ?? a).localeCompare(english.of(b) ?? b, "en")
+  );
+  for (const code of codes) {
+    // lang, so a screen reader pronounces each name in its own language.
+    select.append(el("option", { value: code, lang: code, text: languageName(code) }));
+  }
+  select.addEventListener("change", async () => {
+    const uiLanguage = select.value;
+    await changeSetting({ uiLanguage });
+    try {
+      await onChanged(uiLanguage);
+    } catch (error) {
+      reportError(error, t("languageChangeError", {}, "The language could not be changed."));
+    }
+  });
 }
 
 /** Make each accent swatch save and apply its colour. Called once, from initAppearance. */
@@ -125,12 +188,17 @@ export async function changeSetting(patch, { apply } = {}) {
     paintSettingsControls(settings);
     return settings;
   } catch (error) {
-    reportError(error, "That setting could not be saved.");
+    reportError(error, t("settingSaveError", {}, "That setting could not be saved."));
     return null;
   }
 }
 
 // ─── Export ───────────────────────────────────────────────────────────────────
+
+// Each count has its own noun in its own plural form, so "1 bookmark, 2 notes" agrees.
+const bookmarkCount = (count) => t("countBookmarks", { count }, "{{count}} bookmarks");
+const noteCount = (count) => t("countNotes", { count }, "{{count}} notes");
+const historyCount = (count) => t("countHistoryEntries", { count }, "{{count}} history entries");
 
 function extensionVersion() {
   try {
@@ -145,13 +213,13 @@ export async function exportBackup() {
   try {
     store = await loadStore();
   } catch (error) {
-    reportError(error, "Your data could not be read.");
+    reportError(error, t("dataReadError", {}, "Your data could not be read."));
     return;
   }
 
   const total = store.favourites.length + store.notes.length + store.history.length;
   if (total === 0) {
-    toast("There is nothing to export yet.", "error");
+    toast(t("exportNothing", {}, "There is nothing to export yet."), "error");
     return;
   }
 
@@ -166,7 +234,14 @@ export async function exportBackup() {
   // Revoke on the next turn so the download has taken the reference.
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 
-  toast(`Exported ${store.favourites.length} bookmarks, ${store.notes.length} notes`, "success");
+  toast(
+    t(
+      "exportDone",
+      { bookmarks: bookmarkCount(store.favourites.length), notes: noteCount(store.notes.length) },
+      "Exported {{bookmarks}}, {{notes}}"
+    ),
+    "success"
+  );
 }
 
 // ─── Restore ──────────────────────────────────────────────────────────────────
@@ -174,7 +249,7 @@ export async function exportBackup() {
 export async function importBackup(file) {
   if (!file) return;
   if (file.size > MAX_BACKUP_BYTES) {
-    toast("That file is too large to be a Psalms Way backup.", "error");
+    toast(t("backupTooLarge", {}, "That file is too large to be a Psalms Way backup."), "error");
     return;
   }
 
@@ -182,7 +257,7 @@ export async function importBackup(file) {
   try {
     text = await file.text();
   } catch (error) {
-    reportError(error, "That file could not be read.");
+    reportError(error, t("fileReadError", {}, "That file could not be read."));
     return;
   }
 
@@ -192,17 +267,23 @@ export async function importBackup(file) {
   } catch (error) {
     // BackupError messages are written for readers, so show them directly.
     console.error("Psalms Way: rejected backup", error);
-    toast(error.message ?? "That file is not a valid backup.", "error");
+    toast(error.message ?? t("backupInvalid", {}, "That file is not a valid backup."), "error");
     return;
   }
 
   const { counts } = parsed;
   const confirmed = await confirmDialog({
-    title: "Replace your data?",
-    message:
-      `This backup holds ${counts.favourites} bookmarks, ${counts.notes} notes and ` +
-      `${counts.history} history entries. Restoring replaces what is on this browser now.`,
-    confirmLabel: "Restore",
+    title: t("restoreTitle", {}, "Replace your data?"),
+    message: t(
+      "restoreMessage",
+      {
+        bookmarks: bookmarkCount(counts.favourites),
+        notes: noteCount(counts.notes),
+        history: historyCount(counts.history),
+      },
+      "This backup holds {{bookmarks}}, {{notes}} and {{history}}. Restoring replaces what is on this browser now."
+    ),
+    confirmLabel: t("restoreConfirm", {}, "Restore"),
     destructive: true,
   });
   if (!confirmed) return;
@@ -214,10 +295,38 @@ export async function importBackup(file) {
     applyFontSize(next.settings.fontSize);
     applyToolbarCollapsed(next.settings.toolbarCollapsed);
     paintSettingsControls(next.settings);
-    toast("Backup restored", "success");
+    toast(t("restoreDone", {}, "Backup restored"), "success");
     return next;
   } catch (error) {
-    reportError(error, "Your backup could not be restored.");
+    reportError(error, t("restoreError", {}, "Your backup could not be restored."));
     return null;
+  }
+}
+
+/**
+ * Restores a backup file the reader chose, and shows the result: the backup brings its
+ * own language, as it brings its own theme, so that is loaded and drawn, and then
+ * `onRestored(next)` redraws what depends on the saved data. A failure after the
+ * restore is reported, never lost in a rejected promise.
+ *
+ * @param {File | undefined} file
+ * @param {{onRestored: (next: object) => (void|Promise<void>)}} options
+ */
+export async function restoreBackup(file, { onRestored }) {
+  const restored = await importBackup(file);
+  if (!restored) return;
+  try {
+    await initI18n(restored.settings.uiLanguage);
+    paintLanguage();
+    await onRestored(restored);
+  } catch (error) {
+    reportError(
+      error,
+      t(
+        "restoreShowError",
+        {},
+        "Your backup was restored, but the page could not be updated. Close and reopen the popup."
+      )
+    );
   }
 }

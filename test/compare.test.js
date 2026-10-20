@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { installChromeMock } from "./chrome-mock.js";
 import * as store from "../src/storage.js";
+import { setTablesForTests } from "../src/i18n.js";
 
 // A small fake catalogue stands in for the real versions: the current one,
 // two ordinary ones, a right-to-left one, and one that lacks verse 2.
@@ -77,6 +78,7 @@ beforeEach(() => {
   ];
   fake.failing.clear();
   fake.gate = null;
+  setTablesForTests("en", []);
 });
 
 describe("renderCompare", () => {
@@ -173,14 +175,28 @@ describe("renderCompare", () => {
     expect(current.text.getAttribute("dir")).toBe("ltr");
   });
 
-  it("names each select for assistive technology", async () => {
+  it("gives each select its own name for assistive technology", async () => {
     await renderCompare({ chapterIndex: 0, verseIndex: 0 });
 
     const choiceCards = readCards().slice(1);
     expect(choiceCards).toHaveLength(2);
-    for (const { select } of choiceCards) {
-      expect(select.getAttribute("aria-label")).toBe("Select bible version");
-    }
+    expect(choiceCards.map(({ select }) => select.getAttribute("aria-label"))).toEqual([
+      "First version",
+      "Second version",
+    ]);
+  });
+
+  it("names the selects in the reader's language", async () => {
+    setTablesForTests("de", [
+      { compareFirstVersion: "Erste Version", compareSecondVersion: "Zweite Version" },
+    ]);
+    await renderCompare({ chapterIndex: 0, verseIndex: 0 });
+
+    expect(
+      readCards()
+        .slice(1)
+        .map(({ select }) => select.getAttribute("aria-label"))
+    ).toEqual(["Erste Version", "Zweite Version"]);
   });
 
   it("saves a new choice, shows that version's text, and keeps focus on the select", async () => {

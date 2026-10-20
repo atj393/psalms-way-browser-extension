@@ -6,6 +6,10 @@ import { setTablesForTests } from "../src/i18n.js";
 import { parsePsalmReference, renderPrayers, resetPrayersCache } from "../src/prayers.js";
 
 const REAL = JSON.parse(readFileSync(resolve(process.cwd(), "data/prayers-en.json"), "utf8"));
+// The English that ships, so "1 prayer" and "6 prayers" come from the plural forms in the table.
+const EXTENSION_ENGLISH = JSON.parse(
+  readFileSync(resolve(process.cwd(), "locales/ext/en.json"), "utf8")
+);
 
 // Small catalogue for the cases the real file does not contain: one prayer in
 // a category, a reference to a whole Psalm, references the reader cannot map,
@@ -71,7 +75,7 @@ async function open(catalogue = REAL) {
 
 beforeEach(() => {
   resetPrayersCache();
-  setTablesForTests("en", []);
+  setTablesForTests("en", [EXTENSION_ENGLISH]);
   document.body.innerHTML = `
     <div class="status-bar" id="statusBar" hidden></div>
     <div id="prayersBody" tabindex="-1"></div>
@@ -84,13 +88,18 @@ afterEach(() => {
 });
 
 describe("the bundled prayers file", () => {
-  // The phone's file, unchanged. The extension flattens the nested array in code.
-  it("has 19 categories and 36 entries, the last of them a nested array of 15 prayers", () => {
+  // The phone's file, unchanged: a plain list of 50 prayers.
+  it("has 19 categories and 50 prayers, every one a plain object", () => {
     expect(REAL.categories).toHaveLength(19);
-    expect(REAL.prayers).toHaveLength(36);
-    expect(Array.isArray(REAL.prayers[35])).toBe(true);
-    expect(REAL.prayers[35]).toHaveLength(15);
-    expect(REAL.prayers.flat()).toHaveLength(50);
+    expect(REAL.prayers).toHaveLength(50);
+    for (const prayer of REAL.prayers) {
+      expect(Array.isArray(prayer)).toBe(false);
+      expect(prayer).toEqual(
+        expect.objectContaining({ id: expect.any(String), categoryId: expect.any(String) })
+      );
+    }
+    const categories = new Set(REAL.categories.map((category) => category.id));
+    expect(REAL.prayers.every((prayer) => categories.has(prayer.categoryId))).toBe(true);
   });
 });
 
@@ -125,7 +134,7 @@ describe("category list", () => {
     expect(rowSub(rowNamed("One Prayer Only"))).toBe("1 prayer");
   });
 
-  it("lists all 50 prayers, including the 15 the phone's file nests, so no category is empty", async () => {
+  it("lists all 50 prayers, so no category is empty", async () => {
     await open();
     const counts = rows().map((row) => Number.parseInt(rowSub(row), 10));
     expect(counts.every((count) => count >= 1)).toBe(true);
@@ -301,7 +310,7 @@ describe("Psalm references", () => {
   });
 
   it("maps every reference in the bundled file", () => {
-    const references = REAL.prayers.flat().flatMap((prayer) => prayer.psalmsReference);
+    const references = REAL.prayers.flatMap((prayer) => prayer.psalmsReference);
     expect(references.length).toBeGreaterThan(0);
     for (const reference of references) {
       expect(parsePsalmReference(reference), reference).not.toBeNull();
@@ -440,5 +449,81 @@ describe("loading", () => {
     await renderPrayers({ navigate: vi.fn() });
 
     expect(body().textContent).toContain("The prayers could not be loaded.");
+  });
+});
+
+describe("the Back button's name", () => {
+  it("says it goes back to the categories, from a category's prayers", async () => {
+    await open();
+    rowNamed("Morning").click();
+
+    expect(backButton().getAttribute("aria-label")).toBe("Back to categories");
+    // The word on the button is unchanged, and the name contains it.
+    expect(backButton().textContent).toBe("Back");
+  });
+
+  it("says which category it goes back to, from a prayer", async () => {
+    await open();
+    rowNamed("Morning").click();
+    rows()[0].click();
+
+    expect(backButton().getAttribute("aria-label")).toBe("Back to Morning");
+  });
+
+  it("names the place in the reader's language", async () => {
+    setTablesForTests("de", [
+      {
+        prayerBackToCategories: "Zurück zu den Kategorien",
+        prayerBackTo: "Zurück zu {{name}}",
+        prayerCatMorning: "Morgen",
+        prayerBack: "Zurück",
+      },
+    ]);
+    await open();
+    rowNamed("Morgen").click();
+    expect(backButton().getAttribute("aria-label")).toBe("Zurück zu den Kategorien");
+    expect(backButton().textContent).toBe("Zurück");
+
+    rows()[0].click();
+    expect(backButton().getAttribute("aria-label")).toBe("Zurück zu Morgen");
+  });
+});
+
+describe("the prayers' own language", () => {
+  // The titles and texts are English on the phone too, so they are marked as English
+  // and keep their direction when the rest of the popup reads right to left.
+  it("marks a prayer's title and text as English, but not the translated category name", async () => {
+    await open();
+    rowNamed("Morning").click();
+
+    expect(body().querySelector(".prayer-heading").hasAttribute("lang")).toBe(false);
+    expect(rows()[0].querySelector(".prayer-row-title").getAttribute("lang")).toBe("en");
+    expect(rows()[0].querySelector(".prayer-row-title").getAttribute("dir")).toBe("ltr");
+
+    rows()[0].click();
+    const prayer = body().querySelector(".prayer-text");
+    expect(prayer.getAttribute("lang")).toBe("en");
+    expect(prayer.getAttribute("dir")).toBe("ltr");
+    expect(body().querySelector(".prayer-heading").getAttribute("lang")).toBe("en");
+    expect(body().querySelector(".prayer-copy").hasAttribute("lang")).toBe(false);
+  });
+});
+
+describe("scripture references in the reader's language", () => {
+  it("name a verse and a whole Psalm the way the phone does in that language", async () => {
+    setTablesForTests("es", [
+      { psalmTitle: "Salmo {{chapter}}", psalmSubtitle: "Salmo {{chapter}}:{{verse}}" },
+      EXTENSION_ENGLISH,
+    ]);
+    await open(FIXTURE);
+    rowNamed("One Prayer Only").click();
+    rows()[0].click();
+    expect(refButtons().map((button) => button.textContent)).toEqual(["Salmo 23"]);
+
+    backButton().click();
+    backButton().click();
+    rowNamed("Odd References").click();
+    rows()[0].click();
+    expect(refButtons().map((button) => button.textContent)).toEqual(["Salmo 23:1"]);
   });
 });

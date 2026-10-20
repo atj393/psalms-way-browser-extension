@@ -26,6 +26,7 @@ import {
 } from "./phoneData.js";
 import { highlightLabel, refreshFavChapter, refreshPassage } from "./reader.js";
 import { t } from "./i18n.js";
+import { readingTextAttributes } from "./versions.js";
 
 let navigate = () => {};
 
@@ -49,7 +50,8 @@ export function setNavigator(fn) {
  * @param {{label: string, icon: string, onClick: () => void}} [options.action]
  */
 function listRow({ reference, preview, meta, note, swatch, onOpen, action }) {
-  const previewEl = el("span", { class: "row-preview" });
+  // The preview is Bible text, so it carries the Bible's language and direction; the row around it does not.
+  const previewEl = el("span", { class: "row-preview", ...readingTextAttributes() });
   if (typeof preview === "string") {
     previewEl.textContent = preview;
   } else {
@@ -117,8 +119,12 @@ export async function runSearch(rawQuery) {
     paint(
       "searchResults",
       emptyState(
-        "Search the Psalms",
-        `Type at least ${SEARCH_MIN_QUERY} characters, then press Enter.`
+        t("searchThePsalms", {}, "Search the Psalms"),
+        t(
+          "searchMinCharacters",
+          { count: SEARCH_MIN_QUERY },
+          "Type at least {{count}} characters, then press Enter."
+        )
       )
     );
     return;
@@ -128,7 +134,7 @@ export async function runSearch(rawQuery) {
   try {
     data = await getData();
   } catch (error) {
-    reportError(error, "The Psalms text could not be loaded.");
+    reportError(error, t("psalmsLoadFailed", {}, "The Psalms text could not be loaded."));
     return;
   }
 
@@ -138,14 +144,21 @@ export async function runSearch(rawQuery) {
     countEl.textContent = "";
     paint(
       "searchResults",
-      emptyState(`No verse contains “${query}”.`, "Try a shorter or more common word.")
+      emptyState(
+        t("searchNoVerse", { query }, "No verse contains “{{query}}”."),
+        t("searchTryShorter", {}, "Try a shorter or more common word.")
+      )
     );
     return;
   }
 
   countEl.textContent = truncated
-    ? `Showing first ${results.length} of ${total} matches`
-    : `${total} ${total === 1 ? "match" : "matches"}`;
+    ? t(
+        "searchShowingFirst",
+        { shown: results.length, count: total },
+        "Showing first {{shown}} of {{count}} matches"
+      )
+    : t("searchMatches", { count: total }, "{{count}} matches");
 
   paint(
     "searchResults",
@@ -204,7 +217,7 @@ async function renderFavourites() {
   try {
     [favourites, data] = await Promise.all([getFavourites(), getData()]);
   } catch (error) {
-    reportError(error, "Your bookmarks could not be read.");
+    reportError(error, t("bookmarksReadError", {}, "Your bookmarks could not be read."));
     return;
   }
 
@@ -214,8 +227,12 @@ async function renderFavourites() {
     paint(
       "libraryBody",
       emptyState(
-        "No bookmarks yet",
-        "Open a Psalm, select a verse, and choose Bookmark to keep it here."
+        t("noBookmarks", {}, "No bookmarks yet"),
+        t(
+          "noBookmarksHint",
+          {},
+          "Open a Psalm, select a verse, and choose Bookmark to keep it here."
+        )
       )
     );
     return;
@@ -224,27 +241,31 @@ async function renderFavourites() {
   paint(
     "libraryBody",
     listContainer(
-      usable.map(({ chapterIndex, verseIndex, addedAt }) =>
-        listRow({
-          reference: formatReference(chapterIndex, verseIndex),
+      usable.map(({ chapterIndex, verseIndex, addedAt }) => {
+        const reference = formatReference(chapterIndex, verseIndex);
+        return listRow({
+          reference,
           preview: truncate(data[chapterIndex][verseIndex], 110),
           meta: formatTimestamp(addedAt),
           onOpen: () => navigate({ chapterIndex, verseIndex }),
           action: {
             icon: "close",
-            label: `Remove the bookmark on ${formatReference(chapterIndex, verseIndex)}`,
+            label: t("bookmarkRemoveOn", { reference }, "Remove the bookmark on {{reference}}"),
             onClick: async () => {
               try {
                 await removeFavourite(chapterIndex, verseIndex);
-                toast(`${formatReference(chapterIndex, verseIndex)} removed`, "success");
+                toast(t("bookmarkRemoved", { reference }, "{{reference}} removed"), "success");
                 await renderFavourites();
               } catch (error) {
-                reportError(error, "That verse could not be removed.");
+                reportError(
+                  error,
+                  t("bookmarkRemoveError", {}, "That verse could not be removed.")
+                );
               }
             },
           },
-        })
-      )
+        });
+      })
     )
   );
 }
@@ -417,7 +438,7 @@ async function renderNotes() {
   try {
     [notes, data] = await Promise.all([getNotes(), getData()]);
   } catch (error) {
-    reportError(error, "Your notes could not be read.");
+    reportError(error, t("notesReadError", {}, "Your notes could not be read."));
     return;
   }
 
@@ -427,8 +448,12 @@ async function renderNotes() {
     paint(
       "libraryBody",
       emptyState(
-        "No notes yet",
-        "Select a verse while reading and choose Note to write something down."
+        t("noNotes", {}, "No notes yet"),
+        t(
+          "noNotesHint",
+          {},
+          "Select a verse while reading and choose Note to write something down."
+        )
       )
     );
     return;
@@ -437,35 +462,40 @@ async function renderNotes() {
   paint(
     "libraryBody",
     listContainer(
-      usable.map(({ chapterIndex, verseIndex, text, updatedAt }) =>
-        listRow({
-          reference: formatReference(chapterIndex, verseIndex),
+      usable.map(({ chapterIndex, verseIndex, text, updatedAt }) => {
+        const reference = formatReference(chapterIndex, verseIndex);
+        return listRow({
+          reference,
           preview: truncate(data[chapterIndex][verseIndex], 80),
           note: text,
           meta: formatTimestamp(updatedAt),
           onOpen: () => navigate({ chapterIndex, verseIndex }),
           action: {
             icon: "trash",
-            label: `Delete note on ${formatReference(chapterIndex, verseIndex)}`,
+            label: t("noteDeleteOn", { reference }, "Delete note on {{reference}}"),
             onClick: async () => {
               const confirmed = await confirmDialog({
-                title: "Delete this note?",
-                message: `Your note on ${formatReference(chapterIndex, verseIndex)} will be removed. This cannot be undone.`,
-                confirmLabel: "Delete",
+                title: t("noteDeleteTitle", {}, "Delete this note?"),
+                message: t(
+                  "noteDeleteMessage",
+                  { reference },
+                  "Your note on {{reference}} will be removed. This cannot be undone."
+                ),
+                confirmLabel: t("delete", {}, "Delete"),
                 destructive: true,
               });
               if (!confirmed) return;
               try {
                 await deleteNote(chapterIndex, verseIndex);
-                toast("Note deleted", "success");
+                toast(t("noteDeleted", {}, "Note deleted"), "success");
                 await renderNotes();
               } catch (error) {
-                reportError(error, "That note could not be deleted.");
+                reportError(error, t("noteDeleteError", {}, "That note could not be deleted."));
               }
             },
           },
-        })
-      )
+        });
+      })
     )
   );
 }
@@ -478,7 +508,7 @@ export async function renderHistory() {
   try {
     [history, data] = await Promise.all([getHistory(), getData()]);
   } catch (error) {
-    reportError(error, "Your reading history could not be read.");
+    reportError(error, t("historyReadError", {}, "Your reading history could not be read."));
     return;
   }
 
@@ -494,7 +524,10 @@ export async function renderHistory() {
   if (usable.length === 0) {
     paint(
       "historyBody",
-      emptyState("Nothing read yet", "Psalms you open appear here, most recent first.")
+      emptyState(
+        t("historyEmpty", {}, "Nothing read yet"),
+        t("historyEmptyHint", {}, "Psalms you open appear here, most recent first.")
+      )
     );
     return;
   }
@@ -519,17 +552,21 @@ export async function renderHistory() {
 
 export async function confirmClearHistory() {
   const confirmed = await confirmDialog({
-    title: "Clear reading history?",
-    message: "Every entry will be removed. Your bookmarks and notes are not affected.",
-    confirmLabel: "Clear history",
+    title: t("historyClearTitle", {}, "Clear reading history?"),
+    message: t(
+      "historyClearMessage",
+      {},
+      "Every entry will be removed. Your bookmarks and notes are not affected."
+    ),
+    confirmLabel: t("historyClearConfirm", {}, "Clear history"),
     destructive: true,
   });
   if (!confirmed) return;
   try {
     await clearHistory();
-    toast("Reading history cleared", "success");
+    toast(t("historyCleared", {}, "Reading history cleared"), "success");
     await renderHistory();
   } catch (error) {
-    reportError(error, "Your history could not be cleared.");
+    reportError(error, t("historyClearError", {}, "Your history could not be cleared."));
   }
 }

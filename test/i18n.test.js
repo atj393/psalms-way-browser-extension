@@ -52,6 +52,64 @@ describe("looking up text", () => {
   });
 });
 
+describe("plural forms", () => {
+  const english = { match_one: "{{count}} match", match_other: "{{count}} matches" };
+
+  it("reads each table by its own language's plural rules", () => {
+    // Japanese has one form for every count; the English table behind it still has two.
+    setTablesForTests("ja", [{}, {}, english, {}], ["ja", "ja", "en", "en"]);
+    expect(t("match", { count: 1 })).toBe("1 match");
+    expect(t("match", { count: 2 })).toBe("2 matches");
+  });
+
+  it("uses the language's own form when it has one, and English rules for the English behind it", () => {
+    const russian = { match_one: "{{count}} совпадение", match_other: "{{count}} совпадений" };
+    setTablesForTests("ru", [russian, english], ["ru", "en"]);
+    // 21 is "one" in Russian and "other" in English.
+    expect(t("match", { count: 21 })).toBe("21 совпадение");
+
+    setTablesForTests("ru", [{}, english], ["ru", "en"]);
+    expect(t("match", { count: 21 })).toBe("21 matches");
+    expect(t("match", { count: 31 })).toBe("31 matches");
+    expect(t("match", { count: 1 })).toBe("1 match");
+  });
+
+  it("counts in the chosen language when every table is given without languages", () => {
+    setTablesForTests("ru", [{ match_one: "один", match_few: "несколько", match_other: "много" }]);
+    expect(t("match", { count: 21 })).toBe("один");
+    expect(t("match", { count: 22 })).toBe("несколько");
+    expect(t("match", { count: 25 })).toBe("много");
+  });
+
+  it("prefers a table's plain key to its _other form, as the phone's files keep the singular there", () => {
+    setTablesForTests("en", [{ result: "{{count}} result", result_other: "{{count}} results" }]);
+    expect(t("result", { count: 1 })).toBe("1 result");
+    expect(t("result", { count: 0 })).toBe("0 results");
+    expect(t("result", { count: 2 })).toBe("2 results");
+  });
+
+  it("falls back to _other when a category has no form and no plain key", () => {
+    setTablesForTests("ar", [{ item_other: "{{count}} عناصر" }]);
+    expect(t("item", { count: 3 })).toBe("3 عناصر");
+  });
+
+  it("counts the English files in English once they are loaded for another language", async () => {
+    const files = {
+      "locales/ext/en.json": english,
+      "locales/app/en.json": {},
+      "locales/ext/ru.json": {},
+      "locales/app/ru.json": {},
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (path) => ({ ok: path in files, status: 404, json: async () => files[path] }))
+    );
+    await initI18n("ru");
+    expect(t("match", { count: 21 })).toBe("21 matches");
+    expect(t("match", { count: 1 })).toBe("1 match");
+  });
+});
+
 describe("choosing the language", () => {
   it("picks the browser's best supported language", () => {
     expect(resolveBrowserLanguage(["pt-BR", "en"])).toBe("pt");

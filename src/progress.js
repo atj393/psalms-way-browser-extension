@@ -23,7 +23,7 @@ import {
 } from "./phoneData.js";
 import { loadStore } from "./storage.js";
 import { same } from "./syncMerge.js";
-import { currentVersion, getVersionData, loadCatalogue } from "./versions.js";
+import { currentVersion, getVersionData, readingTextAttributes } from "./versions.js";
 import { BADGE_DEFS, awardBadges } from "./badges.js";
 import {
   CHALLENGE_DEFS,
@@ -352,21 +352,17 @@ async function openChallenge(id) {
 }
 
 /**
- * The text of a day's verse in the version being read, and which way it runs. If the
- * version cannot be read the failure is shown and the text is left out, so the
- * challenge still opens and can be marked, read elsewhere or reset.
+ * The text of a day's verse in the version being read. If the version cannot be read
+ * the failure is shown and the text is left out, so the challenge still opens and can
+ * be marked, read elsewhere or reset.
  */
 async function loadVerse({ chapter, verseNumber }) {
   try {
-    const module = currentVersion();
-    const [data, catalogue] = await Promise.all([getVersionData(module), loadCatalogue()]);
-    return {
-      text: data[chapter - 1]?.[verseNumber - 1] ?? null,
-      rtl: catalogue.find((version) => version.module === module)?.rtl === true,
-    };
+    const data = await getVersionData(currentVersion());
+    return { text: data[chapter - 1]?.[verseNumber - 1] ?? null };
   } catch (error) {
     reportError(error, t("challengeVerseFailed", {}, "Today's verse could not be loaded."));
-    return { text: null, rtl: false };
+    return { text: null };
   }
 }
 
@@ -519,7 +515,8 @@ function verseCard(assignment, verse) {
       ),
     }),
     text
-      ? el("p", { class: "progress-verse-text", dir: verse.rtl ? "rtl" : null, text })
+      ? // The Bible's own language and direction, not the popup's.
+        el("p", { class: "progress-verse-text", text, ...readingTextAttributes() })
       : el("p", {
           class: "progress-verse-missing",
           text: t(

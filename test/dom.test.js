@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   el,
   toast,
@@ -10,6 +10,7 @@ import {
   focusFirst,
 } from "../src/dom.js";
 import { icon, ICON_NAMES } from "../src/icons.js";
+import { setTablesForTests } from "../src/i18n.js";
 
 beforeEach(() => {
   document.body.innerHTML = `
@@ -139,6 +140,26 @@ describe("reportError", () => {
     const error = new Error("boom");
     reportError(error, "fallback");
     expect(spy).toHaveBeenCalledWith("Psalms Way:", error);
+  });
+});
+
+describe("the dialog and errors in the reader's language", () => {
+  afterEach(() => setTablesForTests("en", []));
+
+  it("labels the default buttons in the reader's language", async () => {
+    setTablesForTests("de", [{ confirm: "Bestätigen", cancel: "Abbrechen" }]);
+    const pending = confirmDialog({ title: "Löschen?" });
+    const [cancel, confirm] = document.querySelectorAll(".dialog-actions button");
+    expect([cancel.textContent, confirm.textContent]).toEqual(["Abbrechen", "Bestätigen"]);
+    cancel.click();
+    await pending;
+  });
+
+  it("says something went wrong in the reader's language when nothing better is known", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    setTablesForTests("de", [{ somethingWentWrong: "Etwas ist schiefgelaufen." }]);
+    reportError(new TypeError("internal"));
+    expect(document.getElementById("statusBar").textContent).toContain("Etwas ist schiefgelaufen.");
   });
 });
 

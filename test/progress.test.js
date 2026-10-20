@@ -22,11 +22,15 @@ vi.mock("../src/versions.js", () => ({
       Array.from({ length: 5 }, (_, v) => `Verse ${c + 1}:${v + 1}`)
     );
   },
-  loadCatalogue: async () => [{ module: "test", rtl: catalogue.rtl }],
+  readingTextAttributes: () =>
+    catalogue.rtl ? { lang: "he", dir: "rtl" } : { lang: "en", dir: "ltr" },
 }));
 
 const phoneEnglish = JSON.parse(
   readFileSync(resolve(process.cwd(), "locales/app/en.json"), "utf8")
+);
+const extensionEnglish = JSON.parse(
+  readFileSync(resolve(process.cwd(), "locales/ext/en.json"), "utf8")
 );
 
 // Local 20 October 2026, 09:00.
@@ -159,6 +163,44 @@ describe("the overview", () => {
     store.resetStoreCache();
     await renderProgress({ navigate: vi.fn() });
   }
+
+  describe("with the English that ships (the extension's wording over the phone's)", () => {
+    beforeEach(() => setTablesForTests("en", [extensionEnglish, phoneEnglish]));
+
+    it("says 1 day, not 1 days, for a longest streak of one", async () => {
+      await overview({ carry: { streak: { lastDate: "2026-10-20", count: 1, longestStreak: 1 } } });
+      expect(document.querySelector(".progress-streak-longest").textContent).toBe(
+        "Longest streak: 1 day"
+      );
+    });
+
+    it("says days for any other longest streak, including none", async () => {
+      await overview({ carry: { streak: { lastDate: "2026-10-20", count: 3, longestStreak: 3 } } });
+      expect(document.querySelector(".progress-streak-longest").textContent).toBe(
+        "Longest streak: 3 days"
+      );
+    });
+
+    it("spells the Favourites total the British way", async () => {
+      await overview();
+      const labels = [...document.querySelectorAll(".progress-total-row dt")].map(
+        (dt) => dt.textContent
+      );
+      expect(labels).toContain("Favourites");
+      expect(labels).not.toContain("Favorites");
+    });
+
+    it("counts a challenge's length in days", async () => {
+      await overview();
+      const meta = card("jesus_testing").querySelector(".progress-challenge-meta").textContent;
+      expect(meta).toBe("40 days");
+    });
+
+    it("shows the badges earned as a bare fraction, which needs no plural", async () => {
+      await overview();
+      expect(document.querySelector(".progress-count").textContent).toBe("0/9");
+    });
+  });
 
   it("has the three sections", async () => {
     await overview();
@@ -340,7 +382,9 @@ describe("a challenge", () => {
     expect(document.querySelector(".progress-verse-text").textContent).toBe(
       `Verse ${chapter}:${verseNumber}`
     );
-    expect(document.querySelector(".progress-verse-text").hasAttribute("dir")).toBe(false);
+    // The Bible's own language and direction, whatever the popup's.
+    expect(document.querySelector(".progress-verse-text").getAttribute("dir")).toBe("ltr");
+    expect(document.querySelector(".progress-verse-text").getAttribute("lang")).toBe("en");
 
     buttonWith("Open verse").click();
     expect(navigate).toHaveBeenCalledWith({
@@ -355,6 +399,7 @@ describe("a challenge", () => {
     buttonWith("Start Challenge").click();
     await until(() => expect(document.querySelector(".progress-verse-text")).not.toBeNull());
     expect(document.querySelector(".progress-verse-text").getAttribute("dir")).toBe("rtl");
+    expect(document.querySelector(".progress-verse-text").getAttribute("lang")).toBe("he");
   });
 
   it("says so when the version does not have the psalm", async () => {

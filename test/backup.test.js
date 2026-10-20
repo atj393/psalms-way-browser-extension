@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
+import { setTablesForTests } from "../src/i18n.js";
 import {
   createBackup,
   parseBackup,
@@ -222,5 +223,27 @@ describe("parseBackup — hostile content is neutralised", () => {
       JSON.stringify({ type: BACKUP_TYPE, schemaVersion: 1, data: { notes: many } })
     );
     expect(counts.notes).toBeLessThanOrEqual(500);
+  });
+});
+
+describe("parseBackup — the reader's language", () => {
+  afterEach(() => setTablesForTests("en", []));
+
+  it("explains a rejected file in the language the reader chose", () => {
+    setTablesForTests("de", [
+      {
+        importErrEmpty: "Diese Datei ist leer.",
+        importErrNotBackup: "Keine Psalms-Way-Sicherung.",
+      },
+    ]);
+    expect(() => parseBackup("")).toThrow("Diese Datei ist leer.");
+    expect(() => parseBackup("[]")).toThrow("Keine Psalms-Way-Sicherung.");
+    // A key the language lacks falls back to English, so the message is still a sentence.
+    expect(() => parseBackup("{definitely not json")).toThrow("That file is not valid JSON.");
+  });
+
+  it("keeps the error code the caller tests for, whatever the language", () => {
+    setTablesForTests("de", [{ importErrEmpty: "Diese Datei ist leer." }]);
+    expect(() => parseBackup("")).toThrow(expect.objectContaining({ code: "empty" }));
   });
 });

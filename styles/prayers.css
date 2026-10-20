@@ -31,6 +31,12 @@
   color: var(--text-muted);
 }
 
+/* Right to left: the row's chevron and Back's point the other way. */
+:root[dir="rtl"] .prayer-row-main svg,
+:root[dir="rtl"] .prayer-back svg {
+  transform: scaleX(-1);
+}
+
 .prayer-row-text {
   display: flex;
   flex-direction: column;

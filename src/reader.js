@@ -16,6 +16,7 @@ import {
 import { addHistoryEntry, hasFavourite, findNote, loadStore, toggleFavourite } from "./storage.js";
 import { HIGHLIGHT_COLORS, highlightOf, isFavoriteChapter, setHighlight } from "./phoneData.js";
 import { t } from "./i18n.js";
+import { readingTextAttributes } from "./versions.js";
 
 /** Current passage. Persisted through history, not held across popup closes. */
 const state = {
@@ -109,7 +110,10 @@ export async function showPassage({ chapterIndex, verseIndex = null, record = tr
 
   // Every version numbers its Psalms 1 to 150, but a few leave some out.
   if (!Number.isInteger(chapterIndex) || chapterIndex < 0 || chapterIndex >= CHAPTER_COUNT) {
-    reportError(new Error(`Chapter ${chapterIndex} is out of range`), "That Psalm does not exist.");
+    reportError(
+      new Error(`Chapter ${chapterIndex} is out of range`),
+      t("psalmDoesNotExist", {}, "That Psalm does not exist.")
+    );
     return;
   }
   const missing = !hasChapter(data, chapterIndex);
@@ -172,10 +176,17 @@ function renderDataFailure(error) {
   console.error("Psalms Way:", error);
   byId("readingView").replaceChildren(
     el("div", { class: "panel-empty" }, [
-      el("p", { class: "panel-empty-title", text: "The Psalms text could not be loaded." }),
+      el("p", {
+        class: "panel-empty-title",
+        text: t("psalmsLoadFailed", {}, "The Psalms text could not be loaded."),
+      }),
       el("p", {
         class: "panel-empty-hint",
-        text: "Reopen the extension. If this keeps happening, reinstall it from chrome://extensions.",
+        text: t(
+          "psalmsLoadFailedHint",
+          {},
+          "Reopen the extension. If this keeps happening, reinstall it from chrome://extensions."
+        ),
       }),
     ])
   );
@@ -204,11 +215,17 @@ function renderMissingChapter(chapterIndex) {
 function renderChapter(data, chapterIndex, store) {
   const list = el("ol", {
     class: "verses",
-    "aria-label": `${formatReference(chapterIndex)}, ${data[chapterIndex].length} verses`,
+    "aria-label": t(
+      "chapterVerseCount",
+      { reference: formatReference(chapterIndex), count: data[chapterIndex].length },
+      "{{reference}}, {{count}} verses"
+    ),
   });
 
+  // The Bible's language and direction go on the verse text alone (see versions.js).
+  const textAttributes = readingTextAttributes();
   data[chapterIndex].forEach((text, verseIndex) => {
-    list.appendChild(renderVerseRow(chapterIndex, verseIndex, text, store));
+    list.appendChild(renderVerseRow(chapterIndex, verseIndex, text, store, textAttributes));
   });
 
   // Roving tab stop: the list is one stop, arrow keys move within it. A chapter
@@ -249,10 +266,10 @@ function onVerseKeyDown(event, rows) {
   next.focus();
 }
 
-function renderVerseRow(chapterIndex, verseIndex, text, store) {
+function renderVerseRow(chapterIndex, verseIndex, text, store, textAttributes) {
   const body = el("div", { class: "verse-body", role: "button", tabindex: "-1" }, [
     el("span", { class: "verse-num", text: String(verseIndex + 1), "aria-hidden": "true" }),
-    el("span", { class: "verse-text", text }),
+    el("span", { class: "verse-text", text, ...textAttributes }),
   ]);
   body.setAttribute("aria-expanded", "false");
   body.setAttribute("aria-label", `${formatReference(chapterIndex, verseIndex)}. ${text}`);
@@ -279,10 +296,10 @@ function paintVerseState(row, store, chapterIndex, verseIndex) {
   const markers = row.querySelector(".verse-markers");
   markers.replaceChildren();
   if (hasFavourite(store, chapterIndex, verseIndex)) {
-    markers.appendChild(markerIcon("bookmark", "Bookmarked"));
+    markers.appendChild(markerIcon("bookmark", t("bookmarked", {}, "Bookmarked")));
   }
   if (findNote(store, chapterIndex, verseIndex)) {
-    markers.appendChild(markerIcon("note", "Has a note"));
+    markers.appendChild(markerIcon("note", t("hasNote", {}, "Has a note")));
   }
   if (color) markers.appendChild(el("span", { class: "sr-only", text: highlightedText(color) }));
 }
@@ -443,11 +460,16 @@ export async function buildVerseActions(chapterIndex, verseIndex, text, { onChan
   const paintFav = (value) => {
     favBtn.classList.toggle("is-fav", value);
     favBtn.setAttribute("aria-pressed", value ? "true" : "false");
-    favBtn.title = value ? "Remove bookmark" : "Bookmark this verse";
+    favBtn.title = value
+      ? t("bookmarkRemove", {}, "Remove bookmark")
+      : t("bookmarkAdd", {}, "Bookmark this verse");
     favBtn.setAttribute("aria-label", favBtn.title);
     favBtn.replaceChildren(
       icon("bookmark", { size: 15, filled: value }),
-      el("span", { class: "btn-action-label", text: value ? "Bookmarked" : "Bookmark" })
+      el("span", {
+        class: "btn-action-label",
+        text: value ? t("bookmarked", {}, "Bookmarked") : t("bookmark", {}, "Bookmark"),
+      })
     );
   };
   paintFav(isFav);
@@ -457,31 +479,33 @@ export async function buildVerseActions(chapterIndex, verseIndex, text, { onChan
     try {
       const nowFavourite = await toggleFavourite(chapterIndex, verseIndex);
       paintFav(nowFavourite);
+      const reference = formatReference(chapterIndex, verseIndex);
       toast(
         nowFavourite
-          ? `${formatReference(chapterIndex, verseIndex)} bookmarked`
-          : `${formatReference(chapterIndex, verseIndex)} removed`,
+          ? t("bookmarkAdded", { reference }, "{{reference}} bookmarked")
+          : t("bookmarkRemoved", { reference }, "{{reference}} removed"),
         "success"
       );
       onChanged?.("fav");
     } catch (error) {
-      reportError(error, "That bookmark could not be saved.");
+      reportError(error, t("bookmarkSaveError", {}, "That bookmark could not be saved."));
     } finally {
       favBtn.disabled = false;
     }
   });
 
+  const noteLabel = hasNote ? t("noteEdit", {}, "Edit note") : t("noteAdd", {}, "Add a note");
   const noteBtn = el(
     "button",
     {
       type: "button",
       class: `btn-action btn-note ${hasNote ? "has-note" : ""}`.trim(),
-      title: hasNote ? "Edit note" : "Add a note",
-      "aria-label": hasNote ? "Edit note" : "Add a note",
+      title: noteLabel,
+      "aria-label": noteLabel,
     },
     [
       icon("note", { size: 15 }),
-      el("span", { class: "btn-action-label", text: hasNote ? "Note" : "Note" }),
+      el("span", { class: "btn-action-label", text: t("note", {}, "Note") }),
     ]
   );
   noteBtn.addEventListener("click", (event) => {
@@ -489,15 +513,19 @@ export async function buildVerseActions(chapterIndex, verseIndex, text, { onChan
     onOpenNoteEditor({ chapterIndex, verseIndex, text, onSaved: onChanged });
   });
 
+  const copyLabel = t("copyVerse", {}, "Copy verse");
   const copyBtn = el(
     "button",
     {
       type: "button",
       class: "btn-action btn-copy",
-      title: "Copy verse",
-      "aria-label": "Copy verse",
+      title: copyLabel,
+      "aria-label": copyLabel,
     },
-    [icon("copy", { size: 15 }), el("span", { class: "btn-action-label", text: "Copy" })]
+    [
+      icon("copy", { size: 15 }),
+      el("span", { class: "btn-action-label", text: t("copy", {}, "Copy") }),
+    ]
   );
   copyBtn.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -561,7 +589,12 @@ function renderSingleVerse(data, chapterIndex, verseIndex, store) {
   const color = highlightOf(store, chapterIndex, verseIndex);
 
   const wrapper = el("div", { class: "single-verse" }, [
-    el("p", { class: "single-verse-text", text, "data-highlight": color }),
+    el("p", {
+      class: "single-verse-text",
+      text,
+      "data-highlight": color,
+      ...readingTextAttributes(),
+    }),
     el("p", { class: "single-verse-ref", text: formatReference(chapterIndex, verseIndex) }),
     color ? el("span", { class: "sr-only", text: highlightedText(color) }) : null,
   ]);
@@ -569,7 +602,7 @@ function renderSingleVerse(data, chapterIndex, verseIndex, store) {
   if (note) {
     wrapper.appendChild(
       el("blockquote", { class: "verse-note-preview" }, [
-        el("span", { class: "verse-note-label", text: "Your note" }),
+        el("span", { class: "verse-note-label", text: t("yourNote", {}, "Your note") }),
         el("p", { class: "verse-note-text", text: note.text }),
       ])
     );
@@ -585,7 +618,7 @@ function renderSingleVerse(data, chapterIndex, verseIndex, store) {
     el("button", {
       type: "button",
       class: "button button-quiet read-chapter-btn",
-      text: `Read ${formatReference(chapterIndex)}`,
+      text: t("readPsalm", { reference: formatReference(chapterIndex) }, "Read {{reference}}"),
       onClick: () => showPassage({ chapterIndex }),
     })
   );
@@ -599,10 +632,20 @@ export async function copyVerse(chapterIndex, verseIndex, text) {
   const payload = formatVerseForCopy(chapterIndex, verseIndex, text);
   try {
     await navigator.clipboard.writeText(payload);
-    toast(`${formatReference(chapterIndex, verseIndex)} copied`, "success");
+    toast(
+      t(
+        "verseCopied",
+        { reference: formatReference(chapterIndex, verseIndex) },
+        "{{reference}} copied"
+      ),
+      "success"
+    );
   } catch (error) {
     console.error("Psalms Way: clipboard write failed", error);
-    toast("Your browser blocked the copy. Select the verse and press Ctrl+C.", "error");
+    toast(
+      t("copyBlocked", {}, "Your browser blocked the copy. Select the verse and press Ctrl+C."),
+      "error"
+    );
   }
 }
 
@@ -615,7 +658,7 @@ export async function showRandomVerse() {
     const verseIndex = getRandomVerseIndex(data[chapterIndex]);
     await showPassage({ chapterIndex, verseIndex });
   } catch (error) {
-    reportError(error, "The Psalms text could not be loaded.");
+    reportError(error, t("psalmsLoadFailed", {}, "The Psalms text could not be loaded."));
   }
 }
 
@@ -624,6 +667,6 @@ export async function showRandomChapter() {
     const data = await getData();
     await showPassage({ chapterIndex: Math.floor(Math.random() * data.length) });
   } catch (error) {
-    reportError(error, "The Psalms text could not be loaded.");
+    reportError(error, t("psalmsLoadFailed", {}, "The Psalms text could not be loaded."));
   }
 }

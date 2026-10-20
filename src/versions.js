@@ -13,12 +13,15 @@
 // in particular, storage.js must never use CHAPTER_COUNT at its top level.
 
 import { DataError } from "./data.js";
+import { t } from "./i18n.js";
 import { updateSettings } from "./storage.js";
 
 const CATALOGUE_PATH = "bibles/index.json";
 const MODERN = "modern";
 
 let current = MODERN;
+/** The catalogue entry of the version in use, once one has been chosen. */
+let currentEntry = null;
 /** The catalogue once loaded: versionLabel() is synchronous and reads it. */
 let loaded = null;
 let cataloguePromise = null;
@@ -27,16 +30,16 @@ const versionPromises = new Map();
 /**
  * Fetch and parse a JSON file of the extension.
  * @param {string} path
- * @param {string} what names the file in the error message
+ * @param {() => string} failure the reader's sentence when the file cannot be loaded
  */
-async function fetchJson(path, what) {
+async function fetchJson(path, failure) {
   try {
     const response = await fetch(path);
     if (!response.ok) throw new DataError(`${path} responded ${response.status}`);
     return await response.json();
   } catch (error) {
     if (error instanceof DataError) throw error;
-    throw new DataError(`${what} could not be loaded.`, error);
+    throw new DataError(failure(), error);
   }
 }
 
@@ -54,9 +57,13 @@ function isCatalogueEntry(entry) {
 }
 
 async function readCatalogue() {
-  const parsed = await fetchJson(CATALOGUE_PATH, "The list of Bible versions");
+  const parsed = await fetchJson(CATALOGUE_PATH, () =>
+    t("versionListLoadFailed", {}, "The list of Bible versions could not be loaded.")
+  );
   if (!Array.isArray(parsed) || parsed.length === 0 || !parsed.every(isCatalogueEntry)) {
-    throw new DataError("The list of Bible versions is not in the expected format.");
+    throw new DataError(
+      t("versionListFormatError", {}, "The list of Bible versions is not in the expected format.")
+    );
   }
   // Everyone shares this list, so nobody may change it.
   parsed.forEach((entry) => Object.freeze(entry));
@@ -84,19 +91,27 @@ export function loadCatalogue() {
 
 async function findEntry(module) {
   const entry = (await loadCatalogue()).find((v) => v.module === module);
-  if (!entry) throw new DataError(`The Bible version "${module}" is not available.`);
+  if (!entry) {
+    throw new DataError(
+      t("versionUnavailable", { module }, 'The Bible version "{{module}}" is not available.')
+    );
+  }
   return entry;
 }
 
 async function readVersion(module) {
   const entry = await findEntry(module);
-  const parsed = await fetchJson(entry.file, "The Psalms text");
+  const parsed = await fetchJson(entry.file, () =>
+    t("psalmsLoadFailed", {}, "The Psalms text could not be loaded.")
+  );
   if (
     !Array.isArray(parsed) ||
     parsed.length !== entry.chapters ||
     !parsed.every((chapter) => Array.isArray(chapter))
   ) {
-    throw new DataError("The Psalms text is not in the expected format.");
+    throw new DataError(
+      t("psalmsFormatError", {}, "The Psalms text is not in the expected format.")
+    );
   }
   return parsed;
 }
@@ -124,13 +139,18 @@ export function currentVersion() {
   return current;
 }
 
-/** Sets the reading view's text direction and language to the version's. */
-function applyReadingDirection(entry) {
-  // No document in the background worker, and no reading view in some tests.
-  const view = globalThis.document?.getElementById("readingView");
-  if (!view) return;
-  view.setAttribute("dir", entry.rtl ? "rtl" : "ltr");
-  view.setAttribute("lang", entry.lang_short);
+/**
+ * The `lang` and `dir` that mark the Bible text of the version being read, for the
+ * reader to put on the verse text and on nothing else: the popup's own words and
+ * buttons keep the interface language and direction. Empty until a version has been
+ * chosen, so the text then takes the page's own.
+ *
+ * @returns {{lang: string, dir: "ltr" | "rtl"} | {}}
+ */
+export function readingTextAttributes() {
+  return currentEntry
+    ? { lang: currentEntry.lang_short, dir: currentEntry.rtl ? "rtl" : "ltr" }
+    : {};
 }
 
 /**
@@ -161,7 +181,7 @@ export async function initVersions(settings, uiLanguage) {
     await updateSettings({ bibleVersion: module });
   }
   current = module;
-  applyReadingDirection(catalogue.find((v) => v.module === module));
+  currentEntry = catalogue.find((v) => v.module === module);
   return module;
 }
 
@@ -173,7 +193,7 @@ export async function setCurrentVersion(module) {
   const entry = await findEntry(module);
   await updateSettings({ bibleVersion: module });
   current = module;
-  applyReadingDirection(entry);
+  currentEntry = entry;
 }
 
 /**
@@ -192,6 +212,7 @@ export function versionLabel(module) {
 /** Test seam: forget what was loaded and go back to the NIV. */
 export function resetVersions() {
   current = MODERN;
+  currentEntry = null;
   loaded = null;
   cataloguePromise = null;
   versionPromises.clear();

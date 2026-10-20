@@ -17,6 +17,7 @@ import {
   wrapChapter,
 } from "../src/data.js";
 import * as store from "../src/storage.js";
+import { setTablesForTests } from "../src/i18n.js";
 import { setCurrentVersion } from "../src/versions.js";
 import { installChromeMock } from "./chrome-mock.js";
 
@@ -81,6 +82,28 @@ describe("formatReference", () => {
   it("treats a null or omitted verse as a whole chapter", () => {
     expect(formatReference(5, null)).toBe("Psalm 6");
     expect(formatReference(5, undefined)).toBe("Psalm 6");
+  });
+});
+
+describe("formatReference in the reader's language", () => {
+  afterEach(() => setTablesForTests("en", []));
+
+  it("uses the phone's wording for the Psalm and the verse", () => {
+    setTablesForTests("es", [
+      { psalmTitle: "Salmo {{chapter}}", psalmSubtitle: "Salmo {{chapter}}:{{verse}}" },
+    ]);
+    expect(formatReference(22)).toBe("Salmo 23");
+    expect(formatReference(22, 0)).toBe("Salmo 23:1");
+    expect(formatVerseForCopy(22, 0, "El Señor es mi pastor")).toBe(
+      "Salmo 23:1 — El Señor es mi pastor"
+    );
+  });
+
+  it("lets a language put the number first", () => {
+    setTablesForTests("ja", [
+      { psalmTitle: "{{chapter}}篇", psalmSubtitle: "{{chapter}}篇{{verse}}節" },
+    ]);
+    expect(formatReference(22, 0)).toBe("23篇1節");
   });
 });
 

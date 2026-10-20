@@ -1,5 +1,6 @@
 // ─── Date helpers ─────────────────────────────────────────────────────────────
-// Pure, dependency-free, and deliberately free of millisecond arithmetic.
+// Deliberately free of millisecond arithmetic. The only words in it are "Today" and
+// "Yesterday", which come from the reader's language.
 //
 // The previous implementation computed the day of the year by subtracting two
 // Date objects and dividing by 86_400_000. That is wrong twice over:
@@ -17,6 +18,7 @@
 // are always exactly 86_400_000 ms apart.
 
 import { CHAPTER_COUNT } from "./data.js";
+import { dateLocale, t } from "./i18n.js";
 
 const MS_PER_DAY = 86400000;
 
@@ -48,8 +50,9 @@ export function getDailyChapterIndex(date = new Date()) {
 }
 
 /**
- * Short, human-readable stamp for history rows.
- * Uses the browser's own locale rather than a hard-coded one.
+ * Short, human-readable stamp for history rows, in the reader's language
+ * ("Today" and "Yesterday" are translated; other dates use the language's own
+ * format, in the browser's variant of it where it has one).
  *
  * @param {number} timestamp epoch milliseconds
  * @param {Date} [now] injectable for tests
@@ -60,13 +63,13 @@ export function formatTimestamp(timestamp, now = new Date()) {
   const date = new Date(timestamp);
   if (Number.isNaN(date.getTime())) return "";
 
-  if (isSameLocalDay(date, now)) return "Today";
+  if (isSameLocalDay(date, now)) return t("dateToday", {}, "Today");
 
   const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-  if (isSameLocalDay(date, yesterday)) return "Yesterday";
+  if (isSameLocalDay(date, yesterday)) return t("dateYesterday", {}, "Yesterday");
 
   const sameYear = date.getFullYear() === now.getFullYear();
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(dateLocale(), {
     day: "numeric",
     month: "short",
     ...(sameYear ? {} : { year: "numeric" }),

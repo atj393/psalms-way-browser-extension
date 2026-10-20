@@ -4,24 +4,28 @@
 // phone; category names, labels and messages are translated.
 //
 // `data/prayers-en.json` is the phone's file byte for byte, so a newer copy from
-// the phone is a plain overwrite. Its last `prayers` entry is a nested array of
-// 15 more prayers, which the phone's `categoryId` match never reaches, so the
-// phone hides them (a phone bug). `loadPrayers` flattens the list instead, so
-// all 50 prayers show here and every category that has prayers lists them.
+// the phone is a plain overwrite.
 
-import { CHAPTER_COUNT } from "./data.js";
+import { CHAPTER_COUNT, formatReference } from "./data.js";
 import { byId, el, emptyState, reportError, toast } from "./dom.js";
 import { icon } from "./icons.js";
 import { t } from "./i18n.js";
 
 const PRAYERS_FILE_PATH = "data/prayers-en.json";
 
-/** The wording and translation key for each occasion the file uses. */
+/** The wording, in the reader's language, for each occasion the file uses. */
 const OCCASIONS = new Map([
-  ["daily", ["prayerOccasionDaily", "Daily"]],
-  ["situational", ["prayerOccasionSituational", "Situational"]],
-  ["seasonal", ["prayerOccasionSeasonal", "Seasonal"]],
+  ["daily", () => t("prayerOccasionDaily", {}, "Daily")],
+  ["situational", () => t("prayerOccasionSituational", {}, "Situational")],
+  ["seasonal", () => t("prayerOccasionSeasonal", {}, "Seasonal")],
 ]);
+
+/**
+ * Prayer titles and texts are English only, as on the phone. Marking them says so,
+ * so they read and align as English when the rest of the popup is in another
+ * language or runs right to left.
+ */
+const ENGLISH = { lang: "en", dir: "ltr" };
 
 let cache = null;
 
@@ -43,7 +47,7 @@ async function loadPrayers() {
     if (!Array.isArray(parsed?.categories) || !Array.isArray(parsed?.prayers)) {
       throw new Error(`${PRAYERS_FILE_PATH} has no categories and prayers lists`);
     }
-    cache = { ...parsed, prayers: parsed.prayers.flat() };
+    cache = parsed;
   } catch (error) {
     throw new Error(t("prayerLoadError", {}, "The prayers could not be loaded."), {
       cause: error,
@@ -79,7 +83,9 @@ export function parsePsalmReference(reference) {
 /** What a reference reads as, and where it opens (null when it cannot be mapped). */
 function describeReference(reference) {
   const target = parsePsalmReference(reference);
-  const label = target ? `${t("psalmPrefix", {}, "Psalm")} ${reference}` : String(reference);
+  const label = target
+    ? formatReference(target.chapterIndex, target.verseIndex)
+    : String(reference);
   return { target, label };
 }
 
@@ -121,8 +127,7 @@ const categoryName = (category) => t(category.i18nKey, {}, category.name);
 const noPrayersText = () => t("prayerEmpty", {}, "No prayers in this category yet");
 
 function occasionLabel(occasion) {
-  const entry = OCCASIONS.get(occasion);
-  return entry ? t(entry[0], {}, entry[1]) : null;
+  return OCCASIONS.get(occasion)?.() ?? null;
 }
 
 /**
@@ -130,18 +135,19 @@ function occasionLabel(occasion) {
  * Returns the rows by item id as well, so a level can put focus back on the row
  * the reader came from.
  *
- * @param {Array<{id: string, title: string, sub: string | null, onOpen: () => void}>} items
+ * @param {Array<{id: string, title: string, sub: string | null, onOpen: () => void,
+ *   english?: boolean}>} items `english` marks a title that is a prayer's own (English only)
  */
 function listRows(items) {
   const rows = new Map();
   const list = el(
     "ul",
     { class: "rows" },
-    items.map(({ id, title, sub, onOpen }) => {
+    items.map(({ id, title, sub, onOpen, english }) => {
       const row = el("button", { type: "button", class: "row-body prayer-row", onClick: onOpen }, [
         el("span", { class: "prayer-row-main" }, [
           el("span", { class: "prayer-row-text" }, [
-            el("span", { class: "prayer-row-title", text: title }),
+            el("span", { class: "prayer-row-title", text: title, ...(english ? ENGLISH : {}) }),
             sub ? el("span", { class: "prayer-row-sub", text: sub }) : null,
           ]),
           icon("chevronRight", { size: 14 }),
@@ -168,7 +174,7 @@ function referenceChip(reference, navigate) {
 function prayerDetail(prayer, navigate) {
   const references = prayer.psalmsReference ?? [];
   return el("div", { class: "prayer-detail" }, [
-    el("p", { class: "prayer-text", text: prayer.prayer }),
+    el("p", { class: "prayer-text", text: prayer.prayer, ...ENGLISH }),
     references.length > 0
       ? el("div", { class: "prayer-refs" }, [
           el("h4", {
@@ -218,15 +224,17 @@ export async function renderPrayers({ navigate }) {
    * Replace the panel's content with one level.
    * Focus goes to `focus` (the row the reader came from) or else to Back. The
    * button that was clicked is gone after the repaint, and focus would otherwise
-   * drop to the top of the page.
+   * drop to the top of the page. Back says "Back"; its accessible name (`backLabel`)
+   * says where it goes. `english` marks a title that is a prayer's own.
    */
-  function paintLevel({ onBack, title, content, focus }) {
+  function paintLevel({ onBack, backLabel, title, english, content, focus }) {
     const back = onBack
       ? el(
           "button",
           {
             type: "button",
             class: "button button-quiet button-small prayer-back",
+            "aria-label": backLabel,
             onClick: onBack,
           },
           [icon("chevronLeft", { size: 14 }), el("span", { text: t("prayerBack", {}, "Back") })]
@@ -235,7 +243,9 @@ export async function renderPrayers({ navigate }) {
     host.replaceChildren(
       el("div", { class: "prayer-level" }, [
         back ? el("div", { class: "prayer-nav" }, [back]) : null,
-        title ? el("h3", { class: "prayer-heading", text: title }) : null,
+        title
+          ? el("h3", { class: "prayer-heading", text: title, ...(english ? ENGLISH : {}) })
+          : null,
         content,
       ])
     );
@@ -250,10 +260,7 @@ export async function renderPrayers({ navigate }) {
         return {
           id: category.id,
           title: categoryName(category),
-          sub:
-            count === 0
-              ? noPrayersText()
-              : t("prayerCount", { count }, count === 1 ? "{{count}} prayer" : "{{count}} prayers"),
+          sub: count === 0 ? noPrayersText() : t("prayerCount", { count }, "{{count}} prayers"),
           onOpen: () => showList(category),
         };
       })
@@ -267,12 +274,14 @@ export async function renderPrayers({ navigate }) {
       prayers.map((prayer) => ({
         id: prayer.id,
         title: prayer.title,
+        english: true,
         sub: occasionLabel(prayer.occasion),
         onOpen: () => showDetail(category, prayer),
       }))
     );
     paintLevel({
       onBack: () => showCategories(category.id),
+      backLabel: t("prayerBackToCategories", {}, "Back to categories"),
       title: categoryName(category),
       content: prayers.length > 0 ? list : emptyState(noPrayersText()),
       focus: rows.get(focusId),
@@ -282,7 +291,9 @@ export async function renderPrayers({ navigate }) {
   function showDetail(category, prayer) {
     paintLevel({
       onBack: () => showList(category, prayer.id),
+      backLabel: t("prayerBackTo", { name: categoryName(category) }, "Back to {{name}}"),
       title: prayer.title,
+      english: true,
       content: prayerDetail(prayer, navigate),
     });
   }

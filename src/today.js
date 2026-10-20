@@ -11,7 +11,7 @@ import { formatReference, formatVerseForCopy } from "./data.js";
 import { getDailyChapterIndex } from "./dates.js";
 import { daysBetween, toDateKey } from "./dateKeys.js";
 import { getVerseForDate } from "./dailyVerse.js";
-import { currentVersion, getVersionData } from "./versions.js";
+import { currentVersion, getVersionData, readingTextAttributes } from "./versions.js";
 import { loadStore } from "./storage.js";
 import { getStreakData } from "./phoneData.js";
 
@@ -79,8 +79,8 @@ function verseCard({ chapter, verseNumber, verse }, navigate) {
   const verseIndex = verseNumber - 1;
   return card("todayVerseLabel", verseOfTheDayLabel(), [
     el("p", { class: "today-reference", text: formatReference(chapterIndex, verseIndex) }),
-    // `auto` lets a right-to-left version read from the right.
-    el("p", { class: "today-verse", dir: "auto", text: verse }),
+    // The Bible's own language and direction, not the popup's.
+    el("p", { class: "today-verse", text: verse, ...readingTextAttributes() }),
     el("div", { class: "button-row" }, [
       el("button", {
         type: "button",

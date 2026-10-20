@@ -4,7 +4,9 @@
 
 import { byId, toast, reportError, confirmDialog } from "./dom.js";
 import { formatReference } from "./data.js";
+import { t } from "./i18n.js";
 import { getNote, saveNote, deleteNote, NOTE_MAX_LENGTH } from "./storage.js";
+import { readingTextAttributes } from "./versions.js";
 
 let returnFocusTo = null;
 let closeEditor = () => {};
@@ -25,15 +27,23 @@ export async function openNoteEditor({ chapterIndex, verseIndex, text, onSaved }
   try {
     existing = await getNote(chapterIndex, verseIndex);
   } catch (error) {
-    reportError(error, "Your note could not be read.");
+    reportError(error, t("noteReadError", {}, "Your note could not be read."));
     return;
   }
 
   const reference = formatReference(chapterIndex, verseIndex);
   byId("noteEditorTitle").textContent = existing
-    ? `Edit note — ${reference}`
-    : `Add note — ${reference}`;
-  byId("noteVerse").textContent = text;
+    ? t("noteEditTitle", { reference }, "Edit note — {{reference}}")
+    : t("noteAddTitle", { reference }, "Add note — {{reference}}");
+
+  // The verse is Bible text; the title and buttons around it are not.
+  const verse = byId("noteVerse");
+  verse.textContent = text;
+  const bibleText = readingTextAttributes();
+  for (const name of ["lang", "dir"]) {
+    if (bibleText[name]) verse.setAttribute(name, bibleText[name]);
+    else verse.removeAttribute(name);
+  }
 
   const textarea = byId("noteText");
   textarea.value = existing?.text ?? "";
@@ -51,29 +61,38 @@ export async function openNoteEditor({ chapterIndex, verseIndex, text, onSaved }
   const save = async () => {
     try {
       const saved = await saveNote(chapterIndex, verseIndex, textarea.value);
-      toast(saved ? `Note saved for ${reference}` : "Note removed", "success");
+      toast(
+        saved
+          ? t("noteSaved", { reference }, "Note saved for {{reference}}")
+          : t("noteRemoved", {}, "Note removed"),
+        "success"
+      );
       onSaved?.();
       close();
     } catch (error) {
-      reportError(error, "Your note could not be saved.");
+      reportError(error, t("noteSaveError", {}, "Your note could not be saved."));
     }
   };
 
   const remove = async () => {
     const confirmed = await confirmDialog({
-      title: "Delete this note?",
-      message: `Your note on ${reference} will be removed. This cannot be undone.`,
-      confirmLabel: "Delete",
+      title: t("noteDeleteTitle", {}, "Delete this note?"),
+      message: t(
+        "noteDeleteMessage",
+        { reference },
+        "Your note on {{reference}} will be removed. This cannot be undone."
+      ),
+      confirmLabel: t("delete", {}, "Delete"),
       destructive: true,
     });
     if (!confirmed) return;
     try {
       await deleteNote(chapterIndex, verseIndex);
-      toast("Note deleted", "success");
+      toast(t("noteDeleted", {}, "Note deleted"), "success");
       onSaved?.();
       close();
     } catch (error) {
-      reportError(error, "That note could not be deleted.");
+      reportError(error, t("noteDeleteError", {}, "That note could not be deleted."));
     }
   };
 

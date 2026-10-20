@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { installChromeMock, removeChromeMock } from "./chrome-mock.js";
 import * as store from "../src/storage.js";
+import { setTablesForTests } from "../src/i18n.js";
 
 const {
   STORE_KEY,
@@ -509,5 +510,40 @@ describe("failures are reported, never swallowed", () => {
       name: "StorageError",
       code: "read_failed",
     });
+  });
+});
+
+describe("problems in the reader's language", () => {
+  afterEach(() => setTablesForTests("en", []));
+
+  it("explains a failed save in the reader's language, and falls back to English for a message not yet translated", async () => {
+    const local = installChromeMock({});
+    await store.loadStore();
+    setTablesForTests("de", [{ storageErrWrite: "Änderungen konnten nicht gespeichert werden." }]);
+    local.rejectNextSet("boom");
+    await expect(store.saveNote(1, 1, "text")).rejects.toThrow(
+      "Änderungen konnten nicht gespeichert werden."
+    );
+
+    local.rejectNextSetWithQuota();
+    await expect(store.saveNote(1, 2, "text")).rejects.toThrow(
+      "There is no room left in browser storage."
+    );
+  });
+
+  it("says unavailable storage in the reader's language", async () => {
+    removeChromeMock();
+    setTablesForTests("fr", [{ storageErrUnavailable: "Le stockage est indisponible." }]);
+    await expect(store.loadStore()).rejects.toThrow("Le stockage est indisponible.");
+  });
+
+  it("puts the note limit into the message", async () => {
+    installChromeMock({});
+    setTablesForTests("de", [
+      { storageErrNoteLength_other: "Notizen sind auf {{count}} Zeichen begrenzt." },
+    ]);
+    await expect(store.saveNote(1, 1, "x".repeat(store.NOTE_MAX_LENGTH + 1))).rejects.toThrow(
+      `Notizen sind auf ${store.NOTE_MAX_LENGTH} Zeichen begrenzt.`
+    );
   });
 });

@@ -43,9 +43,12 @@ import {
   applyToolbarCollapsed,
   changeSetting,
   exportBackup,
-  importBackup,
+  applyLanguage,
   initAppearance,
+  initLanguageSelect,
+  paintLanguage,
   paintSettingsControls,
+  restoreBackup,
 } from "./settings.js";
 import {
   CLOUD_STATE_KEY,
@@ -54,7 +57,7 @@ import {
   renderCloud,
   sendCloud,
 } from "./cloud.js";
-import { applyTranslations, currentLanguage, initI18n, t } from "./i18n.js";
+import { currentLanguage, initI18n, t } from "./i18n.js";
 import { currentVersion, initVersions, loadCatalogue, versionLabel } from "./versions.js";
 import { renderVersionPicker } from "./versionPicker.js";
 import { openToday, renderToday } from "./today.js";
@@ -114,7 +117,7 @@ async function openPanel(view, render) {
   try {
     await render?.();
   } catch (error) {
-    reportError(error, "That could not be opened.");
+    reportError(error, t("openFailed", {}, "That could not be opened."));
   }
   focusFirst(byId(VIEWS[view].panel));
 }
@@ -136,7 +139,14 @@ function goToTypedChapter() {
   const chapterIndex = parseChapterInput(input.value);
   if (chapterIndex === null) {
     input.setAttribute("aria-invalid", "true");
-    toast(`Enter a Psalm number between 1 and ${CHAPTER_COUNT}.`, "error");
+    toast(
+      t(
+        "chapterInputInvalid",
+        { max: CHAPTER_COUNT },
+        "Enter a Psalm number between 1 and {{max}}."
+      ),
+      "error"
+    );
     input.select();
     return;
   }
@@ -253,7 +263,10 @@ function wire() {
       await toggleFavoriteChapter(getCurrentChapter());
       refreshFavChapter(await loadStore());
     } catch (error) {
-      reportError(error, "That Psalm could not be saved to Favourites.");
+      reportError(
+        error,
+        t("chapterFavouriteSaveError", {}, "That Psalm could not be saved to Favourites.")
+      );
     }
   });
 
@@ -332,18 +345,20 @@ function wire() {
   // Backup
   byId("btnExport").addEventListener("click", exportBackup);
   byId("btnImport").addEventListener("click", () => byId("fileImport").click());
-  byId("fileImport").addEventListener("change", async (event) => {
+  byId("fileImport").addEventListener("change", (event) => {
     const [file] = event.target.files ?? [];
     // Reset so choosing the same file twice fires another change event.
     event.target.value = "";
-    const restored = await importBackup(file);
-    if (restored) {
-      const { chapterIndex, verseIndex } = await resolveOpeningPassage();
-      await showPassage({ chapterIndex, verseIndex, record: false });
-    }
+    return restoreBackup(file, { onRestored: showRestored });
   });
 
   document.addEventListener("keydown", onGlobalKeyDown);
+}
+
+/** After a restore: the passage the popup would open on, drawn from the restored data. */
+async function showRestored() {
+  const { chapterIndex, verseIndex } = await resolveOpeningPassage();
+  await showPassage({ chapterIndex, verseIndex, record: false });
 }
 
 // ─── Bible version ────────────────────────────────────────────────────────────
@@ -422,17 +437,28 @@ export async function start() {
 
   hydrateIcons();
   wire();
+  initLanguageSelect({ onChanged: applyLanguage });
+
+  const appearance = await initAppearance();
+
+  // The language comes before anything is said to the reader. If the saved settings could
+  // not be read, initAppearance gave defaults, which means the browser's language.
+  await initI18n(appearance.uiLanguage);
+  paintLanguage();
 
   if (!isStorageAvailable()) {
-    toast("Saving is unavailable, so bookmarks and notes will not be kept.", "error");
+    toast(
+      t(
+        "storageUnavailable",
+        {},
+        "Saving is unavailable, so bookmarks and notes will not be kept."
+      ),
+      "error"
+    );
   }
-
-  await initAppearance();
 
   try {
     const settings = await getSettings();
-    await initI18n(settings.uiLanguage);
-    applyTranslations();
     await initVersions(settings, currentLanguage());
     await paintVersion();
   } catch (error) {

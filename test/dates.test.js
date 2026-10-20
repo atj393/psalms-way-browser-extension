@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
+import { setTablesForTests } from "../src/i18n.js";
 import { dayOfYear, getDailyChapterIndex, formatTimestamp } from "../src/dates.js";
 import { CHAPTER_COUNT } from "../src/data.js";
 
@@ -120,6 +121,26 @@ describe("getDailyChapterIndex", () => {
 
 describe("formatTimestamp", () => {
   const now = new Date(2026, 5, 15, 12);
+
+  afterEach(() => {
+    setTablesForTests("en", []);
+    vi.unstubAllGlobals();
+  });
+
+  it("says today and yesterday in the reader's language", () => {
+    setTablesForTests("de", [{ dateToday: "Heute", dateYesterday: "Gestern" }]);
+    expect(formatTimestamp(new Date(2026, 5, 15, 8).getTime(), now)).toBe("Heute");
+    expect(formatTimestamp(new Date(2026, 5, 14, 23).getTime(), now)).toBe("Gestern");
+  });
+
+  it("writes older dates in the reader's language, in the browser's own variant of it", () => {
+    setTablesForTests("de", []);
+    vi.stubGlobal("navigator", { languages: ["de-AT"] });
+    const older = new Date(2026, 2, 3, 10).getTime();
+    expect(formatTimestamp(older, now)).toBe(
+      new Intl.DateTimeFormat("de-AT", { day: "numeric", month: "short" }).format(older)
+    );
+  });
 
   it("labels today and yesterday", () => {
     expect(formatTimestamp(new Date(2026, 5, 15, 8).getTime(), now)).toBe("Today");

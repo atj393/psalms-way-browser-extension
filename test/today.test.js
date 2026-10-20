@@ -9,9 +9,15 @@ import { setTablesForTests } from "../src/i18n.js";
 import { openToday, renderToday, shownStreak } from "../src/today.js";
 
 // The version text comes from versions.js; these tests choose what it returns.
-const versions = vi.hoisted(() => ({ module: "modern", data: [], requested: [] }));
+const versions = vi.hoisted(() => ({
+  module: "modern",
+  data: [],
+  requested: [],
+  attributes: { lang: "en", dir: "ltr" },
+}));
 vi.mock("../src/versions.js", () => ({
   currentVersion: () => versions.module,
+  readingTextAttributes: () => versions.attributes,
   getVersionData: async (module) => {
     versions.requested.push(module);
     return versions.data;
@@ -46,6 +52,7 @@ beforeEach(() => {
   versions.module = "modern";
   versions.data = niv;
   versions.requested = [];
+  versions.attributes = { lang: "en", dir: "ltr" };
   writeText = vi.fn(async () => {});
   Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
 });
@@ -98,9 +105,15 @@ describe("renderToday: the verse of the day", () => {
     expect(cards()[0].querySelector(".today-verse").textContent).toMatch(/^kjv verse \d+$/);
   });
 
-  it("lets the browser pick the text direction for right-to-left versions", async () => {
+  it("marks the verse with the Bible's own language and direction", async () => {
     await renderToday({ navigate: vi.fn(), now: NOW });
-    expect(cards()[0].querySelector(".today-verse").getAttribute("dir")).toBe("auto");
+    const verse = cards()[0].querySelector(".today-verse");
+    expect([verse.getAttribute("lang"), verse.getAttribute("dir")]).toEqual(["en", "ltr"]);
+
+    versions.attributes = { lang: "he", dir: "rtl" };
+    await renderToday({ navigate: vi.fn(), now: NOW });
+    const hebrew = cards()[0].querySelector(".today-verse");
+    expect([hebrew.getAttribute("lang"), hebrew.getAttribute("dir")]).toEqual(["he", "rtl"]);
   });
 
   it("Open goes to that verse", async () => {

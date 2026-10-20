@@ -209,6 +209,18 @@ fieldset {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
+}
+
+/* One Verse and New Chapter can be long in some languages. Beside the title, the chip and
+   the sync button they would push past the header's edge, so they give way: the label is
+   cut with an ellipsis (the whole word is still the button's name) and the controls stay
+   in their row. */
+.header-actions .button {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* The Bible version chip: the current version, opens the picker. */
@@ -217,7 +229,8 @@ fieldset {
   align-items: center;
   gap: 3px;
   max-width: 96px;
-  padding: 4px 8px 4px 10px;
+  padding-block: 4px;
+  padding-inline: 10px 8px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-pill);
   background: var(--bg-raised);
@@ -407,12 +420,18 @@ fieldset {
 
 .input-chapter {
   width: 54px;
-  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  border-start-start-radius: var(--radius-sm);
+  border-end-start-radius: var(--radius-sm);
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
   text-align: center;
 }
 
 .button-attached {
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  border-start-end-radius: var(--radius-sm);
+  border-end-end-radius: var(--radius-sm);
   padding: 5px 9px;
 }
 
@@ -448,6 +467,17 @@ fieldset {
   transform: rotate(-90deg);
 }
 
+/* Right to left: the previous and next arrows point the other way, and so does
+   the collapsed toolbar's chevron. (Prayers and Progress flip theirs in their own files.) */
+:root[dir="rtl"] #btnPrev svg,
+:root[dir="rtl"] #btnNext svg {
+  transform: scaleX(-1);
+}
+
+:root[dir="rtl"] .btn-toolbar-toggle.is-collapsed svg {
+  transform: rotate(90deg);
+}
+
 /* ── Feature toolbar ───────────────────────────────────────────────────── */
 .toolbar-wrapper {
   flex-shrink: 0;
@@ -463,6 +493,7 @@ fieldset {
 
 .btn-tool {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -488,9 +519,17 @@ fieldset {
 }
 
 .btn-tool-label {
+  max-width: 100%;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.01em;
+  line-height: 1.15;
+  text-align: center;
+  /* Eight buttons share 440 px, so a long word in some language wraps rather than
+     pushing the last buttons out of the popup (hyphenated where the browser knows how,
+     otherwise broken at the edge). The title still holds the whole word. */
+  hyphens: auto;
+  overflow-wrap: anywhere;
 }
 
 /* ── Panels ────────────────────────────────────────────────────────────── */
@@ -587,7 +626,7 @@ fieldset {
   align-items: baseline;
   gap: var(--space-3);
   width: 100%;
-  text-align: left;
+  text-align: start;
   background: none;
   border: none;
   border-radius: var(--radius-sm);
@@ -598,9 +637,9 @@ fieldset {
   color: var(--text);
 }
 
-/* Keep the text clear of the bookmark and note markers in the top-right corner. */
+/* Keep the text clear of the bookmark and note markers in the corner at the end of the line. */
 .verse:has(.verse-marker) .verse-body {
-  padding-right: 36px;
+  padding-inline-end: 36px;
 }
 
 .verse-body:hover {
@@ -620,7 +659,7 @@ fieldset {
   line-height: calc(var(--size-read) * var(--line-read));
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
-  text-align: right;
+  text-align: end;
 }
 
 .verse-text {
@@ -630,7 +669,7 @@ fieldset {
 .verse-markers {
   position: absolute;
   top: 6px;
-  right: var(--space-4);
+  inset-inline-end: var(--space-4);
   display: flex;
   gap: 3px;
   pointer-events: none;
@@ -728,10 +767,11 @@ fieldset {
 
 .verse-note-preview {
   width: 100%;
-  text-align: left;
+  text-align: start;
   background: var(--bg-sunken);
-  border-left: 3px solid var(--brand);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-inline-start: 3px solid var(--brand);
+  border-start-end-radius: var(--radius-sm);
+  border-end-end-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
 }
 
@@ -782,7 +822,7 @@ fieldset {
   border: none;
   border-radius: var(--radius-sm);
   padding: var(--space-3);
-  text-align: left;
+  text-align: start;
   min-width: 0;
 }
 
@@ -824,8 +864,9 @@ fieldset {
   line-height: 1.45;
   color: var(--text);
   background: var(--bg-sunken);
-  border-left: 2px solid var(--brand);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-inline-start: 2px solid var(--brand);
+  border-start-end-radius: var(--radius-sm);
+  border-end-end-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
   margin-top: var(--space-1);
   white-space: pre-wrap;
@@ -1042,8 +1083,9 @@ fieldset {
   line-height: 1.5;
   color: var(--text-soft);
   background: var(--bg-sunken);
-  border-left: 3px solid var(--brand);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-inline-start: 3px solid var(--brand);
+  border-start-end-radius: var(--radius-sm);
+  border-end-end-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
   max-height: 120px;
   overflow-y: auto;
@@ -1071,7 +1113,7 @@ fieldset {
 .note-counter {
   font-size: 10.5px;
   color: var(--text-muted);
-  text-align: right;
+  text-align: end;
 }
 
 .note-actions {

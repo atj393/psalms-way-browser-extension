@@ -9,6 +9,7 @@
 // no network, and works across browsers and profiles. Local storage stays
 // authoritative.
 
+import { t } from "./i18n.js";
 import { SCHEMA_VERSION, normaliseStore, sanitiseSettings } from "./storage.js";
 
 export const BACKUP_TYPE = "psalms-way-browser-backup";
@@ -67,36 +68,51 @@ export function backupFileName(now = new Date()) {
  */
 export function parseBackup(text) {
   if (typeof text !== "string" || text.trim() === "") {
-    throw new BackupError("That file is empty.", "empty");
+    throw new BackupError(t("importErrEmpty", {}, "That file is empty."), "empty");
   }
   if (byteLength(text) > MAX_BACKUP_BYTES) {
-    throw new BackupError("That file is too large to be a Psalms Way backup.", "too_large");
+    throw new BackupError(
+      t("backupTooLarge", {}, "That file is too large to be a Psalms Way backup."),
+      "too_large"
+    );
   }
 
   let parsed;
   try {
     parsed = JSON.parse(text);
   } catch {
-    throw new BackupError("That file is not valid JSON.", "invalid_json");
+    throw new BackupError(
+      t("importErrNotJson", {}, "That file is not valid JSON."),
+      "invalid_json"
+    );
   }
 
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new BackupError("That file is not a Psalms Way backup.", "wrong_shape");
+    throw new BackupError(
+      t("importErrNotBackup", {}, "That file is not a Psalms Way backup."),
+      "wrong_shape"
+    );
   }
   if (parsed.type !== BACKUP_TYPE) {
-    throw new BackupError("That file is not a Psalms Way backup.", "wrong_type");
+    throw new BackupError(
+      t("importErrNotBackup", {}, "That file is not a Psalms Way backup."),
+      "wrong_type"
+    );
   }
   if (!Number.isInteger(parsed.schemaVersion)) {
-    throw new BackupError("That backup is missing its version.", "missing_version");
+    throw new BackupError(
+      t("importErrNoVersion", {}, "That backup is missing its version."),
+      "missing_version"
+    );
   }
   if (parsed.schemaVersion > BACKUP_SCHEMA_VERSION) {
     throw new BackupError(
-      "That backup was made by a newer version of Psalms Way.",
+      t("importErrNewer", {}, "That backup was made by a newer version of Psalms Way."),
       "future_version"
     );
   }
   if (!parsed.data || typeof parsed.data !== "object" || Array.isArray(parsed.data)) {
-    throw new BackupError("That backup has no data in it.", "no_data");
+    throw new BackupError(t("importErrNoData", {}, "That backup has no data in it."), "no_data");
   }
 
   // Reuse the store sanitisers: identical rules for stored and imported data.
@@ -115,7 +131,10 @@ export function parseBackup(text) {
   };
 
   if (counts.favourites === 0 && counts.notes === 0 && counts.history === 0) {
-    throw new BackupError("That backup contains nothing to restore.", "no_records");
+    throw new BackupError(
+      t("importErrNothing", {}, "That backup contains nothing to restore."),
+      "no_records"
+    );
   }
 
   return { data: normalised, counts };

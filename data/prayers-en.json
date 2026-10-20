@@ -336,7 +336,6 @@
       "tags": ["forgiveness", "mercy"],
       "psalmsReference": ["51:1", "103:12"]
     },
-    [
     {
       "id": "hope_001",
       "categoryId": "hope",
@@ -472,6 +471,5 @@
       "tags": ["church", "unity"],
       "psalmsReference": ["122:1", "133:1"]
     }
-]
   ]
 }

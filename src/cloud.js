@@ -7,20 +7,38 @@
 import { byId, confirmDialog, el, reportError, toast } from "./dom.js";
 import { icon } from "./icons.js";
 import { formatTimestamp } from "./dates.js";
+import { dateLocale, t } from "./i18n.js";
 
+const busyText = () => t("syncErrBusy", {}, "Google Drive is busy.");
+
+/** The sentence for each problem the background worker reports, in the reader's language. */
 const ERROR_TEXT = {
-  network: "No internet connection.",
-  quota: "Google Drive is busy.",
-  server: "Google Drive is busy.",
-  unknown: "Something went wrong.",
-  "auth-expired": "Google needs you to sign in again.",
-  "drive-full":
-    "Your Google Drive is full. Free up space in your Google account and sync will continue.",
-  "incompatible-backup":
-    "Your backup was made by a newer version of Psalms Way. Update this extension.",
-  "empty-local": "This browser has nothing saved, but your Google account does.",
+  network: () => t("syncErrNetwork", {}, "No internet connection."),
+  quota: busyText,
+  server: busyText,
+  unknown: () => t("somethingWentWrong", {}, "Something went wrong."),
+  "auth-expired": () => t("syncErrAuthExpired", {}, "Google needs you to sign in again."),
+  "drive-full": () =>
+    t(
+      "syncErrDriveFull",
+      {},
+      "Your Google Drive is full. Free up space in your Google account and sync will continue."
+    ),
+  "incompatible-backup": () =>
+    t(
+      "syncErrIncompatible",
+      {},
+      "Your backup was made by a newer version of Psalms Way. Update this extension."
+    ),
+  "empty-local": () =>
+    t("syncErrEmptyLocal", {}, "This browser has nothing saved, but your Google account does."),
 };
 const TRANSIENT = ["network", "quota", "server", "unknown"];
+
+/** The sentence for a problem code, or `otherwise()` for a code with none. */
+function errorText(code, otherwise) {
+  return Object.hasOwn(ERROR_TEXT, code) ? ERROR_TEXT[code]() : otherwise();
+}
 
 /** chrome.storage.local key of the sync state (cloudSync.js); read here only to notice changes. */
 export const CLOUD_STATE_KEY = "cloudSync";
@@ -36,27 +54,41 @@ export async function sendCloud(cmd) {
 
 function lastSyncedText(iso) {
   const ms = Date.parse(iso ?? "");
-  if (Number.isNaN(ms)) return "Not yet";
-  const time = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(
+  if (Number.isNaN(ms)) return t("syncNotYet", {}, "Not yet");
+  const time = new Intl.DateTimeFormat(dateLocale(), { hour: "numeric", minute: "2-digit" }).format(
     ms
   );
-  return `${formatTimestamp(ms)} at ${time}`;
+  return t("syncDateAtTime", { date: formatTimestamp(ms), time }, "{{date}} at {{time}}");
 }
 
-/** Paints the toolbar button: off, synced, or needs attention. */
+/** The status last painted on the header button, so a change of language can paint it again. */
+let lastStatus = null;
+
+/**
+ * Paints the header button: off, synced, or needs attention. It has no visible text, so
+ * the tooltip and the accessible name are the same sentence and both follow the state.
+ */
 export function paintCloudButton(status) {
+  lastStatus = status;
   const button = byId("btnCloud");
   if (!button) return;
   const name = { ok: "cloudCheck", attention: "cloudAlert" }[status?.icon] ?? "cloudOff";
   // An icon-only button in the header.
   button.replaceChildren(icon(name, { size: 18 }));
   button.classList.toggle("needs-attention", status?.icon === "attention");
-  button.title =
+  const label =
     status?.icon === "ok"
-      ? "Synced with your phone"
+      ? t("syncedWithPhone", {}, "Synced with your phone")
       : status?.icon === "attention"
-        ? "Sync needs your attention"
-        : "Sync with your phone";
+        ? t("syncNeedsAttention", {}, "Sync needs your attention")
+        : t("syncWithPhone", {}, "Sync with your phone");
+  button.title = label;
+  button.setAttribute("aria-label", label);
+}
+
+/** Paints the button again with the state it last had, after the language changed. */
+export function repaintCloudButton() {
+  paintCloudButton(lastStatus);
 }
 
 let busy = false;
@@ -69,7 +101,10 @@ async function act(cmd, { working, done }) {
   busy = false;
   if (result?.ok && done) toast(done(result), "success");
   else if (result && !result.ok && result.code !== "cancelled" && result.code !== "empty-local") {
-    toast(ERROR_TEXT[result.code] ?? "Sync could not finish.", "error");
+    toast(
+      errorText(result.code, () => t("syncErrFinish", {}, "Sync could not finish.")),
+      "error"
+    );
   }
   await renderCloud();
 }
@@ -81,41 +116,68 @@ async function onConnect() {
     // extension never asks for it.
     granted = await chrome.permissions.request({ permissions: ["identity"] });
   } catch (error) {
-    reportError(error, "Google sign-in could not be started.");
+    reportError(error, t("syncSignInError", {}, "Google sign-in could not be started."));
     return;
   }
   if (!granted) {
-    toast("Psalms Way needs your permission to open Google sign-in.", "error");
+    toast(
+      t("syncPermissionNeeded", {}, "Psalms Way needs your permission to open Google sign-in."),
+      "error"
+    );
     return;
   }
   await act("connect", {
-    working: "Waiting for Google… If this window closes, open Psalms Way again when you're done.",
+    working: t(
+      "syncWaiting",
+      {},
+      "Waiting for Google… If this window closes, open Psalms Way again when you're done."
+    ),
     done: (r) =>
       r.addedFromCloud > 0
-        ? `Connected. ${r.addedFromCloud} items came from your phone.`
-        : "Connected.",
+        ? t(
+            "syncConnectedAdded",
+            { count: r.addedFromCloud },
+            "Connected. {{count}} items came from your phone."
+          )
+        : t("syncConnected", {}, "Connected."),
   });
 }
 
 async function onSyncAnyway() {
   const confirmed = await confirmDialog({
-    title: "Sync this browser as it is?",
-    message:
-      "Your Google account will then hold only what this browser holds, which is nothing saved.",
-    confirmLabel: "Sync anyway",
+    title: t("syncAnywayTitle", {}, "Sync this browser as it is?"),
+    message: t(
+      "syncAnywayMessage",
+      {},
+      "Your Google account will then hold only what this browser holds, which is nothing saved."
+    ),
+    confirmLabel: t("syncAnyway", {}, "Sync anyway"),
     destructive: true,
   });
-  if (confirmed) await act("syncAnyway", { working: "Syncing…", done: () => "Synced." });
+  if (confirmed) {
+    await act("syncAnyway", {
+      working: t("syncSyncing", {}, "Syncing…"),
+      done: () => t("syncDone", {}, "Synced."),
+    });
+  }
 }
 
 async function onDisconnect() {
   const confirmed = await confirmDialog({
-    title: "Disconnect Google account?",
-    message: "This browser keeps everything it has, and your backup stays in Google Drive.",
-    confirmLabel: "Disconnect",
+    title: t("syncDisconnectTitle", {}, "Disconnect Google account?"),
+    message: t(
+      "syncDisconnectMessage",
+      {},
+      "This browser keeps everything it has, and your backup stays in Google Drive."
+    ),
+    confirmLabel: t("backupDisconnect", {}, "Disconnect"),
   });
-  if (confirmed)
-    await act("disconnect", { working: "Disconnecting…", done: () => "Disconnected." });
+  if (confirmed) {
+    await act("disconnect", {
+      working: t("syncDisconnecting", {}, "Disconnecting…"),
+      done: () => t("syncDisconnected", {}, "Disconnected."),
+    });
+  }
 }
 
 /** The sync state changed (a background run finished): repaint, unless an action is showing progress. */
@@ -152,9 +214,13 @@ function accountCard(status) {
   const failing = status.attention || status.lastError;
   const line = failing
     ? status.attention
-      ? "Needs your attention"
-      : `Will try again · last synced ${lastSyncedText(status.lastSyncAt)}`
-    : `Synced · ${lastSyncedText(status.lastSyncAt)}`;
+      ? t("syncStatusAttention", {}, "Needs your attention")
+      : t(
+          "syncStatusRetry",
+          { when: lastSyncedText(status.lastSyncAt) },
+          "Will try again · last synced {{when}}"
+        )
+    : t("syncStatusOk", { when: lastSyncedText(status.lastSyncAt) }, "Synced · {{when}}");
   return el("div", { class: "cloud-card" }, [
     el("span", {
       class: "cloud-avatar",
@@ -180,67 +246,109 @@ export async function renderCloud({ working } = {}) {
 
   const blocks = [];
   if (!status?.configured) {
-    blocks.push(hint("Sync with the phone app is not available in this version."));
+    blocks.push(
+      hint(t("syncUnavailable", {}, "Sync with the phone app is not available in this version."))
+    );
   } else if (!status.email) {
     blocks.push(
       el("div", { class: "cloud-hero" }, [
         el("span", { class: "cloud-hero-icon" }, [icon("cloud", { size: 26 })]),
-        el("p", { class: "cloud-hero-title", text: "Your Psalms Way on every device" }),
+        el("p", {
+          class: "cloud-hero-title",
+          text: t("syncHeroTitle", {}, "Your Psalms Way on every device"),
+        }),
         el("p", {
           class: "cloud-hero-text",
-          text: "Sign in with the same Google account as the Psalms Way phone app, and your bookmarks, notes and history stay the same on both.",
+          text: t(
+            "syncHeroText",
+            {},
+            "Sign in with the same Google account as the Psalms Way phone app, and your bookmarks, notes and history stay the same on both."
+          ),
         }),
       ]),
       working
         ? hint(working)
-        : buttonRow([button("Connect Google account", onConnect, "button button-large")]),
+        : buttonRow([
+            button(
+              t("syncConnect", {}, "Connect Google account"),
+              onConnect,
+              "button button-large"
+            ),
+          ]),
       el("p", {
         class: "settings-hint cloud-privacy",
-        text: "Saved in a private folder in your own Google Drive that only Psalms Way can see. We never receive your data. Optional: without it, everything stays on this browser.",
+        text: t(
+          "syncPrivacy",
+          {},
+          "Saved in a private folder in your own Google Drive that only Psalms Way can see. We never receive your data. Optional: without it, everything stays on this browser."
+        ),
       })
     );
   } else {
     blocks.push(accountCard(status));
     if (status.attention === "empty-local") {
       blocks.push(
-        banner(ERROR_TEXT["empty-local"], "alert"),
+        banner(ERROR_TEXT["empty-local"](), "alert"),
         buttonRow([
           button(
-            "Get my data back",
+            t("syncRecover", {}, "Get my data back"),
             () =>
               act("recover", {
-                working: "Bringing your data back…",
-                done: () => "Your data is back.",
+                working: t("syncRecovering", {}, "Bringing your data back…"),
+                done: () => t("syncRecovered", {}, "Your data is back."),
               }),
             "button button-large"
           ),
-          button("Sync anyway", onSyncAnyway, "button button-large button-quiet"),
+          button(
+            t("syncAnyway", {}, "Sync anyway"),
+            onSyncAnyway,
+            "button button-large button-quiet"
+          ),
         ])
       );
     } else if (status.lastError) {
-      const text = ERROR_TEXT[status.lastError] ?? ERROR_TEXT.unknown;
-      const suffix = TRANSIENT.includes(status.lastError)
-        ? " It will try again automatically."
-        : "";
-      blocks.push(banner(`${text}${suffix}`));
+      const text = errorText(status.lastError, ERROR_TEXT.unknown);
+      blocks.push(
+        banner(
+          TRANSIENT.includes(status.lastError)
+            ? t("syncErrRetry", { text }, "{{text}} It will try again automatically.")
+            : text
+        )
+      );
     }
     if (status.unreadableKeptAsideAt) {
-      blocks.push(hint("A backup that could not be read was kept aside in your Google Drive."));
+      blocks.push(
+        hint(
+          t(
+            "syncUnreadableAside",
+            {},
+            "A backup that could not be read was kept aside in your Google Drive."
+          )
+        )
+      );
     }
     blocks.push(
       working
         ? hint(working)
         : buttonRow([
             status.attention === "reconnect" || status.lastError === "auth-expired"
-              ? button("Reconnect", onConnect, "button button-large")
+              ? button(t("cloudReconnect", {}, "Reconnect"), onConnect, "button button-large")
               : button(
-                  "Sync now",
-                  () => act("syncNow", { working: "Syncing…", done: () => "Synced." }),
+                  t("syncNow", {}, "Sync now"),
+                  () =>
+                    act("syncNow", {
+                      working: t("syncSyncing", {}, "Syncing…"),
+                      done: () => t("syncDone", {}, "Synced."),
+                    }),
                   "button button-large"
                 ),
-            button("Disconnect", onDisconnect, "button button-large button-quiet"),
+            button(
+              t("backupDisconnect", {}, "Disconnect"),
+              onDisconnect,
+              "button button-large button-quiet"
+            ),
           ]),
-      hint("Syncs when you open Psalms Way and a few seconds after each change.")
+      hint(t("syncWhen", {}, "Syncs when you open Psalms Way and a few seconds after each change."))
     );
   }
   body.replaceChildren(...blocks);
