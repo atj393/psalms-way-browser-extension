@@ -35,10 +35,11 @@
   --mark-text: #3a2f00;
 
   /* Typography */
-  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-read: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
-  --size-read: 15px;
-  --line-read: 1.62;
+  /* Arial throughout, as in version 1.2: plain, even and very readable. */
+  --font-ui: Arial, Helvetica, sans-serif;
+  --font-read: Arial, Helvetica, sans-serif;
+  --size-read: 16px;
+  --line-read: 1.5;
 
   /* Space and shape */
   --space-1: 2px;
@@ -103,10 +104,10 @@
   --size-read: 13px;
 }
 :root[data-size="medium"] {
-  --size-read: 15px;
+  --size-read: 16px;
 }
 :root[data-size="large"] {
-  --size-read: 18px;
+  --size-read: 19px;
 }
 
 /* ── Reset ─────────────────────────────────────────────────────────────── */
@@ -540,11 +541,13 @@ fieldset {
 
 .verse-num {
   flex-shrink: 0;
-  min-width: 1.4em;
+  min-width: 1.6em;
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: calc(var(--size-read) - 3px);
   font-weight: 700;
-  color: var(--brand);
+  line-height: calc(var(--size-read) * var(--line-read));
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
   text-align: right;
 }
 
@@ -857,6 +860,8 @@ fieldset {
 }
 
 .settings-row .settings-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   margin-top: var(--space-2);
 }
 
@@ -897,8 +902,8 @@ fieldset {
   background: var(--bg-raised);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
-  padding: 4px 10px;
-  font-size: 11.5px;
+  padding: 7px 10px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-soft);
   transition:
@@ -1089,20 +1094,131 @@ fieldset {
   }
 }
 
+/* ── Equal-width button rows ── */
+/* Buttons that sit side by side share the row equally, so every group lines up. */
+.button-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.button-large {
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 12.5px;
+}
+
 /* ── Sync with the phone app ── */
-.cloud-account {
-  margin: 0 0 var(--space-2);
-  font-weight: 600;
+.cloud-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) 0;
+  text-align: center;
+}
+
+.cloud-hero-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.cloud-hero-title {
+  margin: var(--space-2) 0 0;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text);
-  overflow-wrap: anywhere;
+}
+
+.cloud-hero-text {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.cloud-privacy {
+  text-align: center;
+}
+
+.cloud-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+}
+
+.cloud-avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--brand-text);
+  background: var(--brand);
+}
+
+.cloud-card-text {
+  min-width: 0;
+}
+
+.cloud-account {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 3px 0 0;
+  font-size: 11.5px;
+}
+
+.cloud-status.is-ok {
+  color: var(--brand);
+}
+
+.cloud-status.is-failing {
+  color: var(--danger);
 }
 
 .cloud-alert {
-  margin: 0 0 var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  line-height: 1.45;
   color: var(--danger);
   background: var(--danger-soft);
+}
+
+.cloud-alert svg {
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .btn-tool.needs-attention {

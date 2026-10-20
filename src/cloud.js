@@ -50,7 +50,7 @@ export function paintCloudButton(status) {
   const name = { ok: "cloudCheck", attention: "cloudAlert" }[status?.icon] ?? "cloudOff";
   const label = byId("btnCloudLabel");
   button.replaceChildren(
-    icon(name),
+    icon(name, { size: 20 }),
     label ?? el("span", { class: "btn-tool-label", text: "Sync" })
   );
   button.classList.toggle("needs-attention", status?.icon === "attention");
@@ -138,6 +138,42 @@ function hint(text) {
   return el("p", { class: "settings-hint", text });
 }
 
+/** Two or more buttons side by side, equal widths. */
+function buttonRow(buttons) {
+  return el("div", { class: "button-row" }, buttons);
+}
+
+function banner(text, role = "status") {
+  return el("div", { class: "cloud-alert", role }, [
+    icon("alert", { size: 16 }),
+    el("span", { text }),
+  ]);
+}
+
+/** The connected account: initial, email, and how the last sync went. */
+function accountCard(status) {
+  const failing = status.attention || status.lastError;
+  const line = failing
+    ? status.attention
+      ? "Needs your attention"
+      : `Will try again · last synced ${lastSyncedText(status.lastSyncAt)}`
+    : `Synced · ${lastSyncedText(status.lastSyncAt)}`;
+  return el("div", { class: "cloud-card" }, [
+    el("span", {
+      class: "cloud-avatar",
+      "aria-hidden": "true",
+      text: (status.email[0] ?? "?").toUpperCase(),
+    }),
+    el("div", { class: "cloud-card-text" }, [
+      el("p", { class: "cloud-account", text: status.email }),
+      el("p", { class: `cloud-status ${failing ? "is-failing" : "is-ok"}` }, [
+        icon(failing ? "alert" : "check", { size: 13 }),
+        el("span", { text: line }),
+      ]),
+    ]),
+  ]);
+}
+
 /** Renders the Sync panel from the background worker's status. */
 export async function renderCloud({ working } = {}) {
   const body = byId("cloudBody");
@@ -150,31 +186,38 @@ export async function renderCloud({ working } = {}) {
     blocks.push(hint("Sync with the phone app is not available in this version."));
   } else if (!status.email) {
     blocks.push(
-      hint(
-        "Sign in with the same Google account as the Psalms Way phone app to keep your bookmarks, notes and history the same on both."
-      ),
-      hint(
-        "Saved in a private folder in your own Google Drive that only Psalms Way can see. We never receive your data. Optional: without it, everything stays on this browser."
-      ),
-      working ? hint(working) : button("Connect Google account", onConnect)
+      el("div", { class: "cloud-hero" }, [
+        el("span", { class: "cloud-hero-icon" }, [icon("cloud", { size: 26 })]),
+        el("p", { class: "cloud-hero-title", text: "Your Psalms Way on every device" }),
+        el("p", {
+          class: "cloud-hero-text",
+          text: "Sign in with the same Google account as the Psalms Way phone app, and your bookmarks, notes and history stay the same on both.",
+        }),
+      ]),
+      working
+        ? hint(working)
+        : buttonRow([button("Connect Google account", onConnect, "button button-large")]),
+      el("p", {
+        class: "settings-hint cloud-privacy",
+        text: "Saved in a private folder in your own Google Drive that only Psalms Way can see. We never receive your data. Optional: without it, everything stays on this browser.",
+      })
     );
   } else {
-    blocks.push(
-      el("p", { class: "cloud-account", text: `Connected as ${status.email}` }),
-      hint(`Last synced: ${lastSyncedText(status.lastSyncAt)}`),
-      hint("Syncs when you open Psalms Way and shortly after each change.")
-    );
+    blocks.push(accountCard(status));
     if (status.attention === "empty-local") {
       blocks.push(
-        el("p", { class: "cloud-alert", role: "alert", text: ERROR_TEXT["empty-local"] }),
-        el("div", { class: "settings-controls settings-controls-wide" }, [
-          button("Get my data back", () =>
-            act("recover", {
-              working: "Bringing your data back…",
-              done: () => "Your data is back.",
-            })
+        banner(ERROR_TEXT["empty-local"], "alert"),
+        buttonRow([
+          button(
+            "Get my data back",
+            () =>
+              act("recover", {
+                working: "Bringing your data back…",
+                done: () => "Your data is back.",
+              }),
+            "button button-large"
           ),
-          button("Sync anyway", onSyncAnyway, "button button-quiet"),
+          button("Sync anyway", onSyncAnyway, "button button-large button-quiet"),
         ])
       );
     } else if (status.lastError) {
@@ -182,22 +225,26 @@ export async function renderCloud({ working } = {}) {
       const suffix = TRANSIENT.includes(status.lastError)
         ? " It will try again automatically."
         : "";
-      blocks.push(el("p", { class: "cloud-alert", role: "status", text: `${text}${suffix}` }));
+      blocks.push(banner(`${text}${suffix}`));
     }
     if (status.unreadableKeptAsideAt) {
       blocks.push(hint("A backup that could not be read was kept aside in your Google Drive."));
     }
-    const controls = working
-      ? [hint(working)]
-      : [
-          status.attention === "reconnect" || status.lastError === "auth-expired"
-            ? button("Reconnect", onConnect)
-            : button("Sync now", () =>
-                act("syncNow", { working: "Syncing…", done: () => "Synced." })
-              ),
-          button("Disconnect", onDisconnect, "button button-quiet"),
-        ];
-    blocks.push(el("div", { class: "settings-controls settings-controls-wide" }, controls));
+    blocks.push(
+      working
+        ? hint(working)
+        : buttonRow([
+            status.attention === "reconnect" || status.lastError === "auth-expired"
+              ? button("Reconnect", onConnect, "button button-large")
+              : button(
+                  "Sync now",
+                  () => act("syncNow", { working: "Syncing…", done: () => "Synced." }),
+                  "button button-large"
+                ),
+            button("Disconnect", onDisconnect, "button button-large button-quiet"),
+          ]),
+      hint("Syncs when you open Psalms Way and a few seconds after each change.")
+    );
   }
   body.replaceChildren(...blocks);
 }
