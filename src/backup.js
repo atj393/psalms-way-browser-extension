@@ -30,6 +30,8 @@ export class BackupError extends Error {
  * Build the backup document for the current store.
  * Only user-created data is included. The bundled scripture, icons and caches
  * are part of the extension package and would be dead weight in a backup.
+ * `carry` is the phone-shaped part: highlights, favourite Psalms, streak, badges
+ * and challenges. Older versions ignore it, so the file stays schema 1.
  */
 export function createBackup(store, extensionVersion, now = new Date()) {
   return {
@@ -42,6 +44,7 @@ export function createBackup(store, extensionVersion, now = new Date()) {
       notes: store.notes ?? [],
       history: store.history ?? [],
       settings: store.settings ?? {},
+      carry: store.carry ?? {},
     },
   };
 }
@@ -122,15 +125,20 @@ export function parseBackup(text) {
     notes: parsed.data.notes,
     history: parsed.data.history,
     settings: sanitiseSettings(parsed.data.settings),
+    carry: parsed.data.carry,
   });
+  // A backup from before the phone's data was included says nothing about it,
+  // so restoring it must leave the phone's data as it is, not empty it.
+  if (!Object.hasOwn(parsed.data, "carry")) delete normalised.carry;
 
   const counts = {
     favourites: normalised.favourites.length,
     notes: normalised.notes.length,
     history: normalised.history.length,
   };
+  const hasPhoneData = Object.keys(normalised.carry ?? {}).length > 0;
 
-  if (counts.favourites === 0 && counts.notes === 0 && counts.history === 0) {
+  if (counts.favourites === 0 && counts.notes === 0 && counts.history === 0 && !hasPhoneData) {
     throw new BackupError(
       t("importErrNothing", {}, "That backup contains nothing to restore."),
       "no_records"

@@ -425,6 +425,28 @@ describe("history", () => {
 });
 
 // ─── Settings ────────────────────────────────────────────────────────────────
+describe("restoring a backup", () => {
+  it("replaces the phone's data when the backup has it", async () => {
+    installChromeMock({});
+    await store.updateStore((draft) => {
+      draft.carry = { favorites: [1] };
+    });
+    await store.replaceUserData({ favourites: [], carry: { favorites: [23] } });
+    store.resetStoreCache();
+    expect((await store.loadStore()).carry).toEqual({ favorites: [23] });
+  });
+
+  it("keeps the phone's data when an older backup has none", async () => {
+    installChromeMock({});
+    await store.updateStore((draft) => {
+      draft.carry = { favorites: [1] };
+    });
+    await store.replaceUserData({ favourites: [] });
+    store.resetStoreCache();
+    expect((await store.loadStore()).carry).toEqual({ favorites: [1] });
+  });
+});
+
 describe("settings", () => {
   it("round-trips a change", async () => {
     installChromeMock({});

@@ -624,6 +624,7 @@ export async function replaceUserData(data) {
     notes: data.notes ?? [],
     history: data.history ?? [],
     settings: data.settings ?? draft.settings,
+    carry: data.carry ?? draft.carry,
   }));
 }
 

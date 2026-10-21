@@ -42,7 +42,13 @@ describe("createBackup", () => {
 
   it("carries only user data, not scripture or assets", () => {
     const backup = createBackup(sampleStore, "1.2");
-    expect(Object.keys(backup.data).sort()).toEqual(["favourites", "history", "notes", "settings"]);
+    expect(Object.keys(backup.data).sort()).toEqual([
+      "carry",
+      "favourites",
+      "history",
+      "notes",
+      "settings",
+    ]);
   });
 
   it("names the file with the date", () => {
@@ -57,6 +63,35 @@ describe("parseBackup — valid input", () => {
     expect(data.favourites[0]).toMatchObject({ chapterIndex: 22, verseIndex: 0 });
     expect(data.notes[0].text).toBe("Read at a hard time.");
     expect(data.settings.theme).toBe("dark");
+  });
+
+  it("keeps highlights, favourite Psalms and progress", () => {
+    const carry = {
+      highlights: [{ chapter: 23, verse: 1, color: "blue" }],
+      favorites: [23],
+      streak: { lastDate: "2026-10-20", count: 4, longestStreak: 9 },
+      badges: { day1: "2026-10-17T08:00:00.000Z", day3: "2026-10-19T08:00:00.000Z" },
+      challenges: {},
+    };
+    const { data } = roundTrip({ ...sampleStore, carry });
+    expect(data.carry).toEqual(carry);
+  });
+
+  it("restores a backup that holds only highlights", () => {
+    const onlyHighlights = {
+      ...sampleStore,
+      favourites: [],
+      notes: [],
+      history: [],
+      carry: { highlights: [{ chapter: 1, verse: 1, color: "yellow" }] },
+    };
+    expect(roundTrip(onlyHighlights).data.carry.highlights).toHaveLength(1);
+  });
+
+  it("leaves out the phone's data when an older backup has none, so a restore keeps it", () => {
+    const older = createBackup(sampleStore, "1.2");
+    delete older.data.carry;
+    expect(parseBackup(JSON.stringify(older)).data).not.toHaveProperty("carry");
   });
 
   it("accepts a backup written by an older schema version", () => {
