@@ -145,7 +145,7 @@
   "challengeStart": "চ্যালেঞ্জ শুরু করুন",
   "challengeContinue": "চালিয়ে যান",
   "challengeCompleted": "সম্পন্ন হয়েছে!",
-  "challengeProgress": "সম্পন্ন / মোট অধ্যায়",
+  "challengeProgress": "{{done}} / {{total}} অধ্যায়",
   "achievementUnlocked": "সাফল্য অর্জিত!",
   "challengeFinished": "চ্যালেঞ্জ সম্পন্ন!",
   "awesome": "চমৎকার!",

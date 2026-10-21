@@ -145,7 +145,7 @@
   "challengeStart": "आव्हान सुरू करा",
   "challengeContinue": "पुढे चालू ठेवा",
   "challengeCompleted": "पूर्ण झाले!",
-  "challengeProgress": "पूर्ण झाले / एकूण प्रकरणे",
+  "challengeProgress": "{{done}} / {{total}} प्रकरणे",
   "achievementUnlocked": "यश प्राप्त झाले!",
   "challengeFinished": "आव्हान पूर्ण!",
   "awesome": "अप्रतिम!",

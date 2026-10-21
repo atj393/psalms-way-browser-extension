@@ -145,7 +145,7 @@
   "challengeStart": "Bắt đầu thử thách",
   "challengeContinue": "Tiếp tục",
   "challengeCompleted": "Hoàn thành!",
-  "challengeProgress": "{{đã hoàn thành}} / {{tổng cộng}} chương",
+  "challengeProgress": "{{done}} / {{total}} chương",
   "achievementUnlocked": "Thành tích đã được mở khóa!",
   "challengeFinished": "Thử thách đã hoàn thành!",
   "awesome": "Tuyệt vời!",

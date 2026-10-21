@@ -145,7 +145,7 @@
   "challengeStart": "Fara Kalubale",
   "challengeContinue": "Ci gaba",
   "challengeCompleted": "An kammala!",
-  "challengeProgress": "{{an gama}} / {{jimlar}} babi",
+  "challengeProgress": "Babi {{done}} / {{total}}",
   "achievementUnlocked": "An Buɗe Nasarar!",
   "challengeFinished": "Kammala Kalubale!",
   "awesome": "Abin mamaki!",

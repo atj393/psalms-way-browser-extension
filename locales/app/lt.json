@@ -145,7 +145,7 @@
   "challengeStart": "Pradėti iššūkį",
   "challengeContinue": "Tęsti",
   "challengeCompleted": "Baigta!",
-  "challengeProgress": "{{padaryta}} / {{iš viso}} skyriai",
+  "challengeProgress": "Skyriai: {{done}} / {{total}}",
   "achievementUnlocked": "Pasiekimas atrakintas!",
   "challengeFinished": "Iššūkis įveiktas!",
   "awesome": "Nuostabu!",

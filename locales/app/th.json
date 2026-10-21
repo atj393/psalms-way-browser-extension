@@ -145,7 +145,7 @@
   "challengeStart": "เริ่มความท้าทาย",
   "challengeContinue": "ดำเนินการต่อ",
   "challengeCompleted": "สมบูรณ์!",
-  "challengeProgress": "เสร็จสิ้น / บททั้งหมด",
+  "challengeProgress": "{{done}} / {{total}} บท",
   "achievementUnlocked": "ปลดล็อกความสำเร็จแล้ว!",
   "challengeFinished": "ภารกิจสำเร็จ!",
   "awesome": "สุดยอด!",

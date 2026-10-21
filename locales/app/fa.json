@@ -145,7 +145,7 @@
   "challengeStart": "شروع چالش",
   "challengeContinue": "ادامه",
   "challengeCompleted": "تکمیل شد!",
-  "challengeProgress": "{{انجام شده}} / {{کل}} فصل‌ها",
+  "challengeProgress": "{{done}} / {{total}} فصل",
   "achievementUnlocked": "دستاورد قفل‌گشایی شد!",
   "challengeFinished": "چالش تمام شد!",
   "awesome": "عالیه!",

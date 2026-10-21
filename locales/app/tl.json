@@ -145,7 +145,7 @@
   "challengeStart": "Simulan ang Hamon",
   "challengeContinue": "Magpatuloy",
   "challengeCompleted": "Nakumpleto na!",
-  "challengeProgress": "{{tapos na}} / {{total}} na mga kabanata",
+  "challengeProgress": "{{done}} / {{total}} na mga kabanata",
   "achievementUnlocked": "Na-unlock ang Nakamit!",
   "challengeFinished": "Tapos na ang Hamon!",
   "awesome": "Ang galing!",

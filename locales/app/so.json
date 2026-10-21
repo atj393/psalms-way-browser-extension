@@ -145,7 +145,7 @@
   "challengeStart": "Bilow Caqabadda",
   "challengeContinue": "Sii wad",
   "challengeCompleted": "La dhammeeyay!",
-  "challengeProgress": "{{la dhammeeyay}} / {{wadarta}} cutubyada",
+  "challengeProgress": "Cutubyada: {{done}} / {{total}}",
   "achievementUnlocked": "Guul la furay!",
   "challengeFinished": "Caqabadda oo Dhammaatay!",
   "awesome": "Cajiib!",

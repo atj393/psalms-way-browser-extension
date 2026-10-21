@@ -181,7 +181,7 @@
   "challenge_praise_desc": "7 psalmów czystej chwały i uwielbienia",
   "challengeSetTime": "Kiedy mamy Ci przypomnieć?",
   "challengeTimeDesc": "Codzienne przypomnienie o {{time}}",
-  "challengeDay": "Dzień {{dzień}} z {{całkowitej sumy}}",
+  "challengeDay": "Dzień {{day}} z {{total}}",
   "challengeDayNumber": "Dzień {{day}}",
   "challengeTodaysVerse": "Dzisiejszy werset",
   "markAsRead": "Oznacz jako przeczytane",

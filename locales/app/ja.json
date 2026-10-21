@@ -182,7 +182,7 @@
   "challengeSetTime": "いつ頃ご連絡すればよろしいでしょうか？",
   "challengeTimeDesc": "毎日{{time}}にリマインダー",
   "challengeDay": "{{total}} 中の {{day}} 日目",
-  "challengeDayNumber": "デイ・ヒェンデイ",
+  "challengeDayNumber": "{{day}}日目",
   "challengeTodaysVerse": "今日の聖句",
   "markAsRead": "既読にする",
   "challengeDayComplete": "{{day}}日目完了！🎉",
