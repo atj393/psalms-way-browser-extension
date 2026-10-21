@@ -280,12 +280,41 @@ try {
     "no element still carries a data-icon placeholder",
     (await evaluate("document.querySelectorAll('[data-icon]').length")) === 0
   );
+  check(
+    "the toolbar has seven buttons: Today, Library, History, Compare, Prayers, Progress, Settings",
+    (await evaluate(
+      "[...document.querySelectorAll('.toolbar .btn-tool')].map((b) => b.id).join()"
+    )) === "btnTodaysPsalm,btnLibrary,btnHistory,btnCompare,btnPrayers,btnProgress,btnSettings"
+  );
+  check(
+    "Search is an icon button in the chapter bar, just before the Psalm number, not in the toolbar",
+    await evaluate(`(() => {
+      const search = document.getElementById('btnSearch');
+      const number = document.getElementById('txtChapter');
+      return Boolean(search.closest('.chapter-bar')) && !search.closest('.toolbar') &&
+        Boolean(search.querySelector('svg')) &&
+        Boolean(search.compareDocumentPosition(number) & Node.DOCUMENT_POSITION_FOLLOWING);
+    })()`)
+  );
+  check(
+    "Go is an arrow button named Go",
+    await evaluate(`(() => {
+      const go = document.getElementById('btnGo');
+      return Boolean(go.querySelector('svg')) && go.getAttribute('aria-label') === 'Go' && go.title === 'Go';
+    })()`)
+  );
+  check(
+    "the header runs Sync, the version chip, One Verse, New Chapter",
+    await evaluate(`(() => {
+      const ids = ['btnCloud', 'btnVersion', 'btnVerse', 'btnChapter'];
+      const nodes = ids.map((id) => document.getElementById(id));
+      return nodes.every((node, i) => i === 0 ||
+        Boolean(nodes[i - 1].compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING));
+    })()`)
+  );
 
-  // ── Today's Psalm ────────────────────────────────────────────────────────
-  section("Today's Psalm");
-  await evaluate("document.getElementById('btnTodaysPsalm').click()");
-  await sleep(300);
-  const todayTitle = await evaluate("document.getElementById('chapterTitle').textContent");
+  // ── Today ────────────────────────────────────────────────────────────────
+  section("Today");
   const expectedToday = await evaluate(`(() => {
     const now = new Date();
     const start = Date.UTC(now.getFullYear(), 0, 1);
@@ -293,10 +322,57 @@ try {
     const day = Math.round((today - start) / 86400000) + 1;
     return 'Psalm ' + (((day - 1) % 150) + 1);
   })()`);
+  // Read some other Psalm first, so that arriving at today's proves the button did it.
+  await evaluate(
+    `document.getElementById('txtChapter').value = '${expectedToday === "Psalm 1" ? 2 : 1}'; document.getElementById('btnGo').click()`
+  );
+  await sleep(300);
+  // Opening the popup counts today's visit in the background; Today shows that count.
+  await waitFor(
+    "chrome.storage.local.get('psalmsway').then((r) => r.psalmsway?.carry?.streak?.count === 1)"
+  );
+  await evaluate("document.getElementById('btnTodaysPsalm').click()");
+  await waitFor("!!document.querySelector('#todayBody .today-verse')");
+  check("the Today panel opens", await evaluate("!document.getElementById('todayPanel').hidden"));
+  const verseOfTheDay = await evaluate(
+    "document.querySelector('#todayBody .today-reference')?.textContent ?? ''"
+  );
+  check(
+    "Today shows a verse of the day with its reference",
+    /^Psalm \d+:\d+$/.test(verseOfTheDay) &&
+      (await evaluate("document.querySelector('#todayBody .today-verse').textContent.length")) > 10,
+    verseOfTheDay
+  );
+  check(
+    "Today names Today's Psalm by the date",
+    (await evaluate("document.querySelector('#todayBody .today-psalm-title')?.textContent")) ===
+      expectedToday
+  );
+  check(
+    "Today shows the reading streak after the first open",
+    (await evaluate("document.querySelector('#todayBody .today-streak')?.textContent")) ===
+      "1-day streak"
+  );
+  await evaluate("document.querySelector('#todayBody .today-psalm .button').click()");
+  await sleep(300);
+  const todayTitle = await evaluate("document.getElementById('chapterTitle').textContent");
   check(
     "Today's Psalm matches the date",
     todayTitle === expectedToday,
     `${todayTitle} vs ${expectedToday}`
+  );
+  check(
+    "opening a Psalm closes Today",
+    await evaluate("document.getElementById('todayPanel').hidden")
+  );
+  await evaluate("document.getElementById('btnTodaysPsalm').click()");
+  await waitFor("!!document.querySelector('#todayBody .today-verse')");
+  await evaluate("document.querySelector('#todayBody .today-verse + .button-row .button').click()");
+  await sleep(300);
+  check(
+    "Open takes the reader to the verse of the day",
+    (await evaluate("document.getElementById('chapterTitle').textContent")) === verseOfTheDay,
+    verseOfTheDay
   );
 
   // ── Navigation ───────────────────────────────────────────────────────────
@@ -496,6 +572,12 @@ try {
   await evaluate("document.getElementById('btnSearch').click()");
   await sleep(300);
   check(
+    "the chapter bar's Search button opens the Search panel and shows as pressed",
+    (await evaluate("document.getElementById('searchPanel').hidden")) === false &&
+      (await evaluate("document.getElementById('btnSearch').getAttribute('aria-pressed')")) ===
+        "true"
+  );
+  check(
     "focus moves into the search field",
     (await evaluate("document.activeElement.id")) === "txtSearch"
   );
@@ -659,16 +741,42 @@ try {
     (await evaluate("document.documentElement.getAttribute('data-size')")) === "large"
   );
 
+  const toggleIsUp =
+    "document.getElementById('btnToggleToolbar').classList.contains('is-collapsed')";
+  check("the toolbar's chevron points down while it is open", !(await evaluate(toggleIsUp)));
   await evaluate("document.getElementById('btnToggleToolbar').click()");
   await sleep(300);
   check("toolbar collapses", await evaluate("document.getElementById('toolbarWrapper').hidden"));
+  check("the chevron turns up while the toolbar is collapsed", await evaluate(toggleIsUp));
   await reload();
   check(
     "toolbar stays collapsed after reopening",
     await evaluate("document.getElementById('toolbarWrapper').hidden")
   );
+  check("the chevron is still up after reopening", await evaluate(toggleIsUp));
   await evaluate("document.getElementById('btnToggleToolbar').click()");
   await sleep(250);
+  check("the chevron turns down again when the toolbar is shown", !(await evaluate(toggleIsUp)));
+
+  await evaluate("document.getElementById('btnSettings').click()");
+  await sleep(300);
+  await evaluate("document.querySelector('#accentControls [data-accent=\"blue\"]').click()");
+  await sleep(300);
+  await reload();
+  check(
+    "the accent colour applies and persists across reopening",
+    (await evaluate("document.documentElement.getAttribute('data-accent')")) === "blue"
+  );
+  await evaluate("document.getElementById('btnSettings').click()");
+  await sleep(300);
+  await evaluate("document.querySelector('#accentControls [data-accent=\"green\"]').click()");
+  await sleep(250);
+  check(
+    "the accent colour can be put back",
+    (await evaluate("document.documentElement.getAttribute('data-accent')")) === "green"
+  );
+  await evaluate("document.getElementById('btnCloseSettings').click()");
+  await sleep(200);
 
   // ── Sync with the phone app ──────────────────────────────────────────────
   section("Sync");
@@ -691,6 +799,309 @@ try {
     )) === "boolean"
   );
   await evaluate("document.getElementById('btnCloseCloud').click()");
+  await sleep(250);
+
+  // ── Bible versions ───────────────────────────────────────────────────────
+  section("Bible versions");
+  const goToPsalm = async (number) => {
+    await evaluate(
+      `document.getElementById('txtChapter').value = '${number}'; document.getElementById('btnGo').click()`
+    );
+    await sleep(300);
+  };
+  const chipLabel = "document.getElementById('btnVersionLabel').textContent";
+  const verseTwo = "document.querySelectorAll('.verse-text')[1]?.textContent ?? ''";
+  const storedVersion =
+    "chrome.storage.local.get('psalmsway').then((r) => r.psalmsway.settings.bibleVersion)";
+  /** Opens the picker and chooses a version by its module, then waits for the page to repaint. */
+  const chooseVersion = async (module) => {
+    await evaluate("document.getElementById('btnVersion').click()");
+    await waitFor("document.querySelectorAll('#versionBody .version-row').length > 0");
+    await evaluate(`document.querySelector('.version-row[data-module="${module}"]').click()`);
+    await waitFor("document.getElementById('versionPanel').hidden");
+    await sleep(300);
+  };
+
+  await goToPsalm(23);
+  check("the chip shows NIV to begin with", (await evaluate(chipLabel)) === "NIV");
+  check("Psalm 23 is in the NIV", (await evaluate(verseTwo)).includes("He makes me lie down"));
+  await evaluate("document.getElementById('btnVersion').click()");
+  await waitFor("document.querySelectorAll('#versionBody .version-row').length > 0");
+  check(
+    "the picker lists all 80 versions and marks the NIV as the current one",
+    (await evaluate("document.querySelectorAll('#versionBody .version-row').length")) === 80 &&
+      (await evaluate(
+        "document.querySelector('.version-row[aria-current=\"true\"]')?.dataset.module"
+      )) === "modern"
+  );
+  await evaluate(
+    "(() => { const f = document.querySelector('.version-filter'); f.value = 'king james'; f.dispatchEvent(new Event('input', { bubbles: true })); })()"
+  );
+  await sleep(150);
+  check(
+    "the filter box narrows the list by name",
+    await evaluate(
+      "(() => { const rows = document.querySelectorAll('#versionBody .version-row'); return rows.length > 0 && rows.length < 5 && !!document.querySelector('.version-row[data-module=\"kjv\"]'); })()"
+    )
+  );
+  await evaluate("document.querySelector('.version-row[data-module=\"kjv\"]').click()");
+  await waitFor("document.getElementById('versionPanel').hidden");
+  await sleep(300);
+  check(
+    "choosing a version closes the picker and the chip says KJV",
+    (await evaluate("document.getElementById('versionPanel').hidden")) &&
+      (await evaluate(chipLabel)) === "KJV",
+    await evaluate(chipLabel)
+  );
+  check(
+    "the Psalm title is still Psalm 23",
+    (await evaluate("document.getElementById('chapterTitle').textContent")) === "Psalm 23"
+  );
+  check("the Psalm is now in the KJV", (await evaluate(verseTwo)).includes("He maketh me"));
+  check("the choice is saved", (await evaluate(storedVersion)) === "kjv");
+
+  await reload();
+  check(
+    "the KJV is still the version after reopening",
+    (await evaluate(chipLabel)) === "KJV" &&
+      (await evaluate("document.getElementById('versionSetting').textContent")) ===
+        "Authorized King James Version"
+  );
+
+  // A single verse keeps its reference through a change of version.
+  await evaluate("document.getElementById('btnLibrary').click()");
+  await sleep(300);
+  await evaluate("document.querySelector('#libraryTabs [data-tab=favourites]').click()");
+  await sleep(300);
+  await evaluate("document.querySelector('#libraryBody .row-body').click()");
+  await sleep(350);
+  check(
+    "the KJV single verse reads 'I shall not want'",
+    (await evaluate("document.getElementById('chapterTitle').textContent")) === "Psalm 23:1" &&
+      (await evaluate("document.querySelector('.single-verse-text').textContent")).includes(
+        "I shall not want"
+      )
+  );
+  await chooseVersion("modern");
+  check("switching back to NIV puts NIV on the chip", (await evaluate(chipLabel)) === "NIV");
+  check(
+    "the single verse keeps its reference and is now the NIV's",
+    (await evaluate("document.getElementById('chapterTitle').textContent")) === "Psalm 23:1" &&
+      (await evaluate("document.querySelector('.single-verse-text').textContent")).includes(
+        "I shall not be in want"
+      )
+  );
+  check("the NIV is saved again", (await evaluate(storedVersion)) === "modern");
+  await reload();
+  check("the NIV is still the version after reopening", (await evaluate(chipLabel)) === "NIV");
+
+  // ── Highlights and favourite Psalms ──────────────────────────────────────
+  section("Highlights and favourite Psalms");
+  await goToPsalm(23);
+  await evaluate("document.querySelectorAll('.verse .verse-body')[2].click()");
+  await sleep(300);
+  await evaluate("document.querySelector('.verse-actions .btn-highlight').click()");
+  await sleep(200);
+  check(
+    "the Highlight button opens four colours and None",
+    (await evaluate("document.querySelectorAll('.highlight-picker .hl-swatch').length")) === 4 &&
+      (await evaluate("!document.querySelector('.highlight-picker').hidden"))
+  );
+  await evaluate("document.querySelector('.hl-swatch[data-highlight=\"yellow\"]').click()");
+  await sleep(400);
+  const verseTint = "document.querySelectorAll('.verse-body')[2].dataset.highlight";
+  check("the verse shows its yellow tint", (await evaluate(verseTint)) === "yellow");
+  // The phone's shape: 1-based chapter and verse. Compared as values, since the store sorts its keys.
+  const storedHighlights = await evaluate(`chrome.storage.local.get('psalmsway').then((r) => {
+    const rows = r.psalmsway.carry.highlights;
+    return JSON.stringify(rows) +
+      (rows.length === 1 && rows[0].chapter === 23 && rows[0].verse === 3 && rows[0].color === 'yellow'
+        ? ' ok' : ' wrong');
+  })`);
+  check(
+    "the highlight is stored in the phone's shape",
+    storedHighlights.endsWith(" ok"),
+    storedHighlights
+  );
+  await reload();
+  await goToPsalm(23);
+  check(
+    "the highlight survives closing and reopening the popup",
+    (await evaluate(verseTint)) === "yellow" &&
+      (await evaluate("document.querySelectorAll('.verse-body[data-highlight]').length")) === 1
+  );
+
+  check(
+    "the heart in the chapter bar starts empty",
+    (await evaluate("document.getElementById('btnFavChapter').getAttribute('aria-pressed')")) ===
+      "false" &&
+      (await evaluate("document.querySelector('#btnFavChapter svg').getAttribute('fill')")) ===
+        "none"
+  );
+  await evaluate("document.getElementById('btnFavChapter').click()");
+  await waitFor("document.getElementById('btnFavChapter').getAttribute('aria-pressed') === 'true'");
+  check(
+    "clicking the heart fills it",
+    (await evaluate("document.querySelector('#btnFavChapter svg').getAttribute('fill')")) ===
+      "currentColor"
+  );
+  await reload();
+  await goToPsalm(23);
+  check(
+    "the filled heart survives closing and reopening the popup",
+    (await evaluate("document.getElementById('btnFavChapter').getAttribute('aria-pressed')")) ===
+      "true"
+  );
+
+  await evaluate("document.getElementById('btnLibrary').click()");
+  await sleep(300);
+  await evaluate("document.querySelector('#libraryTabs [data-tab=highlights]').click()");
+  await sleep(300);
+  check(
+    "Library > Highlights lists the highlighted verse with its colour",
+    (await evaluate("document.querySelectorAll('#libraryBody .row').length")) === 1 &&
+      (await evaluate("document.querySelector('#libraryBody .row-ref').textContent")).includes(
+        "Psalm 23:3"
+      ) &&
+      (await evaluate("document.querySelector('#libraryBody .hl-dot')?.dataset.highlight")) ===
+        "yellow"
+  );
+  await evaluate("document.querySelector('#libraryTabs [data-tab=chapters]').click()");
+  await sleep(300);
+  check(
+    "Library > Favourites lists the favourite Psalm",
+    (await evaluate("document.querySelectorAll('#libraryBody .row').length")) === 1 &&
+      (await evaluate("document.querySelector('#libraryBody .row-ref').textContent")) === "Psalm 23"
+  );
+  await evaluate("document.querySelector('#libraryBody .row-body').click()");
+  await sleep(350);
+  check(
+    "opening a favourite Psalm shows the whole Psalm",
+    (await evaluate("document.getElementById('chapterTitle').textContent")) === "Psalm 23" &&
+      (await evaluate("document.querySelectorAll('.verse').length")) === 6
+  );
+  await evaluate("document.getElementById('btnFavChapter').click()");
+  await waitFor(
+    "document.getElementById('btnFavChapter').getAttribute('aria-pressed') === 'false'"
+  );
+  check(
+    "clicking the heart again empties it",
+    (await evaluate("document.querySelector('#btnFavChapter svg').getAttribute('fill')")) === "none"
+  );
+  await evaluate("document.getElementById('btnFavChapter').click()");
+  await waitFor("document.getElementById('btnFavChapter').getAttribute('aria-pressed') === 'true'");
+
+  // ── Compare ──────────────────────────────────────────────────────────────
+  section("Compare");
+  await goToPsalm(23);
+  await evaluate("document.getElementById('btnCompare').click()");
+  await waitFor("document.querySelectorAll('#compareBody .compare-card').length > 0");
+  check(
+    "Compare shows three cards",
+    (await evaluate("document.querySelectorAll('#compareBody .compare-card').length")) === 3
+  );
+  check(
+    "the first card is the version being read, the other two have a select each",
+    (await evaluate("document.querySelector('.compare-card-name')?.textContent")) ===
+      "New International Version (1984)" &&
+      (await evaluate("document.querySelectorAll('.compare-select').length")) === 2
+  );
+  check(
+    "every card has its own text for the verse",
+    await evaluate(
+      "(() => { const t = [...document.querySelectorAll('.compare-text')].map((n) => n.textContent); return t.length === 3 && t.every((x) => x.length > 10) && new Set(t).size === 3; })()"
+    )
+  );
+  check(
+    "the selects do not offer the version already being read",
+    await evaluate(
+      "[...document.querySelectorAll('.compare-select')].every((s) => s.options.length === 79 && ![...s.options].some((o) => o.value === 'modern'))"
+    )
+  );
+  await evaluate("document.getElementById('btnCloseCompare').click()");
+  await sleep(250);
+
+  // ── Prayers ──────────────────────────────────────────────────────────────
+  section("Prayers");
+  await evaluate("document.getElementById('btnPrayers').click()");
+  await waitFor("document.querySelectorAll('#prayersBody .prayer-row').length > 0");
+  check(
+    "Prayers opens on its categories",
+    (await evaluate("document.querySelectorAll('#prayersBody .prayer-row').length")) > 1
+  );
+  const prayerTotal = await evaluate(`(() => {
+    const body = document.getElementById('prayersBody');
+    const categories = body.querySelectorAll('.prayer-row').length;
+    let total = 0;
+    for (let i = 0; i < categories; i++) {
+      body.querySelectorAll('.prayer-row')[i].click();
+      total += body.querySelectorAll('.prayer-row').length;
+      body.querySelector('.prayer-back').click();
+    }
+    return JSON.stringify({ categories, total });
+  })()`);
+  check(
+    "the categories hold 50 prayers between them",
+    JSON.parse(prayerTotal).total === 50 && JSON.parse(prayerTotal).categories > 1,
+    prayerTotal
+  );
+  await evaluate("document.querySelectorAll('#prayersBody .prayer-row')[0].click()");
+  const categoryHeading = await evaluate("document.querySelector('.prayer-heading').textContent");
+  check(
+    "a category opens its prayers",
+    (await evaluate("document.querySelectorAll('#prayersBody .prayer-row').length")) > 0 &&
+      categoryHeading.length > 0,
+    categoryHeading
+  );
+  await evaluate("document.querySelectorAll('#prayersBody .prayer-row')[0].click()");
+  check(
+    "a prayer opens with its text and Psalm references",
+    (await evaluate("document.querySelector('.prayer-text')?.textContent.length")) > 50 &&
+      (await evaluate("document.querySelectorAll('.prayer-ref').length")) > 0
+  );
+  await evaluate("document.querySelector('.prayer-ref:not(.is-plain)').click()");
+  await sleep(350);
+  check(
+    "a Psalm reference in a prayer opens that Psalm",
+    (await evaluate("document.getElementById('prayersPanel').hidden")) &&
+      /^Psalm \d+(:\d+)?$/.test(
+        await evaluate("document.getElementById('chapterTitle').textContent")
+      )
+  );
+
+  // ── Progress ─────────────────────────────────────────────────────────────
+  section("Progress");
+  await evaluate("document.getElementById('btnProgress').click()");
+  await waitFor("!!document.querySelector('#progressBody .progress-streak-number')");
+  check(
+    "Progress shows a streak of 1 after the first open",
+    (await evaluate("document.querySelector('.progress-streak-number').textContent")) === "1"
+  );
+  check(
+    "the last seven days are listed and today is marked read",
+    (await evaluate("document.querySelectorAll('.progress-day').length")) === 7 &&
+      (await evaluate(
+        "document.querySelector('.progress-day.is-today').classList.contains('is-read')"
+      ))
+  );
+  check(
+    "nine badges are listed and one is earned: 1/9",
+    (await evaluate("document.querySelectorAll('.progress-badge').length")) === 9 &&
+      (await evaluate("document.querySelectorAll('.progress-badge.is-earned').length")) === 1 &&
+      (await evaluate("document.querySelector('.progress-count')?.textContent")) === "1/9"
+  );
+  check(
+    "six challenges are listed",
+    (await evaluate("document.querySelectorAll('#progressBody .progress-challenge').length")) === 6
+  );
+  check(
+    "the reading totals count the highlight and the favourite Psalm",
+    await evaluate(`(() => {
+      const rows = Object.fromEntries([...document.querySelectorAll('.progress-total-row')].map((r) => [r.firstChild.textContent, r.lastChild.textContent]));
+      return rows['Highlights'] === '1' && rows['Favourites'] === '1';
+    })()`)
+  );
+  await evaluate("document.getElementById('btnCloseProgress').click()");
   await sleep(250);
 
   // ── Interface language ───────────────────────────────────────────────────
@@ -747,6 +1158,36 @@ try {
     (await evaluate("document.documentElement.lang")) === "ar" &&
       (await evaluate("document.documentElement.dir")) === "rtl"
   );
+  // German: the toolbar says what the phone's German files say, not English.
+  await evaluate("document.getElementById('btnSettings').click()");
+  await sleep(300);
+  await chooseLanguage("de");
+  check(
+    "German shows German labels in the toolbar",
+    await evaluate(`(async () => {
+      const [ext, app] = await Promise.all(
+        ['locales/ext/de.json', 'locales/app/de.json'].map((path) => fetch(path).then((r) => r.json()))
+      );
+      const labels = [...document.querySelectorAll('.toolbar .btn-tool-label')];
+      return labels.length === 7 &&
+        labels.every((label) => label.textContent === (ext[label.dataset.i18n] ?? app[label.dataset.i18n]));
+    })()`)
+  );
+  check(
+    "the German toolbar no longer says Library, History, Compare, Prayers or Settings",
+    await evaluate(`(() => {
+      const labels = [...document.querySelectorAll('.toolbar .btn-tool-label')].map((l) => l.textContent);
+      return ['Library', 'History', 'Compare', 'Prayers', 'Settings'].every((word) => !labels.includes(word));
+    })()`)
+  );
+  check(
+    "German names the Search button and stays left to right",
+    (await evaluate(`(async () => {
+      const ext = await (await fetch('locales/ext/de.json')).json();
+      const app = await (await fetch('locales/app/de.json')).json();
+      return document.getElementById('btnSearch').getAttribute('aria-label') === (ext.search ?? app.search);
+    })()`)) && (await evaluate("document.documentElement.dir")) === "ltr"
+  );
   // Long words in some languages must not push a control out of its row or past the edge.
   const fitsWithinItsRow = `(() => {
     const inside = (selector) => {
@@ -757,12 +1198,20 @@ try {
       const right = rect.right - parseFloat(style.paddingRight);
       return [...box.children].every((child) => {
         const r = child.getBoundingClientRect();
+        if (child.classList.contains('sr-only')) return true;
         return r.width === 0 || (r.left >= left - 1 && r.right <= right + 1);
       });
     };
-    return ['.header', '.chapter-bar', '.toolbar'].every(inside);
+    return ['.header', '.header-actions', '.chapter-bar', '.chapter-nav', '.toolbar'].every(inside);
   })()`;
-  const LONG_LANGUAGES = { de: "German", ta: "Tamil", ml: "Malayalam" };
+  // German has the long words; Tamil and Malayalam the wide letters; Arabic and Hebrew run right to left.
+  const LONG_LANGUAGES = {
+    de: "German",
+    ta: "Tamil",
+    ml: "Malayalam",
+    ar: "Arabic",
+    he: "Hebrew",
+  };
   for (const [code, name] of Object.entries(LONG_LANGUAGES)) {
     await evaluate("document.getElementById('btnSettings').click()");
     await sleep(300);
@@ -898,6 +1347,37 @@ try {
     roundTrip === '{"favourites":2,"rejected":4}',
     roundTrip
   );
+
+  // ── Every panel ──────────────────────────────────────────────────────────
+  // Last of all, on the migrated store, so the console and network checks below
+  // cover each panel having been opened, not only the ones the sections above used.
+  section("Every panel");
+  for (const [button, panel] of [
+    ["btnTodaysPsalm", "todayPanel"],
+    ["btnSearch", "searchPanel"],
+    ["btnLibrary", "libraryPanel"],
+    ["btnHistory", "historyPanel"],
+    ["btnVersion", "versionPanel"],
+    ["btnCompare", "comparePanel"],
+    ["btnPrayers", "prayersPanel"],
+    ["btnProgress", "progressPanel"],
+    ["btnCloud", "cloudPanel"],
+    ["btnSettings", "settingsPanel"],
+  ]) {
+    await evaluate(`document.getElementById('${button}').click()`);
+    await sleep(500);
+    const opened = await evaluate(`!document.getElementById('${panel}').hidden`);
+    const name = panel.replace("Panel", "");
+    await evaluate(
+      `document.getElementById('btnClose${name[0].toUpperCase()}${name.slice(1)}').click()`
+    );
+    await sleep(150);
+    check(
+      `the ${name} panel opens and closes`,
+      opened && (await evaluate(`document.getElementById('${panel}').hidden`)),
+      `${button} → ${panel}`
+    );
+  }
 
   // ── Console and network ──────────────────────────────────────────────────
   section("Console and network");

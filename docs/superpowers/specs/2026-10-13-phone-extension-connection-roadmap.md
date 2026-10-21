@@ -19,19 +19,19 @@ the extension keeps working offline and privately, as it does today.
 
 ## Decisions
 
-| Topic                   | Decision                                                                                                                                                                                                                                  | From                      |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| Order                   | Phone sync upgrade, extension groundwork, one brand, extension sign-in and sync. Translations and languages, then the remaining features.                                                                                                 | Owner                     |
-| Brand                   | One brand for both: the same name, icon, colours and wording. They stay two apps with two codebases.                                                                                                                                      | Owner (codebases assumed) |
-| Translations            | All 82 translations ship inside both packages: the phone as now, the extension the same way. Public hosting (GitHub, npm or Drive) is postponed and may be revisited later.                                                               | Owner, 2026-10-20         |
-| UI languages            | All 47 ship inside both packages.                                                                                                                                                                                                         | Assumed                   |
-| Extension's default     | NIV 1984 stays the default English text.                                                                                                                                                                                                  | Owner                     |
-| Google Cloud project    | The new project (number 873591523011) holds the phone's Android client and the extension's clients. The old project `dulcet-outlook-496910-b7` is retired.                                                                                | Owner, 2026-10-20         |
-| Where synced data lives | The user's own Google Drive, private app folder, the same `psalms-way-backup.json` the phone writes. No server.                                                                                                                           | Assumed (not changed)     |
-| What syncs              | Bookmarks, favourites, highlights, notes, history, streak, badges and challenges. Settings stay per device.                                                                                                                               | Assumed (not changed)     |
-| Sync behaviour          | Two-way: adding, changing and deleting on either device reaches the other within about a minute, or on the next open. Not instant.                                                                                                        | Assumed (not changed)     |
-| Extension data model    | The phone's. The extension's current "Favourites" (single verses) become Bookmarks, and whole-chapter Favourites are added. This reverses the "one list only" decision in `docs/OVERNIGHT_AUDIT.md`, because both apps' lists must match. | Assumed (not changed)     |
-| Browsers                | Chrome and Edge, as today. Firefox is out of scope. The owner chose not to test Edge in the spike.                                                                                                                                        | Owner                     |
+| Topic                   | Decision                                                                                                                                                                                                                                                                                 | From                      |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| Order                   | Phone sync upgrade, extension groundwork, one brand, extension sign-in and sync. Translations and languages, then the remaining features.                                                                                                                                                | Owner                     |
+| Brand                   | One brand for both: the same name, icon, colours and wording. They stay two apps with two codebases.                                                                                                                                                                                     | Owner (codebases assumed) |
+| Translations            | All 80 translations ship inside both packages (the phone's files, less lt_heritage and ta_oitce, which are left out because their psalm numbers are wrong): the phone as now, the extension the same way. Public hosting (GitHub, npm or Drive) is postponed and may be revisited later. | Owner, 2026-10-20         |
+| UI languages            | All 47 ship inside both packages.                                                                                                                                                                                                                                                        | Assumed                   |
+| Extension's default     | NIV 1984 stays the default English text.                                                                                                                                                                                                                                                 | Owner                     |
+| Google Cloud project    | The new project (number 873591523011) holds the phone's Android client and the extension's clients. The old project `dulcet-outlook-496910-b7` is retired.                                                                                                                               | Owner, 2026-10-20         |
+| Where synced data lives | The user's own Google Drive, private app folder, the same `psalms-way-backup.json` the phone writes. No server.                                                                                                                                                                          | Assumed (not changed)     |
+| What syncs              | Bookmarks, favourites, highlights, notes, history, streak, badges and challenges. Settings stay per device.                                                                                                                                                                              | Assumed (not changed)     |
+| Sync behaviour          | Two-way: adding, changing and deleting on either device reaches the other within about a minute, or on the next open. Not instant.                                                                                                                                                       | Assumed (not changed)     |
+| Extension data model    | The phone's. The extension's current "Favourites" (single verses) become Bookmarks, and whole-chapter Favourites are added. This reverses the "one list only" decision in `docs/OVERNIGHT_AUDIT.md`, because both apps' lists must match.                                                | Assumed (not changed)     |
+| Browsers                | Chrome and Edge, as today. Firefox is out of scope. The owner chose not to test Edge in the spike.                                                                                                                                                                                       | Owner                     |
 
 ## Findings that shape the work
 
@@ -61,7 +61,7 @@ From the extension survey, checks on both repositories and the spike:
    Edge has no `chrome.identity.getAuthToken`; silent renewal in Edge is untested.
 8. **Verse numbering differs in 13 of 81 translations** (verse counts compared with the KJV). Five
    count the psalm heading as verse 1 (afri, oster, pol_nbg, wlc, wo_kyg). Two are incomplete
-   (lt_heritage: 137 chapters, 850 verses; ta_oitce: 148 chapters). Six differ in 1–18 chapters
+   (lt_heritage: 137 chapters, 850 verses; ta_oitce: 148 chapters; both are left out of the extension, because their psalm numbers are wrong). Six differ in 1–18 chapters
    (bo_ntb, bungo, martin, te_irv, turkish, ug_ara). Positions are what sync, so on these a bookmark
    can land a verse off; already true on the phone when switching translations. NIV 1984 and KJV
    match in every chapter.
@@ -73,7 +73,7 @@ From the extension survey, checks on both repositories and the spike:
    2010 and 2004 (`rvg`, `rvg_2004`, rights reserved); Kannada KJV (`kn_kjv`, copyright unknown);
    Fidela (`fidela`); Nowej Biblii Gdańskiej (`pol_nbg`). Shipping them in both packages is the
    owner's decision; the licensing question recorded in the extension's docs remains open.
-10. **Size of bundling every translation in the extension.** 82 files, 26 MB installed (already
+10. **Size of bundling every translation in the extension.** 80 files, 26 MB installed (already
     compact; minifying saves under 1 %), about 6.5 MB zipped. Today's package is 365 KB installed and
     121 KB zipped. The largest single translation is 770 KB; NIV is 221 KB. The phone's 47 UI locale
     files total 855 KB.
@@ -186,7 +186,7 @@ behaves exactly as before.
 
 ### 5. Translations and UI languages in the extension (bundled)
 
-- All 82 translations ship as separate files in the package, as on the phone. Only the chosen one is
+- All 80 translations ship as separate files in the package, as on the phone. Only the chosen one is
   loaded, so opening the popup stays as fast as today (the largest file is 770 KB; NIV is 221 KB).
 - The phone's files (`{metadata, psalms}`) are used as they are; the extension's loader reads that
   shape. A script copies them from the phone repository so both always carry the same text.
@@ -196,8 +196,8 @@ behaves exactly as before.
 - The extension's UI strings translated into the phone's 47 languages, all bundled; the browser
   language picks one, with English as the fallback.
 - The package script, `scripts/package-manifest.js` and the package validator learn the new files;
-  the smoke test checks that every translation loads with 150 chapters (148 and 137 for the two
-  incomplete ones).
+  `npm run validate` checks that every translation has 150 chapters (the two incomplete ones, with 148 and
+  137, are left out).
 - Cost: the download grows from about 121 KB to about 6.5 MB, and each extension update downloads
   the package again. Nothing is fetched from the network, so it all works offline from the first
   open.
