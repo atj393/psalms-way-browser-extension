@@ -11,10 +11,11 @@ last, or on Today's Psalm the first time.
 The popup has three parts:
 
 - **The top row** — the Sync cloud, the Bible version button (for English readers it reads
-  **NIV** to begin with), and the two quick buttons, One Verse and New Chapter.
+  **NIV** to begin with), the two quick buttons, One Verse and New Chapter, and the
+  gear for Settings.
 - **The chapter row** — where you are (with a heart to keep the Psalm), and how to
   find or move between Psalms: Search, the number box and Go, then previous and next.
-- **The toolbar** — Today, Library, History, Compare, Prayers, Progress and Settings.
+- **The toolbar** — Today, Library, History, Compare, Prayers and Progress.
 
 You can hide the toolbar with the **⌄** button on the right of the chapter row. The
 arrow turns up (**⌃**) while the toolbar is hidden; press it to bring the toolbar

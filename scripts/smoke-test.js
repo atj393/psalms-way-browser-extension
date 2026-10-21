@@ -281,10 +281,20 @@ try {
     (await evaluate("document.querySelectorAll('[data-icon]').length")) === 0
   );
   check(
-    "the toolbar has seven buttons: Today, Library, History, Compare, Prayers, Progress, Settings",
+    "the toolbar has six buttons: Today, Library, History, Compare, Prayers, Progress",
     (await evaluate(
       "[...document.querySelectorAll('.toolbar .btn-tool')].map((b) => b.id).join()"
-    )) === "btnTodaysPsalm,btnLibrary,btnHistory,btnCompare,btnPrayers,btnProgress,btnSettings"
+    )) === "btnTodaysPsalm,btnLibrary,btnHistory,btnCompare,btnPrayers,btnProgress"
+  );
+  check(
+    "Settings is a gear button at the end of the header, after New Chapter",
+    await evaluate(`(() => {
+      const settings = document.getElementById('btnSettings');
+      return settings?.parentElement?.classList.contains('header-actions') &&
+        settings.previousElementSibling?.id === 'btnChapter' &&
+        settings.nextElementSibling === null &&
+        settings.getAttribute('aria-label').length > 0;
+    })()`)
   );
   check(
     "Search is an icon button in the chapter bar, just before the Psalm number, not in the toolbar",
@@ -1171,15 +1181,15 @@ try {
         ['locales/ext/de.json', 'locales/app/de.json'].map((path) => fetch(path).then((r) => r.json()))
       );
       const labels = [...document.querySelectorAll('.toolbar .btn-tool-label')];
-      return labels.length === 7 &&
+      return labels.length === 6 &&
         labels.every((label) => label.textContent === (ext[label.dataset.i18n] ?? app[label.dataset.i18n]));
     })()`)
   );
   check(
-    "the German toolbar no longer says Library, History, Compare, Prayers or Settings",
+    "the German toolbar no longer says Library, History, Compare, Prayers or Progress",
     await evaluate(`(() => {
       const labels = [...document.querySelectorAll('.toolbar .btn-tool-label')].map((l) => l.textContent);
-      return ['Library', 'History', 'Compare', 'Prayers', 'Settings'].every((word) => !labels.includes(word));
+      return ['Library', 'History', 'Compare', 'Prayers', 'Progress'].every((word) => !labels.includes(word));
     })()`)
   );
   check(

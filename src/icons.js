@@ -48,14 +48,12 @@ const ICONS = {
     paths: ["M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 17.8 8.6 4.7 4.7 0 0 1 17.3 18z", "M4 4l16 16"],
   },
   clock: { paths: ["M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "M12 7v5l3 3"] },
+  // A gear: eight teeth around a hub.
   settings: {
-    paths: ["M4 6h16", "M4 12h16", "M4 18h16"],
-    dots: [
-      [9, 6],
-      [15, 12],
-      [9, 18],
+    paths: [
+      "M19.02 9.65L21.42 10.17L21.42 13.83L19.02 14.35L18.62 15.3L19.96 17.37L17.37 19.96L15.3 18.62L14.35 19.02L13.83 21.42L10.17 21.42L9.65 19.02L8.7 18.62L6.63 19.96L4.04 17.37L5.38 15.3L4.98 14.35L2.58 13.83L2.58 10.17L4.98 9.65L5.38 8.7L4.04 6.63L6.63 4.04L8.7 5.38L9.65 4.98L10.17 2.58L13.83 2.58L14.35 4.98L15.3 5.38L17.37 4.04L19.96 6.63L18.62 8.7Z",
+      "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
     ],
-    hollowDots: true,
   },
   library: {
     paths: [
@@ -122,9 +120,9 @@ export function icon(name, { size = 18, filled = false } = {}) {
     const circle = document.createElementNS(SVG_NS, "circle");
     circle.setAttribute("cx", String(cx));
     circle.setAttribute("cy", String(cy));
-    circle.setAttribute("r", spec.hollowDots ? "2" : "1");
-    circle.setAttribute("fill", spec.hollowDots ? "var(--bg)" : "currentColor");
-    if (!spec.hollowDots) circle.setAttribute("stroke", "none");
+    circle.setAttribute("r", "1");
+    circle.setAttribute("fill", "currentColor");
+    circle.setAttribute("stroke", "none");
     svg.appendChild(circle);
   }
   return svg;

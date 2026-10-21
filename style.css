@@ -552,7 +552,7 @@ fieldset {
   letter-spacing: 0.01em;
   line-height: 1.15;
   text-align: center;
-  /* Seven buttons share 440 px. A long word is hyphenated where the browser knows
+  /* Six buttons share 440 px. A long word is hyphenated where the browser knows
      how; otherwise fitToolbarLabels (settings.js) draws it smaller until it fits.
      The title still holds the whole word. */
   hyphens: auto;
