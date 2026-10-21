@@ -63,11 +63,6 @@
   color: var(--text);
 }
 
-.single-verse-text[data-highlight] {
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-}
-
 /* ── Verse actions: five buttons on two even lines ─────────────────────── */
 /* Five pills do not fit one line at 440 px. Thirds make three on the first line
    and let the last two share the second, rather than leaving one stranded. */

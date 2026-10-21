@@ -604,13 +604,13 @@ function renderSingleVerse(data, chapterIndex, verseIndex, store) {
   const color = highlightOf(store, chapterIndex, verseIndex);
 
   const wrapper = el("div", { class: "single-verse" }, [
+    el("p", { class: "single-verse-ref", text: formatReference(chapterIndex, verseIndex) }),
     el("p", {
       class: "single-verse-text",
       text,
       "data-highlight": color,
       ...readingTextAttributes(),
     }),
-    el("p", { class: "single-verse-ref", text: formatReference(chapterIndex, verseIndex) }),
     color ? el("span", { class: "sr-only", text: highlightedText(color) }) : null,
   ]);
 
