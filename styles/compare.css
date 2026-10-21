@@ -29,9 +29,13 @@
   background: var(--bg-sunken);
 }
 
-/* The version name, or the select that picks it, sits above the verse. */
+/* The version name, or the select that picks it, sits above the verse. Both are
+   one control high, so the verse starts at the same height in every card. */
 .compare-card-head {
+  display: flex;
+  align-items: center;
   min-width: 0;
+  min-height: var(--control-h);
 }
 
 .compare-card-name {
@@ -44,7 +48,9 @@
 
 /* .select adds a top margin for the settings page; here it is the header. */
 .compare-select {
+  height: var(--control-h);
   margin-top: 0;
+  padding-block: 0;
   min-width: 0;
   font-weight: 700;
 }

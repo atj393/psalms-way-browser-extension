@@ -55,11 +55,46 @@ export function applyFontSize(size) {
   document.documentElement.setAttribute("data-size", FONT_SIZES.includes(size) ? size : "medium");
 }
 
+const overflows = (node) => node.scrollWidth > node.clientWidth;
+
+/**
+ * Draws the text of `nodes` smaller together, half a pixel at a time down to
+ * `minPx`, until none is wider than its box. Returns whether they all fit.
+ */
+function shrinkToFit(nodes, minPx) {
+  for (const node of nodes) node.style.fontSize = "";
+  if (nodes.length === 0) return true;
+  let size = parseFloat(getComputedStyle(nodes[0]).fontSize) || 10;
+  while (nodes.some(overflows) && size > minPx) {
+    size = Math.max(minPx, size - 0.5);
+    for (const node of nodes) node.style.fontSize = `${size}px`;
+  }
+  return !nodes.some(overflows);
+}
+
+/**
+ * In some languages the top rows' words are long: a toolbar label can be one long
+ * word ("Einstellungen"), and One Verse and New Chapter can share their first word,
+ * so cutting both with "…" would make them look the same. Each toolbar label that
+ * does not fit is drawn smaller, down to 8 px, so the word stays whole (only a word
+ * too wide even then may break); the two header buttons shrink together, down to
+ * 10 px, before their ellipsis is needed. Measured, so it runs whenever the text
+ * changes or the toolbar is shown.
+ */
+export function fitTopRowText(root = document) {
+  for (const label of root.querySelectorAll(".btn-tool-label")) {
+    label.classList.remove("is-tight");
+    if (!shrinkToFit([label], 8)) label.classList.add("is-tight");
+  }
+  shrinkToFit([...root.querySelectorAll(".header-actions .button")], 10);
+}
+
 export function applyToolbarCollapsed(collapsed) {
   const wrapper = byId("toolbarWrapper");
   const button = byId("btnToggleToolbar");
   wrapper.classList.toggle("is-collapsed", collapsed);
   wrapper.hidden = collapsed;
+  if (!collapsed) fitTopRowText();
   button.setAttribute("aria-expanded", collapsed ? "false" : "true");
   button.title = collapsed
     ? t("toolbarShow", {}, "Show toolbar")
@@ -101,6 +136,7 @@ export function paintSettingsControls(settings) {
 export function paintLanguage() {
   applyTranslations();
   applyToolbarCollapsed(byId("toolbarWrapper").classList.contains("is-collapsed"));
+  fitTopRowText();
   repaintCloudButton();
 }
 

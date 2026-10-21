@@ -123,7 +123,7 @@ try {
   await page.send("Runtime.enable");
   await page.send("Emulation.setDeviceMetricsOverride", {
     width: 440,
-    height: 560,
+    height: 600,
     deviceScaleFactor: 2,
     mobile: false,
   });

@@ -94,12 +94,13 @@ describe("the stylesheets", () => {
       ({ property, value }) =>
         property === "transform" && /translateX|translate\(|rotate\(-?90/.test(value)
     );
-    // The toolbar toggle turns a quarter when collapsed; its right-to-left twin turns the other way.
-    for (const declaration of sideways) {
-      expect(declaration.selector, describeAt(declaration)).toMatch(/btn-toolbar-toggle/);
-    }
+    expect(sideways.map(describeAt)).toEqual([]);
+  });
+
+  it("turn the toolbar toggle up when the toolbar is closed, in either direction", () => {
+    // Up and down read the same right to left, so it needs no twin.
     const css = sheets.map((sheet) => sheet.css).join("\n");
-    expect(css).toMatch(/:root\[dir="rtl"\][^{]*btn-toolbar-toggle[^{]*\{[^}]*rotate\(90deg\)/);
+    expect(css).toMatch(/\.btn-toolbar-toggle\.is-collapsed svg\s*\{[^}]*rotate\(180deg\)/);
   });
 });
 
