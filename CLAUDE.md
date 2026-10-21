@@ -73,9 +73,9 @@ popups support natively.
 ## Commands
 
 ```bash
-npm test              # 1048 unit and DOM tests (Vitest)
+npm test              # unit and DOM tests (Vitest, over 1,000)
 npm run test:coverage # logic-layer coverage, thresholds enforced
-npm run test:browser  # loads the real extension into Chrome, 167 checks
+npm run test:browser  # loads the real extension into Chrome, every panel
 npm run lint          # ESLint
 npm run format:check  # Prettier
 npm run validate      # every Bible file + manifest.json + package contents
@@ -128,8 +128,8 @@ These are checked by lint, a validator or a test. Breaking one fails the build.
 - References are formatted by `formatReference()` and read **"Psalm 23:1"**,
   singular. "Psalms" is the book; a chapter is a Psalm. This matches the
   companion Android app. Do not write `Psalms 23:1`.
-- Chapter and verse indices are **0-based everywhere in code** and 1-based only
-  in what the reader sees. `formatReference()` does the conversion.
+- Chapter and verse indices are **0-based everywhere in code** (except the
+  phone-shaped `carry` data, which is 1-based) and 1-based in what the reader sees. `formatReference()` does the conversion.
 - Saved verses are **Bookmarks**, as in the Android app, because the two now sync
   (see `docs/superpowers/specs/2026-10-13-phone-extension-connection-roadmap.md`).
   Code still names verse bookmarks `favourites` (`store.favourites`). The phone's

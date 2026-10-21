@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Psalms Way",
   "version": "3.0",
-  "description": "All 150 Psalms in your toolbar. Daily Psalm, search, bookmarks, notes and history. Offline, private, optional sync with your phone.",
+  "description": "All 150 Psalms in 80 Bible versions and 47 languages. Bookmarks, highlights, notes, prayers and progress. Optional phone sync.",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",

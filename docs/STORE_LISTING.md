@@ -14,10 +14,10 @@ This is the manifest `name`. Whether the live listing shows a longer title is
 ## Short description
 
 The store takes this from the manifest `description`, so it must stay the same
-(limit 132 characters; it is 131):
+(limit 132 characters; it is 126):
 
 ```
-All 150 Psalms in your toolbar. Daily Psalm, search, bookmarks, notes and history. Offline, private, optional sync with your phone.
+All 150 Psalms in 80 Bible versions and 47 languages. Bookmarks, highlights, notes, prayers and progress. Optional phone sync.
 ```
 
 ## Full description
@@ -82,12 +82,15 @@ Each Bible version keeps its own terms; its credit line is shown in the version 
 
 ## Screenshots to upload
 
-All are 880 x 1200 pixels (the popup's 440 x 600 at twice the density), made by
-`node scripts/screenshots.js` from the real extension, so they never show anything
-the extension does not do. The size the store asks for is **Unknown** from here:
-check the dashboard, which may need them on a larger canvas.
+Ready to upload: `docs/store/store-1.png` … `store-5.png`, 1280 x 800 each. Each
+puts one of the popup screenshots below beside a short headline: All 150 Psalms,
+80 Bible versions, Compare, a daily habit (Progress), and an Arabic right-to-left
+page. Check the dashboard for the current size and number rules.
 
-The store takes up to five. Suggested order:
+The popup screenshots themselves are 880 x 1200 pixels (the popup's 440 x 600 at
+twice the density), made by `node scripts/screenshots.js` from the real extension,
+so they never show anything the extension does not do. Suggested order if you
+upload them directly:
 
 | #   | File                                     | What it shows                                                                   |
 | --- | ---------------------------------------- | ------------------------------------------------------------------------------- |
@@ -138,7 +141,8 @@ What the extension keeps, on the reader's own browser only: bookmarks, notes,
 highlights, favourite Psalms, reading history, streak, badges, challenge progress
 and settings.
 
-The one transfer, and only if the reader connects sync: that same data goes, as one
+The one transfer, and only if the reader connects sync: that data (except this
+extension's own look-and-feel settings, which stay on the browser) goes, as one
 file, from the browser straight to a hidden app folder in the reader's own Google
 Drive (the `drive.appdata` scope, which cannot see any other file in the Drive). The
 reader's email address is read from Google to show which account is connected, and

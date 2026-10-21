@@ -10,8 +10,8 @@ last, or on Today's Psalm the first time.
 
 The popup has three parts:
 
-- **The top row** — the Sync cloud, the Bible version button (it reads **NIV** to
-  begin with), and the two quick buttons, One Verse and New Chapter.
+- **The top row** — the Sync cloud, the Bible version button (for English readers it reads
+  **NIV** to begin with), and the two quick buttons, One Verse and New Chapter.
 - **The chapter row** — where you are (with a heart to keep the Psalm), and how to
   find or move between Psalms: Search, the number box and Go, then previous and next.
 - **The toolbar** — Today, Library, History, Compare, Prayers, Progress and Settings.
@@ -283,10 +283,11 @@ Everything you save (bookmarks, notes, highlights, favourite Psalms, history,
 progress and settings) lives on this browser. Unless you turn on Sync it is not sent
 anywhere, and it is **deleted if you remove the extension**.
 
-**Export…** saves your bookmarks, notes, history and settings to a file named
-something like `psalms-way-backup-2026-09-08.json`. Keep it somewhere safe, or move
-it to another computer. Highlights, favourite Psalms, streaks, badges and challenges
-are not in that file: Sync is how they move between your devices.
+**Export…** saves your bookmarks, notes, highlights, favourite Psalms, history,
+streak, badges, challenges and settings to a file named something like
+`psalms-way-backup-2026-09-08.json`. Keep it somewhere safe, or move it to another
+computer. A file exported by an older version has no highlights or progress in it;
+restoring it leaves the ones you have as they are.
 
 **Restore…** reads a file you exported before.
 

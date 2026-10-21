@@ -1059,14 +1059,16 @@ try {
     (await evaluate("document.querySelector('.prayer-text')?.textContent.length")) > 50 &&
       (await evaluate("document.querySelectorAll('.prayer-ref').length")) > 0
   );
+  const reference = await evaluate(
+    "document.querySelector('.prayer-ref:not(.is-plain)').textContent.trim()"
+  );
   await evaluate("document.querySelector('.prayer-ref:not(.is-plain)').click()");
-  await sleep(350);
+  await waitFor("document.getElementById('prayersPanel').hidden");
+  const openedTitle = await evaluate("document.getElementById('chapterTitle').textContent");
   check(
     "a Psalm reference in a prayer opens that Psalm",
-    (await evaluate("document.getElementById('prayersPanel').hidden")) &&
-      /^Psalm \d+(:\d+)?$/.test(
-        await evaluate("document.getElementById('chapterTitle').textContent")
-      )
+    (await evaluate("document.getElementById('prayersPanel').hidden")) && openedTitle === reference,
+    `${reference} → ${openedTitle}`
   );
 
   // ── Progress ─────────────────────────────────────────────────────────────

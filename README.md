@@ -93,8 +93,9 @@ Prayers, search, History and the dark and sepia themes.
 
 **Your data**
 
-- Export bookmarks, notes, history and settings to a JSON file and restore them on
-  another browser or profile.
+- Export everything you keep (bookmarks, notes, highlights, favourite Psalms,
+  history, progress and settings) to a JSON file and restore it on another browser
+  or profile.
 - Optional sync with the Psalms Way phone app through your own Google Drive.
 - There are no reminders or notifications.
 
@@ -215,7 +216,7 @@ optional: one file in a private folder of your own Google Drive.
 ```bash
 npm install
 
-npm test              # 1048 unit and DOM tests
+npm test              # unit and DOM tests (over 1,000)
 npm run test:coverage # coverage for the service layer
 npm run test:browser  # loads the real extension into Chrome and drives the popup
 npm run lint
