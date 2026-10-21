@@ -44,7 +44,12 @@ const codes = readdirSync(dir)
 describe.each(codes)("locales/ext/%s.json", (code) => {
   const table = readJson(code);
   const translated = Object.keys(table).length > 0;
-  const categories = new Intl.PluralRules(code).resolvedOptions().pluralCategories;
+  // A language the platform has no plural rules for (ht, mi) gets the machine's
+  // default rules at run time, so the test asks for one/other, not whatever this
+  // machine happens to use; the lookup falls back to _other for anything else.
+  const categories = Intl.PluralRules.supportedLocalesOf(code).length
+    ? new Intl.PluralRules(code).resolvedOptions().pluralCategories
+    : ["one", "other"];
 
   it("is a supported language", () => {
     expect(SUPPORTED_LANGUAGES).toContain(code);
