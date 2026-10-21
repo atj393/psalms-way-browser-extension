@@ -98,6 +98,19 @@ describe("parseBackup — valid input", () => {
     const older = { ...createBackup(sampleStore, "1.2"), schemaVersion: 1 };
     expect(() => parseBackup(JSON.stringify(older))).not.toThrow();
   });
+
+  it("keeps only the settings a backup has, so a restore leaves the newer ones as they are", () => {
+    // A backup from before 3.0 knows nothing of the accent, the Bible version or the language.
+    const older = createBackup({ ...sampleStore, settings: { theme: "dark", fontSize: "large" } });
+    expect(parseBackup(JSON.stringify(older)).data.settings).toEqual({
+      theme: "dark",
+      fontSize: "large",
+    });
+
+    const without = createBackup(sampleStore, "1.2");
+    delete without.data.settings;
+    expect(parseBackup(JSON.stringify(without)).data.settings).toEqual({});
+  });
 });
 
 describe("parseBackup — rejects bad input", () => {
@@ -191,7 +204,8 @@ describe("parseBackup — hostile content is neutralised", () => {
     expect(counts.favourites).toBe(1);
     expect(counts.notes).toBe(1);
     expect(counts.history).toBe(0);
-    expect(data.settings.theme).toBe("light");
+    // An unusable setting is left out, so a restore keeps the reader's own.
+    expect(data.settings).not.toHaveProperty("theme");
   });
 
   it("keeps script-like note text as inert text", () => {

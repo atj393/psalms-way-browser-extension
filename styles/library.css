@@ -159,8 +159,9 @@
   margin-inline-start: auto;
 }
 
-/* ── A Psalm this version does not have ────────────────────────────────── */
-.chapter-missing .button {
+/* ── A Psalm this version does not have, or a version that did not load ── */
+.chapter-missing .button,
+.version-failed .button {
   margin-top: var(--space-4);
 }
 

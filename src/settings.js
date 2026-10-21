@@ -15,6 +15,7 @@ import {
   ACCENTS,
 } from "./storage.js";
 import { createBackup, parseBackup, backupFileName, MAX_BACKUP_BYTES } from "./backup.js";
+import { getChallengeProgress, getFavoriteChapters, getHighlights } from "./phoneData.js";
 
 // ─── Appearance ───────────────────────────────────────────────────────────────
 
@@ -78,15 +79,24 @@ function shrinkToFit(nodes, minPx) {
  * so cutting both with "…" would make them look the same. Each toolbar label that
  * does not fit is drawn smaller, down to 8 px, so the word stays whole (only a word
  * too wide even then may break); the two header buttons shrink together, down to
- * 10 px, before their ellipsis is needed. Measured, so it runs whenever the text
- * changes or the toolbar is shown.
+ * 10 px, and then the title "Psalms Way" gives up room, down to 12 px, before their
+ * ellipsis is needed. Measured, so it runs whenever the text or the version chip
+ * changes, or the toolbar is shown.
  */
 export function fitTopRowText(root = document) {
   for (const label of root.querySelectorAll(".btn-tool-label")) {
     label.classList.remove("is-tight");
     if (!shrinkToFit([label], 8)) label.classList.add("is-tight");
   }
-  shrinkToFit([...root.querySelectorAll(".header-actions .button")], 10);
+  const buttons = [...root.querySelectorAll(".header-actions .button")];
+  const title = root.querySelector(".header .title");
+  if (title) title.style.fontSize = "";
+  if (shrinkToFit(buttons, 10) || !title) return;
+  let size = parseFloat(getComputedStyle(title).fontSize) || 14;
+  while (buttons.some(overflows) && size > 12) {
+    size = Math.max(12, size - 0.5);
+    title.style.fontSize = `${size}px`;
+  }
 }
 
 export function applyToolbarCollapsed(collapsed) {
@@ -253,7 +263,15 @@ export async function exportBackup() {
     return;
   }
 
-  const total = store.favourites.length + store.notes.length + store.history.length;
+  // What the reader saved. The streak and badges come by themselves, so alone they
+  // are not worth a file.
+  const total =
+    store.favourites.length +
+    store.notes.length +
+    store.history.length +
+    getHighlights(store).length +
+    getFavoriteChapters(store).length +
+    Object.keys(getChallengeProgress(store)).length;
   if (total === 0) {
     toast(t("exportNothing", {}, "There is nothing to export yet."), "error");
     return;

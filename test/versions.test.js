@@ -339,6 +339,31 @@ describe("initVersions", () => {
     expect((await store.getSettings()).bibleVersion).toBe("elberfelder_1871");
   });
 
+  it("keeps a reader from version 2 on the NIV they were reading, whatever the language", async () => {
+    // Version 2 had only the NIV and no bibleVersion; the store already holds their reading.
+    for (const saved of [
+      { favourites: [{ chapterIndex: 22, verseIndex: 0, addedAt: 1730000000000 }] },
+      { notes: [{ chapterIndex: 22, verseIndex: 0, text: "A note" }] },
+      { history: [{ chapterIndex: 22, verseIndex: null, viewedAt: 1730000000000 }] },
+    ]) {
+      store.resetStoreCache();
+      resetVersions();
+      installChromeMock({ psalmsway: { schemaVersion: 2, settings: { theme: "dark" }, ...saved } });
+      serveRepoFiles();
+
+      expect(await initVersions({ bibleVersion: null }, "de")).toBe("modern");
+      expect((await store.getSettings()).bibleVersion).toBe("modern");
+    }
+  });
+
+  it("gives a new reader, with nothing saved yet, the language's first choice", async () => {
+    installChromeMock({ psalmsway: { schemaVersion: 3, settings: { uiLanguage: "de" } } });
+    serveRepoFiles();
+
+    expect(await initVersions({ bibleVersion: null }, "de")).toBe("elberfelder_1871");
+    expect((await store.getSettings()).bibleVersion).toBe("elberfelder_1871");
+  });
+
   it("copes with missing settings", async () => {
     installChromeMock();
     serveRepoFiles();

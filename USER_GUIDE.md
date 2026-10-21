@@ -294,7 +294,8 @@ restoring it leaves the ones you have as they are.
 
 > **Restoring replaces what is on this browser.** You are shown how many
 > bookmarks, notes and history entries the file contains, and asked to confirm,
-> before anything changes.
+> before anything changes. Your streak, badges and challenge progress are the
+> exception: they are combined with the file's, so an older file cannot lower them.
 
 If a file is not a Psalms Way backup, is damaged, or was made by a newer version
 of the extension, you are told exactly what is wrong and nothing is changed.

@@ -33,6 +33,11 @@ export function getCurrentVerse() {
   return state.verseIndex;
 }
 
+/** The verse whose actions are open in the chapter list (or the single verse shown), else null. */
+export function getSelectedVerse() {
+  return state.selectedVerse;
+}
+
 let onOpenNoteEditor = () => {};
 
 /** Injected by app.js to avoid a circular import with the note editor. */
@@ -172,10 +177,20 @@ async function loadStoreQuietly() {
   }
 }
 
+/** Opens the version list: the way out when this version cannot show the Psalm. */
+function chooseAnotherVersionButton() {
+  return el("button", {
+    type: "button",
+    class: "button",
+    text: t("versionChooseAnother", {}, "Choose another version"),
+    onClick: () => byId("btnVersion")?.click(),
+  });
+}
+
 function renderDataFailure(error) {
   console.error("Psalms Way:", error);
   byId("readingView").replaceChildren(
-    el("div", { class: "panel-empty" }, [
+    el("div", { class: "panel-empty version-failed" }, [
       el("p", {
         class: "panel-empty-title",
         text: t("psalmsLoadFailed", {}, "The Psalms text could not be loaded."),
@@ -188,6 +203,7 @@ function renderDataFailure(error) {
           "Reopen the extension. If this keeps happening, reinstall it from chrome://extensions."
         ),
       }),
+      chooseAnotherVersionButton(),
     ])
   );
 }
@@ -201,14 +217,7 @@ function renderMissingChapter(chapterIndex) {
     )
   );
   message.classList.add("chapter-missing");
-  message.appendChild(
-    el("button", {
-      type: "button",
-      class: "button",
-      text: t("versionChooseAnother", {}, "Choose another version"),
-      onClick: () => byId("btnVersion")?.click(),
-    })
-  );
+  message.appendChild(chooseAnotherVersionButton());
   return message;
 }
 

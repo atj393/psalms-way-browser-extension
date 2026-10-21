@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installChromeMock } from "./chrome-mock.js";
 import * as storage from "../src/storage.js";
 import { createBackup } from "../src/backup.js";
+import { setHighlight, toggleFavoriteChapter, updateCarry } from "../src/phoneData.js";
 import { currentLanguage, setTablesForTests } from "../src/i18n.js";
 import { refreshPassage } from "../src/reader.js";
 import { applyLanguage, exportBackup, restoreBackup } from "../src/settings.js";
@@ -130,6 +131,29 @@ describe("exporting", () => {
     await storage.saveNote(1, 0, "one");
     await exportBackup();
     expect(status()).toBe("1 Lesezeichen und 1 Notiz exportiert");
+  });
+
+  it.each([
+    ["highlights", () => setHighlight(22, 0, "yellow")],
+    ["favourite Psalms", () => toggleFavoriteChapter(22)],
+    [
+      "a challenge's progress",
+      () =>
+        updateCarry((carry) => {
+          carry.challenges = { psalms30: { startDate: "2026-10-18", completedDays: [0] } };
+        }),
+    ],
+  ])("exports a reader who has only %s", async (_, save) => {
+    await save();
+    await exportBackup();
+    expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1);
+    expect(status()).toBe("Exported 0 bookmarks, 0 notes");
+  });
+
+  it("still says there is nothing to export when there is nothing", async () => {
+    await exportBackup();
+    expect(HTMLAnchorElement.prototype.click).not.toHaveBeenCalled();
+    expect(status()).toBe("There is nothing to export yet.");
   });
 });
 

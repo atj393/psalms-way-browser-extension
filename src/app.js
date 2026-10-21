@@ -23,6 +23,7 @@ import {
   showRandomVerse,
   getCurrentChapter,
   getCurrentVerse,
+  getSelectedVerse,
   refreshFavChapter,
   refreshPassage,
   setCompareOpener,
@@ -44,6 +45,7 @@ import {
   changeSetting,
   exportBackup,
   applyLanguage,
+  fitTopRowText,
   initAppearance,
   initLanguageSelect,
   paintLanguage,
@@ -271,9 +273,13 @@ function wire() {
   });
 
   // Compare, Prayers, Progress
+  // The verse open in the Psalm, else the verse shown; Compare takes verse 1 when there is neither.
   byId("btnCompare").addEventListener("click", () =>
     openPanel("compare", () =>
-      renderCompare({ chapterIndex: getCurrentChapter(), verseIndex: getCurrentVerse() })
+      renderCompare({
+        chapterIndex: getCurrentChapter(),
+        verseIndex: getSelectedVerse() ?? getCurrentVerse(),
+      })
     )
   );
   byId("btnCloseCompare").addEventListener("click", closePanel);
@@ -355,22 +361,37 @@ function wire() {
   document.addEventListener("keydown", onGlobalKeyDown);
 }
 
-/** After a restore: the passage the popup would open on, drawn from the restored data. */
+/**
+ * After a restore: the backup's Bible version, then the passage the popup would open on,
+ * drawn from the restored data in that version.
+ */
 async function showRestored() {
+  await initVersions(await getSettings(), currentLanguage());
+  await paintVersion();
   const { chapterIndex, verseIndex } = await resolveOpeningPassage();
   await showPassage({ chapterIndex, verseIndex, record: false });
 }
 
 // ─── Bible version ────────────────────────────────────────────────────────────
 
-/** Shows the current version on the header chip and in Settings. */
+/**
+ * Shows the current version on the header chip and in Settings. The chip's width follows
+ * its label, and One Verse and New Chapter share the row with it, so they are fitted again.
+ */
 async function paintVersion() {
   const module = currentVersion();
   const label = byId("btnVersionLabel");
   if (label) label.textContent = versionLabel(module);
+  fitTopRowText();
   const entry = (await loadCatalogue()).find((v) => v.module === module);
+  if (!entry) return;
+  // The label may be cut short, so the chip's name says the whole version.
+  const chip = byId("btnVersion");
+  const name = `${t("versionTitle", {}, "Bible version")}: ${entry.name}`;
+  chip?.setAttribute("title", name);
+  chip?.setAttribute("aria-label", name);
   const setting = byId("versionSetting");
-  if (setting && entry) setting.textContent = entry.name;
+  if (setting) setting.textContent = entry.name;
 }
 
 /** After the reader picks a version: repaint, and show the same passage in it. */
@@ -391,6 +412,8 @@ async function refreshViews() {
   if (currentView === "reading") await refreshPassage();
   else if (currentView === "library") await renderLibrary();
   else if (currentView === "history") await renderHistory();
+  else if (currentView === "today") await renderToday({ navigate: goToPassage });
+  else if (currentView === "progress") await renderProgress({ navigate: goToPassage });
 }
 
 function onStorageChanged(changes, area) {
@@ -437,7 +460,13 @@ export async function start() {
 
   hydrateIcons();
   wire();
-  initLanguageSelect({ onChanged: applyLanguage });
+  initLanguageSelect({
+    onChanged: async (setting) => {
+      await applyLanguage(setting);
+      // The chip's name is put together in code, so it is said again in the new language.
+      await paintVersion();
+    },
+  });
 
   const appearance = await initAppearance();
 

@@ -64,6 +64,65 @@ describe("fitting the header buttons", () => {
   });
 });
 
+describe("letting the title give way", () => {
+  /**
+   * The title at the stylesheet's 14 px and one header button `perPixel` × font size wide,
+   * in a box that is 90 px wide and gains 5 px for each pixel the title gives up.
+   */
+  function header(perPixel) {
+    document.body.replaceChildren();
+    if (!document.getElementById("titleSize")) {
+      const sizes = document.createElement("style");
+      sizes.id = "titleSize";
+      sizes.textContent =
+        ".title { font-size: 14px; } .header-actions .button { font-size: 12px; }";
+      document.head.append(sizes);
+    }
+    const title = Object.assign(document.createElement("h1"), { className: "title" });
+    const actions = Object.assign(document.createElement("div"), { className: "header-actions" });
+    const button = Object.assign(document.createElement("button"), { className: "button" });
+    const titlePx = () => parseFloat(title.style.fontSize || "14");
+    Object.defineProperty(button, "clientWidth", { get: () => 90 + (14 - titlePx()) * 5 });
+    Object.defineProperty(button, "scrollWidth", {
+      configurable: true,
+      get: () => Math.round(perPixel * parseFloat(button.style.fontSize || "12")),
+    });
+    actions.append(button);
+    const row = Object.assign(document.createElement("header"), { className: "header" });
+    row.append(title, actions);
+    document.body.append(row);
+    return { title, button };
+  }
+
+  it("leaves the title alone while the buttons fit at 10 px", () => {
+    const { title, button } = header(9); // 90 px at 10 px
+    fitTopRowText();
+    expect(button.style.fontSize).toBe("10px");
+    expect(title.style.fontSize).toBe("");
+  });
+
+  it("draws the title smaller, only as far as the buttons need, once they are at 10 px", () => {
+    const { title, button } = header(9.5); // 95 px at 10 px: the title gives up 1 px
+    fitTopRowText();
+    expect(button.style.fontSize).toBe("10px");
+    expect(title.style.fontSize).toBe("13px");
+  });
+
+  it("stops the title at 12 px and leaves the rest to the ellipsis", () => {
+    const { title } = header(12);
+    fitTopRowText();
+    expect(title.style.fontSize).toBe("12px");
+  });
+
+  it("starts the title again from the stylesheet's size", () => {
+    const { title, button } = header(12);
+    fitTopRowText();
+    Object.defineProperty(button, "scrollWidth", { get: () => 40 });
+    fitTopRowText();
+    expect(title.style.fontSize).toBe("");
+  });
+});
+
 describe("fitting toolbar labels", () => {
   it("leaves a label that fits as it is", () => {
     document.body.replaceChildren();

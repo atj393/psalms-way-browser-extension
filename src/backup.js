@@ -11,6 +11,7 @@
 
 import { t } from "./i18n.js";
 import { SCHEMA_VERSION, normaliseStore, sanitiseSettings } from "./storage.js";
+import { same } from "./syncMerge.js";
 
 export const BACKUP_TYPE = "psalms-way-browser-backup";
 export const BACKUP_SCHEMA_VERSION = 1;
@@ -124,12 +125,13 @@ export function parseBackup(text) {
     favourites: parsed.data.favourites,
     notes: parsed.data.notes,
     history: parsed.data.history,
-    settings: sanitiseSettings(parsed.data.settings),
     carry: parsed.data.carry,
   });
   // A backup from before the phone's data was included says nothing about it,
   // so restoring it must leave the phone's data as it is, not empty it.
   if (!Object.hasOwn(parsed.data, "carry")) delete normalised.carry;
+  // The same for each setting: an older backup lacks the newer ones.
+  normalised.settings = settingsInBackup(parsed.data.settings);
 
   const counts = {
     favourites: normalised.favourites.length,
@@ -146,6 +148,21 @@ export function parseBackup(text) {
   }
 
   return { data: normalised, counts };
+}
+
+/**
+ * The settings a backup holds, each one usable. A setting the backup does not have
+ * (a backup from before 3.0 has no accent, Bible version or language) or cannot use
+ * is left out, so restoring it keeps the reader's current one.
+ */
+function settingsInBackup(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const clean = sanitiseSettings(value);
+  return Object.fromEntries(
+    Object.entries(clean).filter(
+      ([key, usable]) => Object.hasOwn(value, key) && same(usable, value[key])
+    )
+  );
 }
 
 function byteLength(text) {

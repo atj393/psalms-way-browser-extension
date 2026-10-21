@@ -6,15 +6,16 @@
 // Psalm N; a version that could not be laid out that way is not shipped.
 //
 // Three modules import each other in a circle: versions.js imports DataError
-// from data.js and updateSettings from storage.js, data.js imports versions.js
-// (getData() asks for the current version), and storage.js imports
-// CHAPTER_COUNT from data.js. That is safe because none of them uses another's
-// exports while its module is loading, only inside functions. Keep it that way:
-// in particular, storage.js must never use CHAPTER_COUNT at its top level.
+// from data.js and loadStore and updateSettings from storage.js, data.js
+// imports versions.js (getData() asks for the current version), and storage.js
+// imports CHAPTER_COUNT from data.js. That is safe because none of them uses
+// another's exports while its module is loading, only inside functions. Keep it
+// that way: in particular, storage.js must never use CHAPTER_COUNT at its top
+// level.
 
 import { DataError } from "./data.js";
 import { t } from "./i18n.js";
-import { updateSettings } from "./storage.js";
+import { loadStore, updateSettings } from "./storage.js";
 
 const CATALOGUE_PATH = "bibles/index.json";
 const MODERN = "modern";
@@ -164,9 +165,20 @@ function firstChoice(catalogue, uiLanguage) {
 }
 
 /**
+ * Whether the store already holds reading from before versions could be chosen.
+ * Version 2 had only the NIV, so such a reader has been reading the NIV.
+ */
+async function readsTheNivAlready() {
+  const { favourites, notes, history } = await loadStore();
+  return favourites.length > 0 || notes.length > 0 || history.length > 0;
+}
+
+/**
  * Chooses the version to read: the saved one, or, when there is none (or it is
- * no longer in the list), a first choice for the app's language. The first
- * choice is saved, so it stays until the reader picks another.
+ * no longer in the list), a first choice for the app's language. A reader
+ * updating from version 2 (no version saved, but bookmarks, notes or history)
+ * stays on the NIV they were reading. The choice is saved, so it stays until
+ * the reader picks another.
  *
  * @param {{bibleVersion?: string|null}} [settings]
  * @param {string} [uiLanguage] the app language, such as "de"
@@ -176,7 +188,8 @@ export async function initVersions(settings, uiLanguage) {
   const catalogue = await loadCatalogue();
   let module = settings?.bibleVersion;
   if (!catalogue.some((v) => v.module === module)) {
-    module = firstChoice(catalogue, uiLanguage);
+    const updating = module == null && (await readsTheNivAlready());
+    module = updating ? MODERN : firstChoice(catalogue, uiLanguage);
     // A failed save rejects before anything changes, so the app keeps the NIV.
     await updateSettings({ bibleVersion: module });
   }

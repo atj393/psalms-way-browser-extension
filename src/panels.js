@@ -241,7 +241,7 @@ async function renderFavourites() {
   paint(
     "libraryBody",
     listContainer(
-      usable.map(({ chapterIndex, verseIndex, addedAt }) => {
+      usable.map(({ chapterIndex, verseIndex, addedAt }, index) => {
         const reference = formatReference(chapterIndex, verseIndex);
         return listRow({
           reference,
@@ -256,6 +256,7 @@ async function renderFavourites() {
                 await removeFavourite(chapterIndex, verseIndex);
                 toast(t("bookmarkRemoved", { reference }, "{{reference}} removed"), "success");
                 await renderFavourites();
+                focusAfterRemoval(index);
               } catch (error) {
                 reportError(
                   error,
@@ -287,6 +288,20 @@ async function repaintAfterRemoval(repaint) {
       )
     );
   }
+}
+
+/**
+ * After a removal has repainted the list, puts focus where the removed row was: on the
+ * remove button of the row now in its place, else of the row before it, else on the
+ * selected tab. Otherwise focus falls to <body> and a keyboard reader starts over.
+ */
+function focusAfterRemoval(index) {
+  const actions = byId("libraryBody")?.querySelectorAll(".btn-row-action") ?? [];
+  const target =
+    actions[index] ??
+    actions[index - 1] ??
+    document.querySelector("#libraryTabs [role='tab'][aria-selected='true']");
+  target?.focus();
 }
 
 async function renderHighlights() {
@@ -321,7 +336,7 @@ async function renderHighlights() {
   paint(
     "libraryBody",
     listContainer(
-      usable.map(({ chapter, verse, color }) => {
+      usable.map(({ chapter, verse, color }, index) => {
         const chapterIndex = chapter - 1;
         const verseIndex = verse - 1;
         const reference = formatReference(chapterIndex, verseIndex);
@@ -351,6 +366,7 @@ async function renderHighlights() {
                 await renderHighlights();
                 // The Psalm being read sits behind this panel; drop its tint too.
                 await refreshPassage();
+                focusAfterRemoval(index);
               });
             },
           },
@@ -386,7 +402,7 @@ async function renderFavouriteChapters() {
   paint(
     "libraryBody",
     listContainer(
-      chapters.map((chapter) => {
+      chapters.map((chapter, index) => {
         const chapterIndex = chapter - 1;
         const reference = formatReference(chapterIndex);
         return listRow({
@@ -423,6 +439,7 @@ async function renderFavouriteChapters() {
                 await renderFavouriteChapters();
                 // The heart in the chapter bar stays visible behind this panel.
                 refreshFavChapter(await loadStore());
+                focusAfterRemoval(index);
               });
             },
           },
@@ -462,7 +479,7 @@ async function renderNotes() {
   paint(
     "libraryBody",
     listContainer(
-      usable.map(({ chapterIndex, verseIndex, text, updatedAt }) => {
+      usable.map(({ chapterIndex, verseIndex, text, updatedAt }, index) => {
         const reference = formatReference(chapterIndex, verseIndex);
         return listRow({
           reference,
@@ -489,6 +506,7 @@ async function renderNotes() {
                 await deleteNote(chapterIndex, verseIndex);
                 toast(t("noteDeleted", {}, "Note deleted"), "success");
                 await renderNotes();
+                focusAfterRemoval(index);
               } catch (error) {
                 reportError(error, t("noteDeleteError", {}, "That note could not be deleted."));
               }

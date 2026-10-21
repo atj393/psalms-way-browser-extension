@@ -13,10 +13,11 @@ import {
   setHighlight,
   toggleFavoriteChapter,
 } from "../src/phoneData.js";
-import { getData, wrapChapter } from "../src/data.js";
+import { DataError, getData, wrapChapter } from "../src/data.js";
 import {
   getCurrentChapter,
   getCurrentVerse,
+  getSelectedVerse,
   highlightLabel,
   refreshFavChapter,
   setCompareOpener,
@@ -194,6 +195,21 @@ describe("the verse actions", () => {
     const actions = await openActions(1);
     actions.querySelector(".btn-compare").click();
     expect(opener.mock.calls).toEqual([[22, 1]]);
+  });
+
+  it("remembers the verse selected in the list, for the toolbar's Compare, until it is closed", async () => {
+    await showPassage({ chapterIndex: 22, record: false });
+    expect(getSelectedVerse()).toBeNull();
+    await openActions(2);
+    expect(getSelectedVerse()).toBe(2);
+    expect(getCurrentVerse()).toBeNull();
+    body(2).click();
+    expect(getSelectedVerse()).toBeNull();
+  });
+
+  it("takes the verse shown as the selected one in the single-verse view", async () => {
+    await showPassage({ chapterIndex: 22, verseIndex: 1, record: false });
+    expect(getSelectedVerse()).toBe(1);
   });
 
   it("tints a verse that is already highlighted", async () => {
@@ -534,6 +550,26 @@ describe("a Psalm missing from the current version", () => {
   });
 });
 
+// ─── A version that cannot be loaded ──────────────────────────────────────────
+
+describe("a version whose text cannot be loaded", () => {
+  it("says so and offers the version list, so the reader can choose another", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const opened = vi.fn();
+    document.getElementById("btnVersion").addEventListener("click", opened);
+    getData.mockRejectedValueOnce(new DataError("The Psalms text could not be loaded."));
+
+    await showPassage({ chapterIndex: 22, record: false });
+
+    const view = document.getElementById("readingView");
+    expect(view.textContent).toContain("The Psalms text could not be loaded.");
+    const button = view.querySelector("button");
+    expect(button.textContent).toBe("Choose another version");
+    button.click();
+    expect(opened).toHaveBeenCalledOnce();
+  });
+});
+
 // ─── The Library ──────────────────────────────────────────────────────────────
 
 describe("the Library tabs", () => {
@@ -649,6 +685,54 @@ describe("the Library tabs", () => {
       );
       expect(status()).not.toContain("could not be removed");
       expect(getFavoriteChapters(await storage.loadStore())).toEqual([]);
+    });
+  });
+
+  describe("after a row is removed", () => {
+    const action = (index) => rows()[index].querySelector(".btn-row-action");
+    const selectedTab = () => document.querySelector("#libraryTabs [aria-selected='true']");
+
+    it("focuses the next row's remove button (Bookmarks)", async () => {
+      await storage.toggleFavourite(22, 0);
+      await storage.toggleFavourite(22, 1);
+      await showLibraryTab("favourites");
+      action(0).focus();
+      action(0).click();
+      await vi.waitFor(() => expect(rows()).toHaveLength(1));
+      await vi.waitFor(() => expect(document.activeElement).toBe(action(0)));
+    });
+
+    it("focuses the previous row's when the last row went (Highlights)", async () => {
+      await setHighlight(22, 0, "blue");
+      await setHighlight(22, 1, "pink");
+      await showLibraryTab("highlights");
+      action(1).focus();
+      action(1).click();
+      await vi.waitFor(() => expect(rows()).toHaveLength(1));
+      await vi.waitFor(() => expect(document.activeElement).toBe(action(0)));
+    });
+
+    it("focuses the selected tab when no row is left (Favourites)", async () => {
+      await toggleFavoriteChapter(22);
+      await showLibraryTab("chapters");
+      action(0).focus();
+      action(0).click();
+      await vi.waitFor(() => expect(rows()).toHaveLength(0));
+      await vi.waitFor(() => expect(document.activeElement).toBe(selectedTab()));
+      expect(selectedTab().dataset.tab).toBe("chapters");
+    });
+
+    it("focuses the next row's remove button after a note is deleted (Notes)", async () => {
+      await storage.saveNote(22, 0, "First");
+      await storage.saveNote(22, 1, "Second");
+      await showLibraryTab("notes");
+      action(0).focus();
+      action(0).click();
+      await vi.waitFor(() => expect(document.querySelector(".dialog-actions")).not.toBeNull());
+      const buttons = document.querySelectorAll(".dialog-actions button");
+      buttons[buttons.length - 1].click();
+      await vi.waitFor(() => expect(rows()).toHaveLength(1));
+      await vi.waitFor(() => expect(document.activeElement).toBe(action(0)));
     });
   });
 

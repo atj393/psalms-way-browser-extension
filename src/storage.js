@@ -19,7 +19,7 @@
 
 import { CHAPTER_COUNT } from "./data.js";
 import { t } from "./i18n.js";
-import { stableJson } from "./syncMerge.js";
+import { mergeBadges, mergeChallenges, mergeStreak, stableJson } from "./syncMerge.js";
 
 // 3: notes are no longer trimmed or cut on read, history keeps one entry per
 // chapter (as the phone app does), and `carry` keeps the phone app's data this
@@ -616,15 +616,44 @@ export async function updateSettings(patch) {
 
 // ─── Backup ───────────────────────────────────────────────────────────────────
 
-/** Replace all user data at once. Used by restore; the phone app's carried data stays. */
+/**
+ * The phone's data after a restore. Highlights and favourite Psalms are replaced by the
+ * backup's, as bookmarks and notes are. Progress is combined by the phone's keep-both
+ * rules instead, so an older backup cannot lower the streak, take badges away or undo a
+ * challenge's days (sync would then send that rollback to the phone). The phone's own
+ * settings stay as they are.
+ */
+function restoredCarry(current, backup) {
+  const carry = { ...current };
+  for (const key of ["highlights", "favorites"]) {
+    if (Object.hasOwn(backup, key)) carry[key] = backup[key];
+    else delete carry[key];
+  }
+  for (const [key, merge] of [
+    ["streak", mergeStreak],
+    ["badges", mergeBadges],
+    ["challenges", mergeChallenges],
+  ]) {
+    // null: neither side has a usable value, so whatever is here stays.
+    const combined = merge(current[key], backup[key]);
+    if (combined !== null) carry[key] = combined;
+  }
+  return carry;
+}
+
+/**
+ * Replace all user data at once. Used by restore: the backup's settings are laid over
+ * the current ones (a backup has only the settings it knew), and see restoredCarry for
+ * the phone's data.
+ */
 export async function replaceUserData(data) {
   return updateStore((draft) => ({
     ...draft,
     favourites: data.favourites ?? [],
     notes: data.notes ?? [],
     history: data.history ?? [],
-    settings: data.settings ?? draft.settings,
-    carry: data.carry ?? draft.carry,
+    settings: { ...draft.settings, ...data.settings },
+    carry: data.carry ? restoredCarry(draft.carry, data.carry) : draft.carry,
   }));
 }
 

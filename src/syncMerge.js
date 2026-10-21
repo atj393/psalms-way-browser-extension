@@ -150,7 +150,8 @@ function daysBetween(from, to) {
   return Math.round((b - a) / 86400000);
 }
 
-function mergeStreak(phone, cloud) {
+/** Two streaks as one: the newer carries on, and the longest streak is never lowered. */
+export function mergeStreak(phone, cloud) {
   const p = asStreak(phone);
   const c = asStreak(cloud);
   if (!p && !c) return null;
@@ -176,7 +177,8 @@ function isDateString(value) {
   return typeof value === "string" && !Number.isNaN(Date.parse(value));
 }
 
-function mergeBadges(phone, cloud) {
+/** Every badge either side earned, each with the earlier date. */
+export function mergeBadges(phone, cloud) {
   if (!isRecord(phone) && !isRecord(cloud)) return null;
   const out = {};
   for (const side of [phone, cloud]) {
@@ -196,7 +198,8 @@ function completedDays(progress) {
     : -1;
 }
 
-function mergeChallenges(phone, cloud) {
+/** Every challenge either side has; for one on both, the side with more days done. */
+export function mergeChallenges(phone, cloud) {
   if (!isRecord(phone) && !isRecord(cloud)) return null;
   if (!isRecord(cloud)) return phone;
   if (!isRecord(phone)) return cloud;

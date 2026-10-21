@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { installChromeMock, removeChromeMock } from "./chrome-mock.js";
 import * as store from "../src/storage.js";
+import { parseBackup } from "../src/backup.js";
 import { setTablesForTests } from "../src/i18n.js";
 
 const {
@@ -444,6 +445,112 @@ describe("restoring a backup", () => {
     await store.replaceUserData({ favourites: [] });
     store.resetStoreCache();
     expect((await store.loadStore()).carry).toEqual({ favorites: [1] });
+  });
+
+  // Today: a 40-day streak, four badges, a challenge four days in, a highlight and a
+  // favourite Psalm made since. The backup is ten days old.
+  const today = {
+    streak: { lastDate: "2026-10-21", count: 40, longestStreak: 40 },
+    badges: {
+      day1: "2026-09-12T08:00:00.000Z",
+      day3: "2026-09-14T08:00:00.000Z",
+      day7: "2026-09-18T08:00:00.000Z",
+      day30: "2026-10-11T08:00:00.000Z",
+    },
+    challenges: { psalms30: { startDate: "2026-10-18", completedDays: [0, 1, 2, 3] } },
+    highlights: [{ chapter: 91, verse: 1, color: "yellow" }],
+    favorites: [91],
+    settings: { theme: "dark" },
+  };
+  const tenDaysAgo = {
+    streak: { lastDate: "2026-10-11", count: 30, longestStreak: 30 },
+    badges: { day1: "2026-09-12T08:00:00.000Z", day3: "2026-09-14T08:00:00.000Z" },
+    challenges: { psalms30: { startDate: "2026-10-18", completedDays: [0, 1] } },
+    highlights: [{ chapter: 23, verse: 1, color: "blue" }],
+    favorites: [23],
+    settings: { theme: "light" },
+  };
+
+  async function restoreOver(current, backup) {
+    installChromeMock({});
+    await store.updateStore((draft) => {
+      draft.carry = structuredClone(current);
+    });
+    await store.replaceUserData({ favourites: [], carry: structuredClone(backup) });
+    store.resetStoreCache();
+    return (await store.loadStore()).carry;
+  }
+
+  it("never lowers the streak or the longest streak", async () => {
+    const carry = await restoreOver(today, tenDaysAgo);
+    expect(carry.streak).toEqual({ lastDate: "2026-10-21", count: 40, longestStreak: 40 });
+  });
+
+  it("takes a longer longest streak from the backup", async () => {
+    const carry = await restoreOver(
+      { ...today, streak: { lastDate: "2026-10-21", count: 2, longestStreak: 2 } },
+      { ...tenDaysAgo, streak: { lastDate: "2026-10-11", count: 30, longestStreak: 30 } }
+    );
+    expect(carry.streak.count).toBe(2);
+    expect(carry.streak.longestStreak).toBe(30);
+  });
+
+  it("never loses an earned badge, and adds the backup's", async () => {
+    const carry = await restoreOver(today, {
+      ...tenDaysAgo,
+      badges: { ...tenDaysAgo.badges, notes5: "2026-10-01T08:00:00.000Z" },
+    });
+    expect(carry.badges).toEqual({ ...today.badges, notes5: "2026-10-01T08:00:00.000Z" });
+  });
+
+  it("never lowers a challenge's completed days", async () => {
+    const carry = await restoreOver(today, tenDaysAgo);
+    expect(carry.challenges.psalms30.completedDays).toEqual([0, 1, 2, 3]);
+  });
+
+  it("brings back the progress onto a browser that has none", async () => {
+    const carry = await restoreOver({}, tenDaysAgo);
+    expect(carry.streak).toEqual(tenDaysAgo.streak);
+    expect(carry.badges).toEqual(tenDaysAgo.badges);
+    expect(carry.challenges).toEqual(tenDaysAgo.challenges);
+  });
+
+  it("replaces highlights and favourite Psalms with the backup's", async () => {
+    const carry = await restoreOver(today, tenDaysAgo);
+    expect(carry.highlights).toEqual(tenDaysAgo.highlights);
+    expect(carry.favorites).toEqual(tenDaysAgo.favorites);
+
+    const none = await restoreOver(today, { streak: tenDaysAgo.streak });
+    expect(none).not.toHaveProperty("highlights");
+    expect(none).not.toHaveProperty("favorites");
+  });
+
+  it("keeps the phone's own settings", async () => {
+    const carry = await restoreOver(today, tenDaysAgo);
+    expect(carry.settings).toEqual({ theme: "dark" });
+  });
+
+  it("lays a pre-3.0 backup's settings over the current ones, keeping the newer settings", async () => {
+    installChromeMock({});
+    await store.updateSettings({ bibleVersion: "kjv", accent: "purple", uiLanguage: "es" });
+    const older = parseBackup(
+      JSON.stringify({
+        type: "psalms-way-browser-backup",
+        schemaVersion: 1,
+        data: {
+          favourites: [{ chapterIndex: 0, verseIndex: 0 }],
+          settings: { theme: "dark", fontSize: "large" },
+        },
+      })
+    );
+    const next = await store.replaceUserData(older.data);
+    expect(next.settings).toMatchObject({
+      theme: "dark",
+      fontSize: "large",
+      bibleVersion: "kjv",
+      accent: "purple",
+      uiLanguage: "es",
+    });
   });
 });
 

@@ -1030,6 +1030,17 @@ try {
   );
   await evaluate("document.getElementById('btnCloseCompare').click()");
   await sleep(250);
+  await evaluate("document.querySelectorAll('.verse .verse-body')[2].click()");
+  await waitFor("!!document.querySelector('.verse.is-selected .verse-actions')");
+  await evaluate("document.getElementById('btnCompare').click()");
+  await waitFor("document.querySelectorAll('#compareBody .compare-card').length > 0");
+  check(
+    "the toolbar's Compare shows the verse selected in the Psalm",
+    (await evaluate("document.querySelector('.compare-reference')?.textContent")) === "Psalm 23:3",
+    await evaluate("document.querySelector('.compare-reference')?.textContent")
+  );
+  await evaluate("document.getElementById('btnCloseCompare').click()");
+  await sleep(250);
 
   // ── Prayers ──────────────────────────────────────────────────────────────
   section("Prayers");
@@ -1113,7 +1124,31 @@ try {
       return rows['Highlights'] === '1' && rows['Favourites'] === '1';
     })()`)
   );
+  // A change that arrives while a panel is open (as cloud sync writes it) is shown at once.
+  const syncStreak = (count) =>
+    evaluate(`chrome.storage.local.get('psalmsway').then((r) => {
+      r.psalmsway.carry.streak = { ...r.psalmsway.carry.streak, count: ${count} };
+      return chrome.storage.local.set(r);
+    })`);
+  await syncStreak(7);
+  check(
+    "an open Progress panel shows a synced streak at once",
+    await waitFor(
+      "document.querySelector('#progressBody .progress-streak-number')?.textContent === '7'"
+    )
+  );
   await evaluate("document.getElementById('btnCloseProgress').click()");
+  await sleep(250);
+  await evaluate("document.getElementById('btnTodaysPsalm').click()");
+  await waitFor("!!document.querySelector('#todayBody .today-streak')");
+  await syncStreak(8);
+  check(
+    "an open Today panel shows a synced streak at once",
+    await waitFor(
+      "document.querySelector('#todayBody .today-streak')?.textContent === '8-day streak'"
+    )
+  );
+  await evaluate("document.getElementById('btnCloseToday').click()");
   await sleep(250);
 
   // ── Interface language ───────────────────────────────────────────────────
@@ -1259,6 +1294,62 @@ try {
   );
   await reload();
 
+  // ── The header after the version chip is painted ─────────────────────────
+  section("Header");
+  const headerState = `(() => {
+    const buttons = [...document.querySelectorAll('.header-actions .button')];
+    const tops = [...document.querySelectorAll('.header .title, .header-actions > *')].map(
+      (node) => Math.round(node.getBoundingClientRect().top)
+    );
+    return {
+      fits: buttons.length === 2 && buttons.every((b) => b.scrollWidth <= b.clientWidth),
+      oneRow: Math.max(...tops) - Math.min(...tops) < 10,
+      chip: document.getElementById('btnVersion').getAttribute('aria-label') ?? '',
+      chipTitle: document.getElementById('btnVersion').title,
+      detail: buttons.map((b) => getComputedStyle(b).fontSize + ' ' + b.scrollWidth + '/' + b.clientWidth).join(', ') +
+        ', title ' + getComputedStyle(document.querySelector('.header .title')).fontSize,
+    };
+  })()`;
+  /** Opens the popup on `store` (written whole) and waits for the chip to say `label`. */
+  const openOn = async (store, language, label) => {
+    await evaluate(`(async () => {
+      await chrome.storage.local.clear();
+      await chrome.storage.local.set({ psalmsway: ${JSON.stringify(store)} });
+    })()`);
+    await reload();
+    await waitFor(`document.documentElement.lang === '${language}'`);
+    await waitFor(`document.getElementById('btnVersionLabel').textContent === '${label}'`);
+    await sleep(300);
+    return evaluate(headerState);
+  };
+  const german = await openOn(
+    { schemaVersion: 3, settings: { uiLanguage: "de", bibleVersion: "elberfelder_1871" } },
+    "de",
+    "Elberfelder"
+  );
+  check(
+    "German with the Elberfelder: One Verse and New Chapter fit, and the header is one row",
+    german.fits && german.oneRow,
+    german.detail
+  );
+  check(
+    "the chip names the whole version, as its label may be cut",
+    german.chip.includes("Elberfelder (1871)") && german.chipTitle.includes("Elberfelder (1871)"),
+    `${german.chip} / ${german.chipTitle}`
+  );
+  // A first-time Spanish reader: no version saved and nothing read, so the Spanish first choice.
+  const spanish = await openOn({ schemaVersion: 3, settings: { uiLanguage: "es" } }, "es", "Reina");
+  check(
+    "Spanish with its first-choice version: the header buttons fit, and the header is one row",
+    spanish.fits && spanish.oneRow,
+    spanish.detail
+  );
+  await evaluate(`(async () => {
+    await chrome.storage.local.clear();
+    await chrome.storage.local.set({ psalmsway: { schemaVersion: 3, settings: { bibleVersion: 'modern' } } });
+  })()`);
+  await reload();
+
   // ── Layout ───────────────────────────────────────────────────────────────
   section("Layout");
   await evaluate(
@@ -1359,6 +1450,35 @@ try {
     roundTrip === '{"favourites":2,"rejected":4}',
     roundTrip
   );
+  // Restoring through Settings, as a reader does: the backup's Bible version applies at once.
+  await evaluate("document.getElementById('btnSettings').click()");
+  await sleep(300);
+  await evaluate(`(async () => {
+    const backup = await import('./src/backup.js');
+    const storage = await import('./src/storage.js');
+    const store = await storage.loadStore();
+    const doc = backup.createBackup({ ...store, settings: { ...store.settings, bibleVersion: 'kjv' } }, '3.0');
+    const files = new DataTransfer();
+    files.items.add(new File([JSON.stringify(doc)], 'backup.json', { type: 'application/json' }));
+    const input = document.getElementById('fileImport');
+    input.files = files.files;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await waitFor("!document.getElementById('dialogHost').hidden");
+  await evaluate("document.querySelector('.dialog-actions .button-danger').click()");
+  await waitFor("document.getElementById('statusBar').textContent.includes('Backup restored')");
+  await waitFor(`${chipLabel} === 'KJV'`);
+  await sleep(300);
+  check(
+    "a restored backup's Bible version applies at once, on the chip and the Psalm",
+    (await evaluate(chipLabel)) === "KJV" &&
+      (await evaluate("document.querySelector('.verse-text')?.textContent ?? ''")).includes(
+        "a very present help"
+      ),
+    await evaluate(chipLabel)
+  );
+  await evaluate("document.getElementById('btnCloseSettings').click()");
+  await sleep(200);
 
   // ── Every panel ──────────────────────────────────────────────────────────
   // Last of all, on the migrated store, so the console and network checks below

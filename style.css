@@ -233,12 +233,13 @@ fieldset {
   text-overflow: ellipsis;
 }
 
-/* The Bible version chip: the current version, opens the picker. */
+/* The Bible version chip: the current version, opens the picker. Kept narrow so One Verse
+   and New Chapter keep their room; a long label is cut, and the chip's name says it whole. */
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  max-width: 96px;
+  max-width: 72px;
   height: var(--control-h);
   padding-block: 0;
   padding-inline: 12px 9px;
