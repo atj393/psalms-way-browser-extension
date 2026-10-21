@@ -22,49 +22,21 @@ All 150 Psalms in 80 Bible versions and 47 languages. Bookmarks, highlights, not
 
 ## Full description
 
-Plain text, as the store shows it:
-
-```
-Psalms Way puts all 150 Psalms in your browser toolbar, in 80 Bible versions and 47 languages. Everything is built into the extension, so it opens instantly and works offline.
-
-READ
-- 80 Bible versions in 46 languages, chosen from a list with a filter box. English readers start on the NIV (1984).
-- Today: the verse of the day, Today's Psalm and your reading streak.
-- One Verse and New Chapter for something at random, or step between Psalms and jump to any number from 1 to 150.
-- Search all 150 Psalms in the version you are reading.
-- Compare one verse in three versions, side by side.
-
-KEEP
-- Bookmark a verse, highlight it in yellow, green, blue or pink, write a note on it, or copy it.
-- Click the heart to keep a whole Psalm.
-- The Library holds your bookmarks, highlights, favourite Psalms and notes. History lists what you read last.
-
-PRAY AND GROW
-- 50 prayers in 19 categories, in English, each with Scripture references that open the Psalm.
-- Progress: your reading streak, the last seven days, nine badges and six reading challenges.
-
-MAKE IT YOURS
-- Light, sepia, dark and auto themes, five accent colours and three text sizes.
-- 47 languages, with a right-to-left layout for Arabic, Persian, Hebrew, Urdu and Uyghur.
-
-SYNC WITH THE PSALMS WAY PHONE APP (OPTIONAL)
-- Connect the same Google account as the phone app, and your bookmarks, notes, highlights, favourite Psalms, history, streak, badges and challenges stay the same on both.
-- They are kept in a private app folder in your own Google Drive that only Psalms Way can see. There is no Psalms Way server, and the developer never receives your data.
-
-PRIVATE BY DESIGN
-- Without sync, the extension makes no network requests at all.
-- The only permission is storage. Google sign-in is asked for only if you connect sync.
-- It cannot see or change the pages you visit. No analytics, no ads, no tracking.
-- There are no reminders or notifications.
-
-Each Bible version keeps its own terms; its credit line is shown in the version list. The extension's code is open source (MIT licence): github.com/atj393/psalms-way-browser-extension
-```
+The store's description box is plain text: it shows Markdown symbols as they are.
+So the text to paste is kept in its own plain-text file,
+`docs/store/description.txt`. Open it, select all, copy, and paste it into the
+box. Do not copy it from this page.
 
 ## What's new in 3.0
 
-```
-80 Bible versions with a picker. 47 languages, with right-to-left layout. Light, sepia, dark and auto themes and five accent colours. Highlights and favourite Psalms. Today with the verse of the day. Compare. 50 prayers. Progress with streaks, badges and challenges. Optional sync with the Psalms Way phone app through your own Google Drive.
-```
+Whether the dashboard has a field for release notes is **Unknown**; if it does
+not, this can go in the GitHub release instead. Plain text:
+
+80 Bible versions with a picker. 47 languages, with right-to-left layout. Light,
+sepia, dark and auto themes and five accent colours. Highlights and favourite
+Psalms. Today with the verse of the day. Compare. 50 prayers. Progress with
+streaks, badges and challenges. Optional sync with the Psalms Way phone app
+through your own Google Drive.
 
 ## Other fields
 
