@@ -385,11 +385,10 @@ async function paintVersion() {
   fitTopRowText();
   const entry = (await loadCatalogue()).find((v) => v.module === module);
   if (!entry) return;
-  // The label may be cut short, so the chip's name says the whole version.
+  // The label may be cut short, so the chip's tooltip says the whole version. Its
+  // accessible name stays the visible label, so "click NIV" works by voice.
   const chip = byId("btnVersion");
-  const name = `${t("versionTitle", {}, "Bible version")}: ${entry.name}`;
-  chip?.setAttribute("title", name);
-  chip?.setAttribute("aria-label", name);
+  chip?.setAttribute("title", `${t("versionTitle", {}, "Bible version")}: ${entry.name}`);
   const setting = byId("versionSetting");
   if (setting) setting.textContent = entry.name;
 }

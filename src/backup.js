@@ -11,7 +11,6 @@
 
 import { t } from "./i18n.js";
 import { SCHEMA_VERSION, normaliseStore, sanitiseSettings } from "./storage.js";
-import { same } from "./syncMerge.js";
 
 export const BACKUP_TYPE = "psalms-way-browser-backup";
 export const BACKUP_SCHEMA_VERSION = 1;
@@ -160,8 +159,20 @@ function settingsInBackup(value) {
   const clean = sanitiseSettings(value);
   return Object.fromEntries(
     Object.entries(clean).filter(
-      ([key, usable]) => Object.hasOwn(value, key) && same(usable, value[key])
+      ([key, usable]) => Object.hasOwn(value, key) && sameSetting(usable, value[key])
     )
+  );
+}
+
+/**
+ * A setting is a plain value or a short list of them (compareVersions), so one
+ * level of comparison is enough, and a hostile file nested thousands deep cannot
+ * overflow the stack the way a recursive comparison would.
+ */
+function sameSetting(usable, raw) {
+  if (!Array.isArray(usable)) return usable === raw;
+  return (
+    Array.isArray(raw) && raw.length === usable.length && usable.every((item, i) => item === raw[i])
   );
 }
 

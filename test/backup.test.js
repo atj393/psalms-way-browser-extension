@@ -111,6 +111,16 @@ describe("parseBackup — valid input", () => {
     delete without.data.settings;
     expect(parseBackup(JSON.stringify(without)).data.settings).toEqual({});
   });
+
+  it("refuses a settings value nested absurdly deep as a damaged setting, without crashing", () => {
+    // Written as text: building it with JSON.stringify would overflow the test itself.
+    const depth = 200000;
+    const deep = '{"d":'.repeat(depth) + '"x"' + "}".repeat(depth);
+    const backup = JSON.stringify(
+      createBackup({ ...sampleStore, settings: { theme: "dark", accent: "DEEP" } })
+    ).replace('"DEEP"', deep);
+    expect(parseBackup(backup).data.settings).toEqual({ theme: "dark" });
+  });
 });
 
 describe("parseBackup — rejects bad input", () => {

@@ -568,6 +568,17 @@ describe("a version whose text cannot be loaded", () => {
     button.click();
     expect(opened).toHaveBeenCalledOnce();
   });
+
+  it("keeps the Psalm it was asked for, so another version opens at the same place", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    getData.mockRejectedValueOnce(new DataError("The Psalms text could not be loaded."));
+
+    await showPassage({ chapterIndex: 22, verseIndex: 3, record: false });
+
+    expect(getCurrentChapter()).toBe(22);
+    expect(getCurrentVerse()).toBe(3);
+    expect(document.getElementById("chapterTitle").textContent).toBe("Psalm 23:4");
+  });
 });
 
 // ─── The Library ──────────────────────────────────────────────────────────────

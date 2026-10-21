@@ -109,6 +109,12 @@ export async function showPassage({ chapterIndex, verseIndex = null, record = tr
   try {
     data = await getData();
   } catch (error) {
+    // Keep the place asked for, so choosing another version opens it there.
+    if (Number.isInteger(chapterIndex) && chapterIndex >= 0 && chapterIndex < CHAPTER_COUNT) {
+      state.chapterIndex = chapterIndex;
+      state.verseIndex = verseIndex;
+      byId("chapterTitle").textContent = formatReference(chapterIndex, verseIndex);
+    }
     renderDataFailure(error);
     return;
   }
