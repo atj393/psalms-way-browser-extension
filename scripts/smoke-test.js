@@ -1333,8 +1333,8 @@ try {
     german.detail
   );
   check(
-    "the chip names the whole version, as its label may be cut",
-    german.chip.includes("Elberfelder (1871)") && german.chipTitle.includes("Elberfelder (1871)"),
+    "the chip's tooltip names the whole version, and its accessible name stays its visible label",
+    german.chip === "" && german.chipTitle.includes("Elberfelder (1871)"),
     `${german.chip} / ${german.chipTitle}`
   );
   // A first-time Spanish reader: no version saved and nothing read, so the Spanish first choice.
